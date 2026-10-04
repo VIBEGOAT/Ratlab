@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "note": "Every constant carries value, unit, source (a references.json id or 'design'), confidence (high | medium | low = how sure we are the number is right) and status. VERIFIED means the number was seen in the cited source on verifiedOn. Anything else is UNVERIFIED and is listed in needs-expert-check.md.",
+  "constants": {
+    "study.tg407.minAnimalsPerGroup": { "value": 10, "unit": "animals (5 per sex)", "source": "oecd-tg407", "confidence": "high", "status": "VERIFIED", "verifiedOn": "2026-10-05", "note": "At least 10 animals, 5 per sex, per dose level." },
+    "study.tg407.minDoseGroups": { "value": 3, "unit": "groups", "source": "oecd-tg407", "confidence": "high", "status": "VERIFIED", "verifiedOn": "2026-10-05", "note": "At least three test groups, plus a control." },
+    "study.tg407.durationDays": { "value": 28, "unit": "days", "source": "oecd-tg407", "confidence": "high", "status": "VERIFIED", "verifiedOn": "2026-10-05" },
+    "study.tg408.durationDays": { "value": 90, "unit": "days", "source": "oecd-tg408", "confidence": "high", "status": "UNVERIFIED" },
+    "study.tg408.minAnimalsPerGroup": { "value": 20, "unit": "animals (10 per sex)", "source": "oecd-tg408", "confidence": "medium", "status": "UNVERIFIED", "note": "From memory." },
+
+    "humane.weightLossFraction": { "value": 0.2, "unit": "fraction of baseline body weight", "source": "design", "confidence": "medium", "status": "UNVERIFIED", "note": "Commonly used institutional threshold. GD 19 gives the concept, the number needs a check against institutional policy." },
+    "humane.grimaceScoreLimit": { "value": 1.5, "unit": "mean Rat Grimace Scale score (0 to 2)", "source": "sotocinal-2011", "confidence": "low", "status": "UNVERIFIED", "note": "Design placeholder. Published analgesia thresholds differ." },
+
+    "safety.hysLaw.altXuln": { "value": 3, "unit": "x upper limit of normal", "source": "fda-dili-2009", "confidence": "high", "status": "UNVERIFIED", "note": "Widely quoted. Confirm against the guidance text." },
+    "safety.hysLaw.bilirubinXuln": { "value": 2, "unit": "x upper limit of normal", "source": "fda-dili-2009", "confidence": "high", "status": "UNVERIFIED" },
+
+    "translation.km.rat": { "value": 6, "unit": "kg/m2 (body weight / surface area factor)", "source": "fda-hed-2005", "confidence": "high", "status": "UNVERIFIED", "note": "Confirm in Table 1 of the guidance." },
+    "translation.km.human": { "value": 37, "unit": "kg/m2", "source": "fda-hed-2005", "confidence": "high", "status": "UNVERIFIED", "note": "Adult human, 60 kg." },
+
+    "rat.organVolume.kidney": { "value": 0.0073, "unit": "fraction of body weight", "source": "brown-1997", "confidence": "high", "status": "VERIFIED", "verifiedOn": "2026-10-05", "note": "Search result quoted 0.73% for rat from Brown 1997." },
+    "rat.organVolume.liver": { "value": 0.0366, "unit": "fraction of body weight", "source": "brown-1997", "confidence": "high", "status": "VERIFIED", "verifiedOn": "2026-10-05", "note": "Quoted as Table 5 value, same for both sexes." },
+    "rat.organVolume.heart": { "value": 0.0033, "unit": "fraction of body weight", "source": "brown-1997", "confidence": "medium", "status": "UNVERIFIED" },
+    "rat.organVolume.brain": { "value": 0.0057, "unit": "fraction of body weight", "source": "brown-1997", "confidence": "medium", "status": "UNVERIFIED" },
+    "rat.organVolume.lung": { "value": 0.005, "unit": "fraction of body weight", "source": "brown-1997", "confidence": "medium", "status": "UNVERIFIED" },
+    "rat.organVolume.spleen": { "value": 0.002, "unit": "fraction of body weight", "source": "brown-1997", "confidence": "medium", "status": "UNVERIFIED" },
+    "rat.organVolume.gut": { "value": 0.027, "unit": "fraction of body weight", "source": "brown-1997", "confidence": "low", "status": "UNVERIFIED" },
+    "rat.organVolume.muscle": { "value": 0.404, "unit": "fraction of body weight", "source": "brown-1997", "confidence": "medium", "status": "UNVERIFIED", "note": "An independent rat PBPK paper (PMC12311570) cites 0.40 for lean rats from Brown 1997." },
+    "rat.organVolume.fat": { "value": 0.07, "unit": "fraction of body weight", "source": "brown-1997", "confidence": "low", "status": "UNVERIFIED", "note": "Varies strongly with age and strain." },
+    "rat.organVolume.boneMarrow": { "value": 0.0054, "unit": "fraction of body weight", "source": "design", "confidence": "low", "status": "UNVERIFIED", "note": "Placeholder. Needs a primary source." },
+    "rat.plasmaVolume": { "value": 0.0312, "unit": "fraction of body weight (L/kg)", "source": "davies-morris-1993", "confidence": "high", "status": "VERIFIED", "verifiedOn": "2026-10-05", "note": "0.0312 seen in a rat PBPK table citing Davies and Morris 1993." },
+    "rat.hematocrit": { "value": 0.46, "unit": "fraction", "source": "davies-morris-1993", "confidence": "high", "status": "VERIFIED", "verifiedOn": "2026-10-05", "note": "Seen in a rat PBPK table citing Davies and Morris 1993." },
+
+    "rat.bloodFlow.kidney": { "value": 0.14, "unit": "fraction of cardiac output", "source": "brown-1997", "confidence": "high", "status": "VERIFIED", "verifiedOn": "2026-10-05", "note": "Quoted as Table 23, both sexes." },
+    "rat.bloodFlow.liverTotal": { "value": 0.174, "unit": "fraction of cardiac output", "source": "brown-1997", "confidence": "medium", "status": "UNVERIFIED", "note": "Hepatic artery plus portal. Another study measured 0.159 in lean rats." },
+    "rat.bloodFlow.heart": { "value": 0.049, "unit": "fraction of cardiac output", "source": "brown-1997", "confidence": "low", "status": "UNVERIFIED", "note": "Another study measured 0.084 in lean rats (Crandall 1986)." },
+    "rat.bloodFlow.brain": { "value": 0.02, "unit": "fraction of cardiac output", "source": "brown-1997", "confidence": "medium", "status": "UNVERIFIED" },
+    "rat.bloodFlow.muscle": { "value": 0.278, "unit": "fraction of cardiac output", "source": "brown-1997", "confidence": "low", "status": "UNVERIFIED" },
+    "rat.bloodFlow.gut": { "value": 0.131, "unit": "fraction of cardiac output", "source": "brown-1997", "confidence": "low", "status": "UNVERIFIED" },
+    "rat.bloodFlow.spleen": { "value": 0.02, "unit": "fraction of cardiac output", "source": "brown-1997", "confidence": "low", "status": "UNVERIFIED" },
+    "rat.bloodFlow.fat": { "value": 0.07, "unit": "fraction of cardiac output", "source": "brown-1997", "confidence": "low", "status": "UNVERIFIED" },
+    "rat.cardiacOutput.scalingCoefficient": { "value": 14.1, "unit": "L/h per kg^0.74", "source": "brown-1997", "confidence": "low", "status": "UNVERIFIED", "note": "Allometric form QC = a * BW^0.74. Check exponent and coefficient." },
+    "rat.gfr": { "value": 1.31, "unit": "mL/min for a ~250 g rat", "source": "davies-morris-1993", "confidence": "low", "status": "UNVERIFIED" },
+
+    "rat.bodyWeight.sd.male.week8": { "value": 250, "unit": "g", "source": "design", "confidence": "low", "status": "UNVERIFIED", "note": "Placeholder. Replace with vendor growth curve (Charles River or Inotiv)." },
+    "rat.bodyWeight.cv": { "value": 0.08, "unit": "coefficient of variation at study start", "source": "design", "confidence": "low", "status": "UNVERIFIED" },
+
+    "rat.clinchem.alt.uln": { "value": 60, "unit": "U/L", "source": "design", "confidence": "low", "status": "UNVERIFIED", "note": "Approximate. Reference ranges vary by lab, strain, age, sex. Needs vendor historical control data." },
+    "rat.clinchem.ast.uln": { "value": 130, "unit": "U/L", "source": "design", "confidence": "low", "status": "UNVERIFIED" },
+    "rat.clinchem.bilirubin.uln": { "value": 0.3, "unit": "mg/dL", "source": "design", "confidence": "low", "status": "UNVERIFIED" },
+    "rat.clinchem.bun.uln": { "value": 25, "unit": "mg/dL", "source": "design", "confidence": "low", "status": "UNVERIFIED" },
+    "rat.clinchem.creatinine.uln": { "value": 0.7, "unit": "mg/dL", "source": "design", "confidence": "low", "status": "UNVERIFIED" },
+    "rat.clinchem.troponinI.uln": { "value": 0.06, "unit": "ng/mL", "source": "design", "confidence": "low", "status": "UNVERIFIED" },
+    "rat.clinchem.glucose.uln": { "value": 160, "unit": "mg/dL", "source": "design", "confidence": "low", "status": "UNVERIFIED" },
+    "rat.heartRate.rest": { "value": 360, "unit": "beats/min", "source": "design", "confidence": "low", "status": "UNVERIFIED", "note": "Telemetry values vary with state and strain." }
+  }
+}
