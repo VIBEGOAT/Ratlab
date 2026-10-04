@@ -13,7 +13,8 @@
     "build": "npm run build -w @eliminate/web",
     "dev": "npm run dev -w @eliminate/web",
     "gen:needs": "node scripts/gen-needs-check.mjs",
-    "ci": "npm run gen:needs && npm run typecheck && npm test"
+    "ci": "npm run gen:needs && npm run gen:docs && npm run typecheck && npm test",
+    "gen:docs": "tsx scripts/gen-docs.ts"
   },
   "devDependencies": {
     "tsx": "^4.23.15",

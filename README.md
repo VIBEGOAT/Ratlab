@@ -1,29 +1,53 @@
-# ELIMINATE-Lab (working name)
+# ELIMINATE-Lab
 
-In-silico rat study simulator aimed at replacing, reducing and refining animal testing (3Rs).
+A web-based in-silico rat laboratory that simulates a repeated-dose rat study: dosing, PK/PD, organ toxicity, disease progression, behaviour, clinical pathology, necropsy, statistics, humane endpoints and a human-translation outlook, all shown on a rotatable 3D virtual rat. The aim is to help replace, reduce and refine animal testing (the 3Rs).
 
-**Research and education tool. Not validated for regulatory or safety decisions.**
+> **Research and education tool. Not validated for regulatory or safety decisions.**
+> It does not replace animal studies. Compounds are fictional archetypes. Most parameters are unverified placeholders (see `data/needs-expert-check.md`). Nothing has been validated against real animal data.
 
-## Layout
-- `data/reference.json` all numeric constants, each with source, confidence and VERIFIED or UNVERIFIED status
-- `data/references.json` bibliography with verification status
-- `data/needs-expert-check.md` generated list of everything still unverified (`npm run gen:needs`)
-- `packages/sim-core` pure TypeScript simulation library (seeded, deterministic, no UI imports)
-- `apps/web` Vite + React + Zustand interface; simulation runs in a Web Worker
+## Run it
+```bash
+npm install
+npm run dev        # http://127.0.0.1:5173
+npm run build      # static site in apps/web/dist
+npm run ci         # regenerate generated docs, type-check, run all tests
+```
 
-## Commands
-- `npm run ci` regenerate review file, type-check, run tests
+## What is where
+| Path | Purpose |
+|---|---|
+| `packages/sim-core` | Pure TypeScript simulation library, seeded and deterministic, no UI imports |
+| `apps/web` | React and Vite interface. The simulation runs in a Web Worker. 3D uses react-three-fiber |
+| `data/reference.json` | Every numeric constant with source, confidence and VERIFIED or UNVERIFIED status |
+| `data/references.json` | Bibliography with verification status |
+| `data/needs-expert-check.md` | Generated list of everything unverified |
+| `docs/fidelity-table.md` | Generated MECHANISTIC, SEMI-QUANTITATIVE and ILLUSTRATIVE table |
+| `docs/expert-review-checklist.md` | Checklist for toxicologist, pathologist, pharmacokineticist, behavioural neuroscientist, biostatistician, regulatory affairs |
+| `docs/validation-roadmap.md` | Which datasets are needed and what each subsystem needs to move up |
+
+## The 16 tabs
+Study Design, Live Rat 3D, Behaviour, PK/PD, Disease Progression, Clinical Obs, Clinical Pathology, Necropsy and Histopath, Statistics and NOAEL, Untreated Twin, Population and Humane Endpoints, Human Translation, Uncertainty and Credibility, Validation, Pitch, Model Fidelity and Assumptions.
+
+Exports: CSV (one row per animal), JSON (full run) and a self-contained HTML report you can print to PDF. Each carries the seed, simulator version and fidelity labels.
+
+## Using your own data
+The Validation tab accepts historical control data as CSV (`dataset,source,strain,sex,ageWeeks,endpoint,n,mean,sd`). Until real data is loaded, validation reads `NO_DATA`.
+
+## How it is built
+- Whole-body PBPK (17 compartments) propagated exactly with a matrix exponential, checked against an adaptive RK45 solver and for mass balance.
+- PD library: Emax, effect compartment, indirect response (types I to IV), transit compartments, tolerance.
+- Organ toxicodynamics: threshold, saturating injury, defence depletion, regeneration, adaptation.
+- Disease overlays: Gompertz tumor with resistance, STZ-like and type-2-like diabetes with complications.
+- Study engine in the style of OECD TG 407 and 408, with litter effects, recovery and TK satellites.
+- Statistics implemented and tested from the published formulas: ANOVA, Dunnett, Kruskal-Wallis with Dunn, trend, Fisher, Kaplan-Meier, log-rank.
+- Monte Carlo toxicity forecasts, Morris sensitivity screening, a validation harness, a V&V 40 style credibility report, virtual control group mechanics.
 
 ## Status
-Phase (a) done: seeded forkable RNG, reference data schema and validator, fidelity registry, tests.
-Phase (b) done: 17-compartment PBPK (exact matrix-exponential propagation), RK45 solver, PD library, organ toxicodynamics with defence depletion, regeneration and adaptation, DDI and organ-feedback on clearance, six fictional archetypes, 82 tests.
-Phase (c) done: tumor and diabetes overlays, disease-toxicity interaction, untreated twin, observables (weight, intake, sickness, pain, clinical signs, clinical chemistry, haematology, Hy's Law, QT-like marker, necropsy), humane endpoints, behaviour (home cage, observation battery, open field, EPM, sucrose, forced swim, water maze, tracks), 129 tests.
-Phase (d) done: study engine (control plus low, mid, high, recovery and TK satellites, litter effects, humane early termination), Dunnett and Kruskal-Wallis analysis with trend and Fisher tests, NOAEL, LOAEL and MTD, Monte Carlo forecast with Kaplan-Meier and log-rank, Morris sensitivity, validation harness, V&V 40 style credibility report, virtual control groups, human translation, 184 tests.
-Phase (e) done: React + Vite web app with a Web Worker running the simulation, 16 tabs, study setup rail with custom compound editor, charts, CSV/JSON/HTML exports, theme toggle, keyboard-navigable tabs, CSV upload for historical controls, 8 UI tests.
-Phase (f) done: rotatable procedural 3D rat (react-three-fiber) with X-ray and skeleton layers, organ colour and grade labels driven by damage, clickable organs with timelines and markers, visible signs (wasting, jaundice, ruffled fur, hunching, tremor, ataxia, red tears, cataract, tumor, grimace), day scrubber with play and speed, treated and untreated twins side by side, and 3D behaviour arenas (open field, water maze, home cage). The model reads one RatVisualState so a glTF model can replace it.
-Next: (g) pitch polish, report export, expert-review checklist, validation roadmap, final fidelity table.
+Phases (a) to (g) are complete. 188 simulation tests and 14 interface tests pass.
 
-## Run the app
-`npm install` then `npm run dev` and open http://127.0.0.1:5173 . `npm run build` makes a static site in apps/web/dist.
-
-Try it: `npx tsx scripts/explore.ts hepatotoxin 28` prints PK and damage versus dose.
+## Known limits
+- No real animal data. No subsystem is validated.
+- Behaviour is ILLUSTRATIVE.
+- The 3D rat is a low-poly procedural model.
+- Optional disease modules (CKD, NASH, heart failure, neurodegeneration, sepsis-like response), multi-species support and ML surrogate models are not implemented. The code has hooks where they would go.
+- The Brown et al. 1997 physiology tables could not be read in full, so most physiology constants remain UNVERIFIED.
