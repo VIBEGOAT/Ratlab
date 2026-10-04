@@ -10,7 +10,8 @@ export interface FidelityEntry {
 
 export const FIDELITY: readonly FidelityEntry[] = [
   { id: "rng", name: "Random number generation", label: "MECHANISTIC", justification: "Deterministic seeded generator; behaviour is fully testable." },
-  { id: "pbpk", name: "PBPK ODE solver and mass balance", label: "MECHANISTIC", justification: "Standard equations; mass conservation is unit-tested." },
+  { id: "pbpk", name: "PBPK solver and mass balance", label: "MECHANISTIC", justification: "Flow-limited whole-body model propagated exactly with a matrix exponential; mass conservation and agreement with an adaptive ODE solver are unit-tested. Compound parameters are fictional archetypes." },
+  { id: "pd", name: "PD models (Emax, effect compartment, indirect response, transit, tolerance)", label: "MECHANISTIC", justification: "Textbook model forms checked against their analytic steady states. Parameters are archetype placeholders." },
   { id: "physiology", name: "Rat physiology parameters", label: "SEMI-QUANTITATIVE", justification: "Taken from the literature; several values still UNVERIFIED and not matched to a specific strain or vendor." },
   { id: "toxicodynamics", name: "Organ damage D(t)", label: "SEMI-QUANTITATIVE", justification: "Mechanism-shaped equations with archetype parameters that are not fitted to data." },
   { id: "clinpath", name: "Clinical pathology mapping from damage", label: "SEMI-QUANTITATIVE", justification: "Reference ranges come from the literature; the damage-to-marker mapping is assumed." },

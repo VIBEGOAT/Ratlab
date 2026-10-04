@@ -3,7 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "description": "ELIMINATE-Lab: in-silico rat study simulator (research and education tool, not validated for regulatory use)",
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "test": "npm test -w @eliminate/sim-core",
     "typecheck": "npm run typecheck -w @eliminate/sim-core",
@@ -11,6 +13,7 @@
     "ci": "npm run gen:needs && npm run typecheck && npm test"
   },
   "devDependencies": {
+    "tsx": "^4.23.15",
     "typescript": "^5.6.0",
     "vitest": "^2.1.0"
   }
