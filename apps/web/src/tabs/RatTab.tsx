@@ -3,6 +3,7 @@ import { FINDINGS, GRADE_SEVERITY, ORGANS, SIGNS, type AnimalBundle, type Organ,
 import { Legend, LineChart } from "../components/Chart";
 import { Banner, Empty, NeedsTwin, Panel, Stat, TabHead, f1 } from "../components/ui";
 import { ORGAN_LABEL } from "../lib/setup";
+import { useStore } from "../store";
 import { DEFAULT_LAYERS, type Layers } from "../three/RatModel";
 import { RatScene, SceneBoundary, useKickResize, webglAvailable } from "../three/RatScene";
 import { ORGAN_DETAIL, ratVisualState } from "../three/ratState";
@@ -11,7 +12,7 @@ const SIGN_LABEL: Record<string, string> = {
   reducedIntake: "Reduced intake", lethargy: "Lethargy", hunchedPosture: "Hunched posture", ruffledFur: "Ruffled fur", chromodacryorrhoea: "Red tears (chromodacryorrhoea)",
   jaundice: "Jaundice", tremor: "Tremor", ataxia: "Ataxia", convulsions: "Convulsions", dyspnoea: "Dyspnoea", diarrhoea: "Diarrhoea", dehydration: "Dehydration", tumour: "Palpable tumour", cataract: "Cataract",
 };
-const LAYER_LABEL: Array<[keyof Layers, string]> = [["xray", "X-ray body"], ["skeleton", "Skeleton"], ["brain", "Brain"], ["heart", "Heart"], ["lungs", "Lungs"], ["liver", "Liver"], ["kidneys", "Kidneys"], ["gut", "Gut"], ["marrow", "Bone marrow"], ["tumor", "Tumor"], ["labels", "Grade labels"]];
+const LAYER_LABEL: Array<[keyof Layers, string]> = [["xray", "X-ray body"], ["skeleton", "Skeleton"], ["vessels", "Blood vessels"], ["brain", "Brain"], ["heart", "Heart"], ["lungs", "Lungs"], ["liver", "Liver"], ["kidneys", "Kidneys"], ["gut", "Gut"], ["marrow", "Bone marrow"], ["tumor", "Tumor"], ["labels", "Grade labels"]];
 
 function OrganDetail({ organ, b, day }: { organ: Organ; b: AnimalBundle; day: number }) {
   const det = ORGAN_DETAIL[organ];
@@ -50,6 +51,10 @@ function RatLab({ tw }: { tw: TwinBundle }) {
   const [selected, setSelected] = useState<Organ | null>(null);
   const [twins, setTwins] = useState(true);
   const [reset, setReset] = useState(0);
+  const quality = useStore((s) => s.quality);
+  const setQuality = useStore((s) => s.setQuality);
+  const cb = useStore((s) => s.cbPalette);
+  const [activeQ, setActiveQ] = useState<"low" | "high">("high");
   const gl = webglAvailable();
   useKickResize(reset);
   const d = Math.min(t.days, Math.round(day));
@@ -73,7 +78,7 @@ function RatLab({ tw }: { tw: TwinBundle }) {
         <div style={{ height: 460, position: "relative", background: "var(--surface-2)" }}>
           {gl ? (
             <SceneBoundary fallback={<Empty>The 3D view could not start. All readouts below still work.</Empty>}>
-              <RatScene treated={t} untreated={tw.untreated} day={day} layers={layers} selected={selected} onSelect={setSelected} twins={twins} resetKey={reset} animate />
+              <RatScene treated={t} untreated={tw.untreated} day={day} layers={layers} selected={selected} onSelect={setSelected} twins={twins} resetKey={reset} animate quality={quality} palette={cb ? "cb" : "standard"} onQualityChange={setActiveQ} />
             </SceneBoundary>
           ) : <Empty>This browser does not offer WebGL, so the 3D rat cannot be drawn. The readouts below still work.</Empty>}
           <div className="small muted" style={{ position: "absolute", right: 10, top: 8, pointerEvents: "none" }}>drag to rotate · scroll to zoom · click an organ</div>
@@ -87,7 +92,8 @@ function RatLab({ tw }: { tw: TwinBundle }) {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
             <label className="small">Speed <select value={speed} onChange={(e) => setSpeed(+e.target.value)} style={{ width: "auto" }}>{[0.5, 1, 2, 4, 8].map((s) => <option key={s} value={s}>{s} days/s</option>)}</select></label>
             <label className="small"><input type="checkbox" checked={twins} onChange={(e) => setTwins(e.target.checked)} /> Show untreated twin</label>
-            <button onClick={() => setReset(reset + 1)}>Reset view</button>
+            <button onClick={() => { setSelected(null); setReset(reset + 1); }}>Reset view</button>
+            <label className="small">Quality <select value={quality} onChange={(e) => setQuality(e.target.value as "auto" | "low" | "high")} style={{ width: "auto" }}><option value="auto">Auto ({activeQ})</option><option value="high">High</option><option value="low">Low</option></select></label>
           </div>
           <div className="checks" role="group" aria-label="Layers">
             {LAYER_LABEL.map(([k, l]) => <label key={k}><input type="checkbox" checked={layers[k]} onChange={(e) => setLayers({ ...layers, [k]: e.target.checked })} />{l}</label>)}

@@ -1,5 +1,28 @@
 # Changelog
 
+## Front-end upgrade, phase (b): 3D rat rebuild
+
+- **One continuous body.** The rat is now a signed distance field (torso, chest, head, snout, four legs and paws blended smoothly) meshed by surface nets into a single closed mesh. A test proves it is one connected piece and that the paws rest on the floor.
+- **Anatomy checked by tests.** Every organ, the gut, the major vessels and the marrow sites stay inside the skin, also at maximum wasting. Eyes, ears, nose, tear stains and the tumour are seated on the skin by ray marching, and the eyes are mirrored left and right. Two placement errors were caught by these tests and fixed: the liver poked through when wasted, and the ears landed below the eyes.
+- **Organs in rat topography.** Brain in the skull, heart between the lungs, two-lobed liver behind it, stomach, coiled intestine, dorsal kidneys, spleen, bladder, femoral and vertebral marrow, plus aorta, vena cava, portal vein, and renal and femoral branches.
+- **Shading.**
+  - Fur shells (12 on High), with ruffled fur driven by piloerection.
+  - Bare-skin areas (paws, nose, ears, tail) take the jaundice tint.
+  - Ruby eyes with a glossy cornea, as in albino lab strains.
+  - Fresnel rim light.
+  - An X-ray shell with an edge glow that lets organs read clearly.
+- **Organ appearance by state.** The liver goes pale yellow-brown, the kidney pale, the heart dark, and the brain shimmers. The marrow glows. Grade 2 and above pulse in the damage colour. The heart beats at the simulated rate.
+- **Signs on the body.** Wasting thins the trunk, the back arches with hunching, and the head drops. Tremor and convulsion jitter, and ataxia sways. Red tear stains, a cataract overlay, a growing tumour, a grimace that squints the eyes and flattens the ears, and a gait for the arenas.
+- **Environment.** Studio environment lighting from procedural light panels, with no downloaded files. Contact shadows. On High only: a soft reflective floor, bloom, vignette, and depth of field when an organ is selected.
+- **Interaction.** Clicking an organ or its card flies the camera in and opens its detail card. Dragging or zooming hands control back. Clicking empty space clears the selection. Organ labels keep a fixed size on screen and show only in X-ray or for the selected organ.
+- **Performance.**
+  - The Quality setting (Auto, High, Low) is remembered, and Auto drops to Low when frame rate falls.
+  - Pixel density adapts.
+  - Arenas use the Low model.
+  - Geometry is built once and shared, and per-instance geometries and materials are disposed on unmount.
+  - The body mesh builds in under 4 s in tests (typically much less).
+- **Licensing.** No third-party 3D assets were used.
+
 ## Front-end upgrade, phase (a): bug fixes, design system, shell, Story and Lab modes
 
 The simulation core's behaviour is unchanged. The original 188 simulation tests pass unchanged. New tests: 5 simulation, 21 interface, 9 end-to-end.

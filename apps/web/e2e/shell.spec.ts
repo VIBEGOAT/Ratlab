@@ -111,3 +111,21 @@ test("dark theme screenshots", async ({ page }) => {
     await page.screenshot({ path: `${SHOTS}/dark-lab-data-${w}x${h}.png` });
   }
 });
+
+test("3D rat renders, organs open their detail, and quality can be set", async ({ page }) => {
+  const errors = watchConsole(page);
+  await fresh(page, "/#lab/animal");
+  await expect(page.locator("canvas")).toBeVisible({ timeout: 90_000 });
+  await expect(page.getByText(/Day \d+ \/ 28/)).toBeVisible();
+  await page.locator("button.organ", { hasText: "Liver" }).click();
+  await expect(page.getByRole("heading", { name: /Liver on day/ })).toBeVisible();
+  await page.getByLabel("Quality").selectOption("low");
+  await page.waitForTimeout(1500);
+  await page.locator("canvas").scrollIntoViewIfNeeded();
+  for (const [w, h] of [[1440, 900], [390, 844]] as const) {
+    await page.setViewportSize({ width: w, height: h });
+    await page.waitForTimeout(1500);
+    await page.screenshot({ path: `e2e/screenshots/phase-b/rat-${w}x${h}.png` });
+  }
+  expect(errors.filter((e) => !/Download the React DevTools|WebGL|GPU stall|THREE\.WebGLRenderer/.test(e))).toEqual([]);
+});

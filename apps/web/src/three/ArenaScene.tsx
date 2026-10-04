@@ -25,7 +25,7 @@ function ArenaRat({ bundle, day, pose, color, label }: { bundle: AnimalBundle; d
   });
   return (
     <group ref={g}>
-      <RatModel v={v} layers={LAYERS} walk={walk} scale={RAT_SCALE} />
+      <RatModel v={v} layers={LAYERS} walk={walk} scale={RAT_SCALE} quality="low" />
       <Html center position={[0, 1.1, 0]} distanceFactor={9} style={{ pointerEvents: "none" }}><div style={{ font: "600 11px 'IBM Plex Sans', sans-serif", padding: "1px 6px", borderRadius: 4, background: "rgba(10,20,19,0.8)", color, border: `1px solid ${color}`, whiteSpace: "nowrap" }}>{label}</div></Html>
     </group>
   );

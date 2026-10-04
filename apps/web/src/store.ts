@@ -23,6 +23,9 @@ interface State {
   setTheme: (t: Theme) => void;
   cbPalette: boolean;
   setCbPalette: (on: boolean) => void;
+  /** 3D quality: auto downgrades on slow frames */
+  quality: "auto" | "low" | "high";
+  setQuality: (q: "auto" | "low" | "high") => void;
 
   setup: Setup;
   /** the setup that produced the current results; null until the first run finishes */
@@ -72,6 +75,8 @@ export const useStore = create<State>((set, get) => ({
   setTheme: (t) => { ls.set("theme", t); set({ theme: t }); },
   cbPalette: ls.get("palette") === "cb",
   setCbPalette: (on) => { ls.set("palette", on ? "cb" : "standard"); set({ cbPalette: on }); },
+  quality: ((): "auto" | "low" | "high" => { const q = ls.get("quality"); return q === "low" || q === "high" ? q : "auto"; })(),
+  setQuality: (q) => { ls.set("quality", q); set({ quality: q }); },
 
   setup: defaultSetup(),
   ranSetup: null,
