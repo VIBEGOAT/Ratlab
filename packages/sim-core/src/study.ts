@@ -2,7 +2,7 @@ import { Rng } from "./rng";
 import { expm, matVec } from "./linalg";
 import { Rk45 } from "./ode";
 import type { Compound } from "./compound";
-import { buildPhysiology, TISSUES, type Physiology, type Sex, type Strain, type Tissue } from "./physiology";
+import { buildPhysiology, TISSUES, type Physiology, type PhysiologyMods, type Sex, type Strain, type Tissue } from "./physiology";
 import {
   buildRateMatrix, IDX, N_PK, plasmaConc, reactiveMetaboliteDensity, tissueConc, totalMass,
   type ClearanceFactors,
@@ -45,6 +45,10 @@ export interface AnimalConfig {
   dtH?: number;
   ddi?: DdiEffect[];
   disease?: DiseaseConfig;
+  /** shared multipliers such as a litter effect */
+  physiologyMods?: PhysiologyMods;
+  /** individual circadian phase offset in hours (positive is later) */
+  circadianPhaseH?: number;
   /** let liver and kidney damage reduce clearance (default true) */
   organFeedback?: boolean;
   /** run the toxicodynamics (default true). Turn off for pure PK. */
@@ -116,7 +120,7 @@ export function simulateAnimal(cfg: AnimalConfig): AnimalResult {
   const dt = cfg.dtH ?? 0.25;
   const c = cfg.compound;
   const rng = new Rng(cfg.seed).fork(cfg.animalId);
-  const phys = buildPhysiology({ sex: cfg.sex, strain: cfg.strain, ageWeeks: cfg.ageWeeks, rng: rng.fork("physiology") });
+  const phys = buildPhysiology({ sex: cfg.sex, strain: cfg.strain, ageWeeks: cfg.ageWeeks, rng: rng.fork("physiology"), mods: cfg.physiologyMods });
   const nSteps = Math.round((cfg.durationDays * 24) / dt);
   const useTd = cfg.toxicodynamics !== false;
   const feedback = cfg.organFeedback !== false;

@@ -29,11 +29,15 @@ export interface Physiology {
   renalFactor: number;
 }
 
+export interface PhysiologyMods { bw?: number; cyp?: number; renal?: number }
+
 export interface PhysiologyInput {
   sex: Sex;
   strain: Strain;
   ageWeeks: number;
   rng: Rng;
+  /** shared multipliers, for example a litter effect */
+  mods?: PhysiologyMods;
 }
 
 const ORGAN_FRACTION: Record<Exclude<Tissue, "rest">, string> = {
@@ -52,7 +56,7 @@ export function meanBodyWeightG(sex: Sex, strain: Strain, ageWeeks: number): num
 
 export function buildPhysiology(inp: PhysiologyInput): Physiology {
   const { rng, sex, strain, ageWeeks } = inp;
-  const bwG = meanBodyWeightG(sex, strain, ageWeeks) * rng.lognormalFactor(constant("rat.bodyWeight.cv"));
+  const bwG = meanBodyWeightG(sex, strain, ageWeeks) * rng.lognormalFactor(constant("rat.bodyWeight.cv")) * (inp.mods?.bw ?? 1);
   const bw = bwG / 1000;
   const organCv = constant("rat.organVolume.cv");
 
@@ -91,7 +95,7 @@ export function buildPhysiology(inp: PhysiologyInput): Physiology {
     sex, strain, ageWeeks, bwKg: bw, vol, volArt, volVen,
     flow: { gut, spleen, hepaticArtery, kidney, heart, brain, muscle, fat, marrow, rest },
     co,
-    cypFactor: rng.lognormalFactor(cypCv),
-    renalFactor: rng.lognormalFactor(constant("rat.renal.cv")),
+    cypFactor: rng.lognormalFactor(cypCv) * (inp.mods?.cyp ?? 1),
+    renalFactor: rng.lognormalFactor(constant("rat.renal.cv")) * (inp.mods?.renal ?? 1),
   };
 }

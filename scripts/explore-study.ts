@@ -1,0 +1,15 @@
+import { ARCHETYPES, defaultDesign, runStudy, analyseEndpoints, histopathTable, determineNoael } from "../packages/sim-core/src";
+const name = process.argv[2] ?? "hepatotoxin";
+const c = ARCHETYPES[name]!;
+const t = performance.now();
+const design = defaultDesign(c, { nPerSexPerGroup: 8, durationDays: 28, seed: 5 });
+const s = runStudy(design);
+console.log("animals", s.animals.length, "ms", (performance.now() - t).toFixed(0));
+const rows = analyseEndpoints(s);
+const sig = rows.filter((r) => r.significant && Math.abs(r.pctChange) >= 20);
+console.log("rows", rows.length, "significant+relevant", sig.length);
+for (const r of sig.slice(0, 14)) console.log(r.endpoint, r.sex, r.groupId, r.pctChange.toFixed(0) + "%", "p", r.pAdj.toExponential(1), r.method);
+const n = determineNoael(s, rows, histopathTable(s));
+console.log("NOAEL", n.noael, "LOAEL", n.loael, "MTD", n.mtd.doseMgPerKg);
+for (const g of n.groups) console.log(g.groupId, g.dose.toFixed(1), g.adverse, g.reasons.slice(0, 4).join("; "));
+console.log("humane", s.animals.filter((a) => a.terminalReason === "humane").length);

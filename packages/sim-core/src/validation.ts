@@ -1,0 +1,129 @@
+import { runStudy, type StudyDesign, type StudyResult } from "./studyEngine";
+import type { Sex } from "./physiology";
+import { mean, sd } from "./stats";
+
+/**
+ * Validation harness. It compares simulated vehicle-control distributions with HISTORICAL CONTROL
+ * data supplied by the user. No real historical control dataset ships with this tool, so the
+ * default status is NO_DATA and the tool says it has not been validated.
+ */
+
+export interface HistoricalRow {
+  dataset: string;
+  source: string;
+  licence?: string;
+  strain: string;
+  sex: Sex;
+  ageWeeks?: number;
+  endpoint: string;
+  n: number;
+  mean: number;
+  sd: number;
+  /** real data, or simulated data used only to test the harness itself */
+  provenance: "real" | "simulated-demo";
+}
+
+export interface ValidationCheck {
+  endpoint: string;
+  sex: Sex;
+  simulatedMean: number;
+  simulatedSd: number;
+  historicalMean: number;
+  historicalSd: number;
+  zMean: number;
+  sdRatio: number;
+  pass: boolean;
+  reason: string;
+}
+
+export type ValidationStatus = "NO_DATA" | "PASS" | "PARTIAL" | "FAIL";
+export interface ValidationReport {
+  status: ValidationStatus;
+  checks: ValidationCheck[];
+  passRate: number;
+  message: string;
+  usesSimulatedDemoData: boolean;
+}
+
+/** Endpoints whose failure alone fails the validation. */
+export const CRITICAL_ENDPOINTS = ["bodyWeightG"];
+
+export function controlEndpointValues(study: StudyResult): Map<string, number[]> {
+  const out = new Map<string, number[]>();
+  for (const a of study.animals) {
+    if (a.doseMgPerKg !== 0 || a.kind !== "main") continue;
+    for (const [k, v] of Object.entries(a.endpoints)) {
+      const key = `${a.sex}|${k}`;
+      const arr = out.get(key) ?? [];
+      arr.push(v);
+      out.set(key, arr);
+    }
+  }
+  return out;
+}
+
+/**
+ * Pass criteria per endpoint and sex: the simulated mean lies within the historical mean plus or minus
+ * two historical SDs, and the simulated SD is between half and double the historical SD.
+ */
+export function validateControls(simulated: Map<string, number[]>, historical: readonly HistoricalRow[]): ValidationReport {
+  if (historical.length === 0) {
+    return { status: "NO_DATA", checks: [], passRate: 0, usesSimulatedDemoData: false, message: "No historical control data loaded. This model has not been validated against animal data." };
+  }
+  const checks: ValidationCheck[] = [];
+  for (const h of historical) {
+    const vals = simulated.get(`${h.sex}|${h.endpoint}`);
+    if (!vals || vals.length < 3) continue;
+    const m = mean(vals), s = sd(vals);
+    const z = h.sd > 0 ? (m - h.mean) / h.sd : 0;
+    const ratio = h.sd > 0 ? s / h.sd : 1;
+    const okMean = Math.abs(z) <= 2, okSd = ratio >= 0.5 && ratio <= 2;
+    checks.push({
+      endpoint: h.endpoint, sex: h.sex, simulatedMean: m, simulatedSd: s, historicalMean: h.mean, historicalSd: h.sd, zMean: z, sdRatio: ratio,
+      pass: okMean && okSd, reason: okMean ? (okSd ? "within historical range" : "spread differs from historical") : "mean outside historical range",
+    });
+  }
+  const passRate = checks.length ? checks.filter((c) => c.pass).length / checks.length : 0;
+  const criticalFail = checks.some((c) => CRITICAL_ENDPOINTS.includes(c.endpoint) && !c.pass);
+  const status: ValidationStatus = checks.length === 0 ? "NO_DATA" : criticalFail ? "FAIL" : passRate >= 0.9 ? "PASS" : passRate >= 0.7 ? "PARTIAL" : "FAIL";
+  const demo = historical.some((h) => h.provenance === "simulated-demo");
+  return {
+    status, checks, passRate, usesSimulatedDemoData: demo,
+    message: demo
+      ? "Result obtained against SIMULATED demonstration data. It tests the harness only and says nothing about agreement with real rats."
+      : `Compared ${checks.length} control endpoint distributions with ${new Set(historical.map((h) => h.dataset)).size} historical dataset(s).`,
+  };
+}
+
+/** Run a set of virtual vehicle controls through the same study engine used for treated groups. */
+export function runVirtualControls(base: StudyDesign, nPerSex: number, seed: number): StudyResult {
+  return runStudy({ ...base, seed, nPerSexPerGroup: nPerSex, groups: [{ id: "G1", label: "Vehicle control", doseMgPerKg: 0, kind: "main" }] });
+}
+
+/** Pooled summary of several virtual control cohorts, formatted as historical control rows. Demonstration only. */
+export function simulatedHistoricalDataset(base: StudyDesign, nStudies: number, nPerSex: number, seed = 1000): HistoricalRow[] {
+  const pooled = new Map<string, number[]>();
+  for (let i = 0; i < nStudies; i++) {
+    for (const [k, v] of controlEndpointValues(runVirtualControls(base, nPerSex, seed + i))) {
+      const arr = pooled.get(k) ?? [];
+      arr.push(...v);
+      pooled.set(k, arr);
+    }
+  }
+  const rows: HistoricalRow[] = [];
+  for (const [k, v] of pooled) {
+    const [sex, endpoint] = k.split("|") as [Sex, string];
+    rows.push({ dataset: "SIMULATED-DEMO", source: "generated by this tool", strain: base.strain, sex, ageWeeks: base.ageWeeks, endpoint, n: v.length, mean: mean(v), sd: sd(v), provenance: "simulated-demo" });
+  }
+  return rows;
+}
+
+/** Datasets to source before any claim of validity. Licence and availability must be checked; none is loaded. */
+export const REQUIRED_DATASETS = [
+  { name: "Vendor historical control reports (for example Charles River or Inotiv) for the chosen strain, sex, age and study duration", usedFor: "Body weight curves, organ weights, clinical chemistry and haematology control ranges", access: "Usually available from the vendor or a CRO. Terms vary.", status: "NOT LOADED" },
+  { name: "Open TG-GATEs (Igarashi et al. 2015)", usedFor: "Rat repeated-dose studies with pathology and clinical chemistry for compounds with known liver and kidney outcomes", access: "Public database. Licence and download terms to be checked.", status: "NOT LOADED" },
+  { name: "DrugMatrix", usedFor: "Rat toxicogenomics and pathology across many compounds", access: "Availability and licence to be checked.", status: "NOT LOADED" },
+  { name: "eTOX and eTRANSAFE resources", usedFor: "Legacy preclinical safety reports", access: "Availability to be verified. Parts were industry-restricted.", status: "NOT LOADED" },
+  { name: "Published rat plasma concentration-time profiles for reference compounds", usedFor: "PBPK calibration and prospective prediction tests", access: "Literature and open databases such as PK-DB (to be verified).", status: "NOT LOADED" },
+  { name: "VICT3R project data and deliverables (IHI)", usedFor: "Virtual control group methods and shared historical control data", access: "To be checked with the project.", status: "NOT LOADED" },
+] as const;

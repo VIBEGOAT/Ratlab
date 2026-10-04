@@ -86,12 +86,13 @@ export function homeCageDay(r: AnimalResult, obs: Observables, beh: BehaviourDai
   const S = obs.sickness[d]!;
   const frag = beh.sleepFragmentation[d]!;
   const amp = constant("behaviour.bodyTemp.circadianAmplitudeC");
+  const phase = r.config.circadianPhaseH ?? 0;
   let tot = 0, dark = 0;
   for (let k = 0; k < bins; k++) {
     const h = (k + 0.5) / 4;
     hours[k] = h;
     // nocturnal drive peaking at hour 18, flattened by sickness and fragmentation
-    const rhythm = Math.max(0, Math.cos((2 * Math.PI * (h - 18)) / 24));
+    const rhythm = Math.max(0, Math.cos((2 * Math.PI * (h - phase - 18)) / 24));
     const amplitude = (1 - 0.7 * S) * (1 - 0.5 * frag * 0) ;
     const flat = 0.15 * frag + 0.05;
     const drive = (rhythm ** 1.3 * amplitude + flat * (1 - rhythm)) * beh.activityIndex[d]!;
@@ -99,7 +100,7 @@ export function homeCageDay(r: AnimalResult, obs: Observables, beh: BehaviourDai
     activity[k] = a;
     feeding[k] = Math.max(0, (obs.foodG[d]! / 8) * Math.max(0, rhythm) * (1 + 0.4 * rng.normal()) * 0.25 * 4 / 4);
     drinking[k] = Math.max(0, (obs.waterMl[d]! / 8) * Math.max(0, rhythm) * (1 + 0.4 * rng.normal()) * 0.25 * 4 / 4);
-    temp[k] = beh.bodyTempC[d]! + amp * Math.cos((2 * Math.PI * (h - 18)) / 24) * (1 - 0.6 * S) + 0.04 * rng.normal();
+    temp[k] = beh.bodyTempC[d]! + amp * Math.cos((2 * Math.PI * (h - phase - 18)) / 24) * (1 - 0.6 * S) + 0.04 * rng.normal();
     tot += a;
     if (h >= 12) dark += a;
   }

@@ -19,5 +19,9 @@ export const FIDELITY: readonly FidelityEntry[] = [
   { id: "humane", name: "Humane endpoint logic", label: "SEMI-QUANTITATIVE", justification: "Criteria follow the concepts in OECD GD 19. Threshold values are placeholders and must be replaced with institutional policy." },
   { id: "twin", name: "Untreated twin", label: "MECHANISTIC", justification: "Same seed, physiology and disease parameters with zero dose, so differences are due to treatment alone. The model it runs on is SEMI-QUANTITATIVE." },
   { id: "behaviour", name: "Behaviour, sickness, grimace, FOB", label: "ILLUSTRATIVE", justification: "Modelled endpoints derived from organ state. No claim about subjective experience." },
+  { id: "statistics", name: "Statistics (ANOVA, Dunnett, Kruskal-Wallis, Dunn, trend, Fisher, Kaplan-Meier, log-rank)", label: "MECHANISTIC", justification: "Implemented from the published formulas and checked against hand-computed examples and by simulation (Dunnett familywise error rate)." },
+  { id: "noael", name: "NOAEL, LOAEL and MTD determination", label: "SEMI-QUANTITATIVE", justification: "Rule-based adversity call (significance, trend, relevance, effect size, corroboration). Thresholds are design values for a toxicologist to set." },
+  { id: "montecarlo", name: "Monte Carlo forecast and sensitivity screening", label: "SEMI-QUANTITATIVE", justification: "Correct sampling and Morris screening, but variability parameters are placeholders so probabilities are not calibrated." },
+  { id: "validation", name: "Validation against historical controls", label: "ILLUSTRATIVE", justification: "The harness works, but no real historical control data is loaded. Status is NO_DATA until data is supplied." },
   { id: "translation", name: "Human translation", label: "ILLUSTRATIVE", justification: "Scaling rules only; no validation against human data." },
 ] as const;
