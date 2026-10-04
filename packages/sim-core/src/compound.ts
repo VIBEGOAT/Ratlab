@@ -36,6 +36,10 @@ export interface Compound {
   fuTissue: number;
   td: Partial<Record<Organ, TdOrganParams>>;
   pd?: PdSpec[];
+  /** anti-tumor or other cytotoxic efficacy, driven by plasma concentration (log-cell-kill per hour) */
+  efficacy?: { kmaxPerH: number; ec50: number; hill: number };
+  /** direction of the CNS effect: +1 excitatory, -1 sedating. Default +1. */
+  cnsSign?: 1 | -1;
   /** dose range (mg/kg/day) the archetype was tuned for; outside it results are extrapolation */
   tunedDoseRange: [number, number];
   defaultDoseMgPerKg: number;
@@ -92,6 +96,7 @@ export const ARCHETYPES: Record<string, Compound> = {
     td: {
       heart: { driver: "conc", thr: 6, kinj: 0.0015, kreg: 0.00005, ...NO_DEFENCE, kad: 0, kadDecay: 0, adMax: 0 },
     },
+    efficacy: { kmaxPerH: 0.02, ec50: 2, hill: 1 },
     tunedDoseRange: [1, 30], defaultDoseMgPerKg: 8,
   },
   neurotoxin: {
@@ -127,6 +132,7 @@ export const ARCHETYPES: Record<string, Compound> = {
       marrow: { driver: "conc", thr: 3, kinj: 0.03, kreg: 0.012, ...NO_DEFENCE, kad: 0, kadDecay: 0, adMax: 0 },
       gut: { driver: "conc", thr: 4, kinj: 0.015, kreg: 0.02, ...NO_DEFENCE, kad: 0, kadDecay: 0, adMax: 0 },
     },
+    efficacy: { kmaxPerH: 0.012, ec50: 2, hill: 1 },
     tunedDoseRange: [2, 60], defaultDoseMgPerKg: 20,
   },
   reference: {
@@ -142,6 +148,7 @@ export const ARCHETYPES: Record<string, Compound> = {
     td: {
       liver: { driver: "reactive", thr: 5000, kinj: 0.1, kreg: 0.004, kdefUse: 0.3, kdefSyn: 0.05, gate0: 0.05, kad: 0, kadDecay: 0, adMax: 0 },
     },
+    efficacy: { kmaxPerH: 0.006, ec50: 8, hill: 1 },
     tunedDoseRange: [10, 500], defaultDoseMgPerKg: 100,
   },
 };

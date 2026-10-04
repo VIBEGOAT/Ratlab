@@ -10,3 +10,8 @@ export * from "./pbpk";
 export * from "./pd";
 export * from "./toxicodynamics";
 export * from "./study";
+export * from "./disease";
+export * from "./observables";
+export * from "./humane";
+export * from "./behaviour";
+export * from "./twin";

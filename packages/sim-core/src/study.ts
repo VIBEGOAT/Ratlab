@@ -9,6 +9,7 @@ import {
 } from "./pbpk";
 import { ORGANS, TD_STATES_PER_ORGAN, tdDeriv, tdInit, type Organ } from "./toxicodynamics";
 import { makePd, type PdInstance } from "./pd";
+import { DISEASE_SERIES, kidneySensitivity, makeDisease, type DiseaseConfig, type DiseaseReading } from "./disease";
 
 export type Route = "oral" | "iv" | "diet";
 
@@ -43,6 +44,7 @@ export interface AnimalConfig {
   /** time step, hours. Doses are applied on this grid. */
   dtH?: number;
   ddi?: DdiEffect[];
+  disease?: DiseaseConfig;
   /** let liver and kidney damage reduce clearance (default true) */
   organFeedback?: boolean;
   /** run the toxicodynamics (default true). Turn off for pure PK. */
@@ -75,12 +77,16 @@ export interface AnimalResult {
   /** PD outputs by spec id */
   pd: Record<string, Float64Array>;
   clearanceFactorHepatic: Float64Array;
+  /** disease series (tumor volume, glucose, complications ...), one value per time step */
+  disease: Record<keyof DiseaseReading, Float64Array>;
   pk: PkSummary;
   doseTotalMg: number;
   /** |dose - sum of all compartments| / dose; should be ~1e-12 */
   massBalanceRelError: number;
 }
 
+import { EMPTY_READING } from "./disease";
+const EMPTY_FALLBACK: DiseaseReading = EMPTY_READING;
 const FEED_DARK_FRACTION = 0.8;
 
 function dietWeight(hourOfDay: number): number {
@@ -165,22 +171,30 @@ export function simulateAnimal(cfg: AnimalConfig): AnimalResult {
   const organs = ORGANS.filter((o) => c.td[o]);
   const pdSpecs = c.pd ?? [];
   const pdInst: PdInstance[] = pdSpecs.map(makePd);
+  const disease = makeDisease(cfg.disease, c.efficacy, rng);
   const nTd = organs.length * TD_STATES_PER_ORGAN;
   const nPd = pdInst.reduce((a, p) => a + p.nStates, 0);
-  const z = new Float64Array(nTd + nPd);
+  const nDis = disease?.nStates ?? 0;
+  const z = new Float64Array(nTd + nPd + nDis);
   organs.forEach((_, i) => tdInit(z, i * TD_STATES_PER_ORGAN));
   let off = nTd;
   const pdOff = pdInst.map((p) => { const o = off; p.init(z, o); off += p.nStates; return o; });
+  const disOff = nTd + nPd;
+  disease?.init(z, disOff);
   const solver = new Rk45(z.length);
 
-  const driverState = { tdE0: new Float64Array(organs.length), tdE1: new Float64Array(organs.length), pdC0: new Float64Array(pdInst.length), pdC1: new Float64Array(pdInst.length) };
+  const driverState = { tdE0: new Float64Array(organs.length), tdE1: new Float64Array(organs.length), pdC0: new Float64Array(pdInst.length), pdC1: new Float64Array(pdInst.length), pl0: 0, pl1: 0 };
   let t0 = 0;
   const deriv = (t: number, y: Float64Array, dy: Float64Array) => {
     const s = (t - t0) / dt;
+    const nephro = disease ? disease.read(y, disOff).nephropathy : 0;
+    const ks = kidneySensitivity(nephro);
     for (let i = 0; i < organs.length; i++) {
       const E = driverState.tdE0[i]! + (driverState.tdE1[i]! - driverState.tdE0[i]!) * s;
-      tdDeriv(c.td[organs[i]!]!, E, y, i * TD_STATES_PER_ORGAN, dy);
+      const isKidney = organs[i] === "kidney";
+      tdDeriv(c.td[organs[i]!]!, E, y, i * TD_STATES_PER_ORGAN, dy, isKidney ? ks.thrScale : 1, isKidney ? ks.kinjScale : 1);
     }
+    if (disease) disease.deriv(t, y, disOff, dy, driverState.pl0 + (driverState.pl1 - driverState.pl0) * s);
     for (let j = 0; j < pdInst.length; j++) {
       const drive = driverState.pdC0[j]! + (driverState.pdC1[j]! - driverState.pdC0[j]!) * s;
       pdInst[j]!.deriv(y, pdOff[j]!, dy, drive);
@@ -207,6 +221,8 @@ export function simulateAnimal(cfg: AnimalConfig): AnimalResult {
   const pdOut: Record<string, Float64Array> = {};
   for (const sp of pdSpecs) pdOut[sp.id] = new Float64Array(nSteps + 1);
   const clFactorOut = new Float64Array(nSteps + 1);
+  const disOut = {} as Record<keyof DiseaseReading, Float64Array>;
+  for (const k of DISEASE_SERIES) disOut[k] = new Float64Array(nSteps + 1);
 
   const x = new Float64Array(N_PK);
   const xn = new Float64Array(N_PK);
@@ -222,6 +238,8 @@ export function simulateAnimal(cfg: AnimalConfig): AnimalResult {
       pdOut[sp.id]![k] = pdInst[j]!.effect(z, pdOff[j]!, drive);
     });
     clFactorOut[k] = factors.hepatic;
+    const reading: DiseaseReading = disease ? disease.read(z, disOff) : EMPTY_FALLBACK;
+    for (const key of DISEASE_SERIES) disOut[key][k] = reading[key];
   };
 
   for (let k = 0; k <= nSteps; k++) {
@@ -241,7 +259,8 @@ export function simulateAnimal(cfg: AnimalConfig): AnimalResult {
     matVec(propagator(factors), x, N_PK, xn);
 
     // TD and PD integration over the step, with drivers interpolated between start and end
-    if (organs.length + pdInst.length > 0 && useTd) {
+    if (organs.length + pdInst.length + nDis > 0 && useTd) {
+      driverState.pl0 = plasmaConc(x, phys, c); driverState.pl1 = plasmaConc(xn, phys, c);
       organs.forEach((o, i) => { driverState.tdE0[i] = driverOf(x, o, factors); driverState.tdE1[i] = driverOf(xn, o, factors); });
       pdSpecs.forEach((sp, j) => { driverState.pdC0[j] = pdDriverOf(x, sp); driverState.pdC1[j] = pdDriverOf(xn, sp); });
       t0 = tH;
@@ -291,7 +310,7 @@ export function simulateAnimal(cfg: AnimalConfig): AnimalResult {
   const massBalanceRelError = doseTotal > 0 ? Math.abs(doseTotal - totalMass(x)) / doseTotal : 0;
 
   return {
-    config: cfg, physiology: phys, timesH, plasma, tissue, damage, defence, pd: pdOut,
+    config: cfg, physiology: phys, timesH, plasma, tissue, damage, defence, pd: pdOut, disease: disOut,
     clearanceFactorHepatic: clFactorOut,
     pk: { cmax, tmaxH: timesH[imax]!, aucAll: trapz(timesH, plasma, 0, nSteps), aucTauFirst, aucTauLast, accumulationRatio: acc, terminalHalfLifeH: thalf, organCmax, organAuc },
     doseTotalMg: doseTotal,

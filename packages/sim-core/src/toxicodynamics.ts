@@ -37,13 +37,13 @@ export interface TdOrganParams {
 
 export const TD_STATES_PER_ORGAN = 3;
 
-export function tdDeriv(p: TdOrganParams, E: number, y: Float64Array, off: number, dy: Float64Array): void {
+export function tdDeriv(p: TdOrganParams, E: number, y: Float64Array, off: number, dy: Float64Array, thrScale = 1, kinjScale = 1): void {
   const D = y[off]!, Def = y[off + 1]!, Ad = y[off + 2]!;
-  const thrEff = p.thr * (1 + Ad);
+  const thrEff = p.thr * thrScale * (1 + Ad);
   const x = Math.max(0, E / thrEff - 1);
   const sat = x / (1 + x);
   const gate = p.gate0 + (1 - p.gate0) * (1 - Def);
-  dy[off] = p.kinj * sat * gate * (1 - D) - p.kreg * D;
+  dy[off] = p.kinj * kinjScale * sat * gate * (1 - D) - p.kreg * D;
   dy[off + 1] = p.kdefSyn * (1 - Def) - p.kdefUse * (E / p.thr) * Def;
   dy[off + 2] = p.kad * sat * (p.adMax - Ad) - p.kadDecay * Ad;
 }

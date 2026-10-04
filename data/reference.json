@@ -275,56 +275,6 @@
       "confidence": "low",
       "status": "UNVERIFIED"
     },
-    "rat.clinchem.alt.uln": {
-      "value": 60,
-      "unit": "U/L",
-      "source": "design",
-      "confidence": "low",
-      "status": "UNVERIFIED",
-      "note": "Approximate. Reference ranges vary by lab, strain, age, sex. Needs vendor historical control data."
-    },
-    "rat.clinchem.ast.uln": {
-      "value": 130,
-      "unit": "U/L",
-      "source": "design",
-      "confidence": "low",
-      "status": "UNVERIFIED"
-    },
-    "rat.clinchem.bilirubin.uln": {
-      "value": 0.3,
-      "unit": "mg/dL",
-      "source": "design",
-      "confidence": "low",
-      "status": "UNVERIFIED"
-    },
-    "rat.clinchem.bun.uln": {
-      "value": 25,
-      "unit": "mg/dL",
-      "source": "design",
-      "confidence": "low",
-      "status": "UNVERIFIED"
-    },
-    "rat.clinchem.creatinine.uln": {
-      "value": 0.7,
-      "unit": "mg/dL",
-      "source": "design",
-      "confidence": "low",
-      "status": "UNVERIFIED"
-    },
-    "rat.clinchem.troponinI.uln": {
-      "value": 0.06,
-      "unit": "ng/mL",
-      "source": "design",
-      "confidence": "low",
-      "status": "UNVERIFIED"
-    },
-    "rat.clinchem.glucose.uln": {
-      "value": 160,
-      "unit": "mg/dL",
-      "source": "design",
-      "confidence": "low",
-      "status": "UNVERIFIED"
-    },
     "rat.heartRate.rest": {
       "value": 360,
       "unit": "beats/min",
@@ -414,6 +364,604 @@
       "confidence": "low",
       "status": "UNVERIFIED",
       "note": "Pairs with rat.cardiacOutput.scalingCoefficient. Gives about 5 L/h for 250 g, higher than the 55 mL/min of Davies and Morris. Resolve against the primary tables."
+    },
+    "disease.tumor.v0": {
+      "value": 100,
+      "unit": "mm3",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Starting volume of an established xenograft. Design placeholder."
+    },
+    "disease.tumor.growthPerDay": {
+      "value": 0.07,
+      "unit": "1/day (Gompertz rate)",
+      "source": "laird-1964",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Gompertz form after Laird 1964. Placeholder rate."
+    },
+    "disease.tumor.vmax": {
+      "value": 4000,
+      "unit": "mm3",
+      "source": "laird-1964",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Gompertz plateau. Placeholder."
+    },
+    "disease.tumor.resistanceRatePerDay": {
+      "value": 0.0012,
+      "unit": "fraction of sensitive volume per day",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Illustrative emergence of resistant clones."
+    },
+    "disease.tumor.cachexiaMaxLoss": {
+      "value": 0.25,
+      "unit": "fraction of body weight",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Illustrative."
+    },
+    "disease.tumor.cachexiaHalfVolume": {
+      "value": 800,
+      "unit": "mm3",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Illustrative."
+    },
+    "humane.tumorVolumeLimit": {
+      "value": 2000,
+      "unit": "mm3",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Institutional limits differ. Check local policy."
+    },
+    "humane.moribundSickness": {
+      "value": 0.85,
+      "unit": "sickness index (0 to 1)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Illustrative moribund trigger."
+    },
+    "humane.convulsionIndex": {
+      "value": 0.9,
+      "unit": "CNS activation fraction",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Illustrative trigger for severe convulsions."
+    },
+    "disease.diabetes.glucoseMax": {
+      "value": 500,
+      "unit": "mg/dL",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Illustrative upper plateau for severe STZ-like diabetes."
+    },
+    "disease.diabetes.hba1cBase": {
+      "value": 4.0,
+      "unit": "percent",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Illustrative."
+    },
+    "disease.diabetes.hba1cPerMgDl": {
+      "value": 0.012,
+      "unit": "percent per mg/dL above baseline",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Illustrative."
+    },
+    "disease.diabetes.hba1cTauDays": {
+      "value": 30,
+      "unit": "days",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Illustrative lag."
+    },
+    "disease.diabetes.type2RampTauDays": {
+      "value": 20,
+      "unit": "days",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Illustrative time constant for slow onset."
+    },
+    "disease.diabetes.nephropathyThreshold": {
+      "value": 200,
+      "unit": "mg/dL",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Illustrative."
+    },
+    "disease.diabetes.nephropathyRatePerH": {
+      "value": 0.0002,
+      "unit": "1/h",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Illustrative."
+    },
+    "disease.diabetes.neuropathyThreshold": {
+      "value": 250,
+      "unit": "mg/dL",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Illustrative."
+    },
+    "disease.diabetes.neuropathyRatePerH": {
+      "value": 0.00012,
+      "unit": "1/h",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Illustrative."
+    },
+    "disease.diabetes.cataractRatePerH": {
+      "value": 0.0001,
+      "unit": "1/h per percent HbA1c-like above 6.5",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Illustrative."
+    },
+    "behaviour.openField.distanceCm5min": {
+      "value": 2000,
+      "unit": "cm per 5 min",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Placeholder baseline. Needs a published or in-house reference."
+    },
+    "behaviour.epm.openArmFraction": {
+      "value": 0.25,
+      "unit": "fraction of time",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Placeholder baseline."
+    },
+    "behaviour.sucrosePreference": {
+      "value": 0.85,
+      "unit": "fraction",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Placeholder baseline."
+    },
+    "behaviour.forcedSwim.immobility": {
+      "value": 0.3,
+      "unit": "fraction of time",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Placeholder baseline."
+    },
+    "behaviour.bodyTemp.meanC": {
+      "value": 37.3,
+      "unit": "deg C",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Placeholder. Rat core temperature varies with circadian phase and activity."
+    },
+    "behaviour.bodyTemp.circadianAmplitudeC": {
+      "value": 0.5,
+      "unit": "deg C",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Placeholder."
+    },
+    "rat.clinchem.alt.mean": {
+      "value": 45,
+      "unit": "U/L",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.clinchem.alt.cv": {
+      "value": 0.25,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.clinchem.ast.mean": {
+      "value": 100,
+      "unit": "U/L",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.clinchem.ast.cv": {
+      "value": 0.25,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.clinchem.alp.mean": {
+      "value": 200,
+      "unit": "U/L",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.clinchem.alp.cv": {
+      "value": 0.35,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.clinchem.ggt.mean": {
+      "value": 1,
+      "unit": "U/L",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.clinchem.ggt.cv": {
+      "value": 0.5,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.clinchem.bilirubin.mean": {
+      "value": 0.1,
+      "unit": "mg/dL",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.clinchem.bilirubin.cv": {
+      "value": 0.3,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.clinchem.albumin.mean": {
+      "value": 4.0,
+      "unit": "g/dL",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.clinchem.albumin.cv": {
+      "value": 0.08,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.clinchem.bun.mean": {
+      "value": 17,
+      "unit": "mg/dL",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.clinchem.bun.cv": {
+      "value": 0.2,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.clinchem.creatinine.mean": {
+      "value": 0.45,
+      "unit": "mg/dL",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.clinchem.creatinine.cv": {
+      "value": 0.15,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.clinchem.troponinI.mean": {
+      "value": 0.02,
+      "unit": "ng/mL",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.clinchem.troponinI.cv": {
+      "value": 0.5,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.clinchem.ck.mean": {
+      "value": 300,
+      "unit": "U/L",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.clinchem.ck.cv": {
+      "value": 0.5,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.clinchem.glucose.mean": {
+      "value": 120,
+      "unit": "mg/dL",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.clinchem.glucose.cv": {
+      "value": 0.15,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.clinchem.cholesterol.mean": {
+      "value": 70,
+      "unit": "mg/dL",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.clinchem.cholesterol.cv": {
+      "value": 0.25,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.clinchem.triglycerides.mean": {
+      "value": 80,
+      "unit": "mg/dL",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.clinchem.triglycerides.cv": {
+      "value": 0.4,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.clinchem.sodium.mean": {
+      "value": 142,
+      "unit": "mmol/L",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.clinchem.sodium.cv": {
+      "value": 0.015,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.clinchem.potassium.mean": {
+      "value": 5.0,
+      "unit": "mmol/L",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.clinchem.potassium.cv": {
+      "value": 0.1,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.clinchem.chloride.mean": {
+      "value": 104,
+      "unit": "mmol/L",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.clinchem.chloride.cv": {
+      "value": 0.02,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.clinchem.calcium.mean": {
+      "value": 10.5,
+      "unit": "mg/dL",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.clinchem.calcium.cv": {
+      "value": 0.04,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.clinchem.phosphorus.mean": {
+      "value": 7,
+      "unit": "mg/dL",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.clinchem.phosphorus.cv": {
+      "value": 0.12,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.hematology.rbc.mean": {
+      "value": 7.5,
+      "unit": "10^6/uL",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.hematology.rbc.cv": {
+      "value": 0.06,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.hematology.hemoglobin.mean": {
+      "value": 15,
+      "unit": "g/dL",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.hematology.hemoglobin.cv": {
+      "value": 0.06,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.hematology.hematocrit.mean": {
+      "value": 44,
+      "unit": "%",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.hematology.hematocrit.cv": {
+      "value": 0.06,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.hematology.wbc.mean": {
+      "value": 8,
+      "unit": "10^3/uL",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.hematology.wbc.cv": {
+      "value": 0.25,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.hematology.neutrophils.mean": {
+      "value": 1.5,
+      "unit": "10^3/uL",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.hematology.neutrophils.cv": {
+      "value": 0.4,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.hematology.lymphocytes.mean": {
+      "value": 6,
+      "unit": "10^3/uL",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.hematology.lymphocytes.cv": {
+      "value": 0.25,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.hematology.platelets.mean": {
+      "value": 900,
+      "unit": "10^3/uL",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.hematology.platelets.cv": {
+      "value": 0.12,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.hematology.reticulocytes.mean": {
+      "value": 3,
+      "unit": "%",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Approximate adult rat value. Replace with vendor historical control data."
+    },
+    "rat.hematology.reticulocytes.cv": {
+      "value": 0.25,
+      "unit": "coefficient of variation (biological)",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED"
+    },
+    "rat.clinpath.analyticalCv": {
+      "value": 0.03,
+      "unit": "coefficient of variation",
+      "source": "design",
+      "confidence": "low",
+      "status": "UNVERIFIED",
+      "note": "Sample-to-sample analytical noise."
     }
   }
 }
