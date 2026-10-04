@@ -83,6 +83,9 @@ export interface AnimalRecord {
   histopathology: OrganFinding[];
   pk: Pick<PkSummary, "cmax" | "aucAll" | "accumulationRatio" | "terminalHalfLifeH">;
   signDaysObserved: Record<string, number>;
+  /** what is needed to rebuild this exact animal (see configForAnimal) */
+  physiologyMods: { bw: number; cyp: number };
+  circadianPhaseH: number;
 }
 
 export interface StudyResult {
@@ -134,7 +137,7 @@ export function simulateStudyAnimal(design: StudyDesign, g: GroupSpec, sex: Sex,
     terminalReason: humane && humane.day < scheduled ? "humane" : "scheduled", humane, endpoints: ep,
     chemistry: cp.chemistry, hematology: cp.hematology, histopathology: nec.histopathology,
     pk: { cmax: r.pk.cmax, aucAll: r.pk.aucAll, accumulationRatio: r.pk.accumulationRatio, terminalHalfLifeH: r.pk.terminalHalfLifeH },
-    signDaysObserved: signs,
+    signDaysObserved: signs, physiologyMods: mods, circadianPhaseH: phase,
   };
 }
 
@@ -168,3 +171,13 @@ export function runStudy(design: StudyDesign, onProgress?: (done: number, total:
 }
 
 export const ORGANS_WITH_HISTOLOGY = ORGANS;
+
+/** Rebuild the exact AnimalConfig used for a study animal, for example to inspect its time courses or its untreated twin. */
+export function configForAnimal(design: StudyDesign, a: AnimalRecord): AnimalConfig {
+  return {
+    seed: design.seed, animalId: a.id, sex: a.sex, strain: design.strain, ageWeeks: design.ageWeeks, compound: design.compound,
+    durationDays: a.scheduledDay,
+    regimen: { route: design.route, doseMgPerKg: a.doseMgPerKg, intervalH: design.intervalH, startH: 0, nDoses: design.route === "diet" ? design.durationDays : Math.floor((design.durationDays * 24) / design.intervalH) },
+    disease: design.disease, physiologyMods: a.physiologyMods, circadianPhaseH: a.circadianPhaseH, dtH: design.dtH,
+  };
+}
