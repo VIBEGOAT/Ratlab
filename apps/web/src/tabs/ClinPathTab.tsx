@@ -3,14 +3,17 @@ import type { Panel as PanelT } from "@eliminate/sim-core";
 import { Legend, LineChart } from "../components/Chart";
 import { Banner, NeedsTwin, Panel, Stat, TabHead, f1 } from "../components/ui";
 
+const UNITS: Record<string, string> = { alt: "U/L", ast: "U/L", alp: "U/L", ggt: "U/L", ck: "U/L", bilirubin: "mg/dL", albumin: "g/dL", bun: "mg/dL", creatinine: "mg/dL", troponinI: "ng/mL", glucose: "mg/dL", cholesterol: "mg/dL", triglycerides: "mg/dL", sodium: "mmol/L", potassium: "mmol/L", chloride: "mmol/L", calcium: "mg/dL", phosphorus: "mg/dL", rbc: "10^6/µL", hemoglobin: "g/dL", hematocrit: "%", wbc: "10^3/µL", neutrophils: "10^3/µL", lymphocytes: "10^3/µL", platelets: "10^3/µL", reticulocytes: "%" };
+const unitOf = (k: string) => UNITS[k] ?? "";
+
 function Table({ panel }: { panel: PanelT }) {
   return (
     <div className="scroll"><table>
-      <thead><tr><th>Marker</th><th className="num">Value</th><th className="num">Low</th><th className="num">High</th><th className="num">× ULN</th><th /></tr></thead>
+      <thead><tr><th>Marker</th><th>Unit</th><th className="num">Value</th><th className="num">Low</th><th className="num">High</th><th className="num">× ULN</th><th /></tr></thead>
       <tbody>
         {Object.entries(panel).map(([k, a]) => (
           <tr key={k} className={a.flag ? "flag" : ""}>
-            <td>{k}</td><td className="num">{f1(a.value, a.value < 10 ? 2 : 0)}</td><td className="num">{f1(a.lln, a.lln < 10 ? 2 : 0)}</td><td className="num">{f1(a.uln, a.uln < 10 ? 2 : 0)}</td><td className="num">{f1(a.xUln, 2)}</td><td>{a.flag}</td>
+            <td>{k}</td><td className="small muted">{unitOf(k)}</td><td className="num">{f1(a.value, a.value < 10 ? 2 : 0)}</td><td className="num">{f1(a.lln, a.lln < 10 ? 2 : 0)}</td><td className="num">{f1(a.uln, a.uln < 10 ? 2 : 0)}</td><td className="num">{f1(a.xUln, 2)}</td><td>{a.flag}</td>
           </tr>
         ))}
       </tbody>
@@ -49,7 +52,7 @@ export default function ClinPathTab() {
                 <select value={marker} onChange={(e) => setMarker(e.target.value)} aria-label="Marker" style={{ width: "auto" }}>
                   {Object.keys(all).map((k) => <option key={k} value={k}>{k}</option>)}
                 </select>}>
-                <LineChart label={`${marker} over time`} series={[{ name: "Treated", x: d, y: series(t), color: "var(--c1)" }, { name: "Untreated twin", x: d, y: series(u), color: "var(--c2)", dash: "5 4" }]} xLabel="day" marker={day} yMin={0} />
+                <LineChart label={`${marker} over time`} series={[{ name: "Treated", x: d, y: series(t), color: "var(--c1)" }, { name: "Untreated twin", x: d, y: series(u), color: "var(--c2)", dash: "5 4" }]} xLabel="Study day" yLabel={`${marker} (${unitOf(marker)})`} marker={day} yMin={0} />
                 <Legend items={[{ name: "Treated", color: "var(--c1)" }, { name: "Untreated twin", color: "var(--c2)", dash: true }]} />
               </Panel>
               <div className="grid">

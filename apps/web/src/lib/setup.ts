@@ -20,15 +20,24 @@ export interface Setup {
   seed: number;
 }
 
+/** Friendly names for the fictional archetypes. The archetype letter stays available as a subtitle. */
+export const COMPOUNDS: Array<{ key: string; name: string; sub: string }> = [
+  { key: "hepatotoxin", name: "Liver-toxic", sub: "Damages the liver at high exposure" },
+  { key: "nephrotoxin", name: "Kidney-toxic", sub: "Builds up in the kidney" },
+  { key: "cardiotoxin", name: "Heart-toxic anticancer", sub: "Shrinks tumours, slowly harms the heart" },
+  { key: "neurotoxin", name: "Nerve-toxic", sub: "Overstimulates the brain" },
+  { key: "myelotoxin", name: "Marrow-toxic", sub: "Suppresses blood cell production" },
+  { key: "reference", name: "Well tolerated", sub: "A safe reference compound" },
+];
+
 export const COMPOUND_LABELS: Record<string, string> = {
-  hepatotoxin: "H · Hepatotoxin archetype",
-  nephrotoxin: "N · Nephrotoxin archetype",
-  cardiotoxin: "C · Cardiotoxin archetype",
-  neurotoxin: "K · Neurotoxin archetype",
-  myelotoxin: "M · Myelotoxin archetype",
-  reference: "S · Safe reference",
+  ...Object.fromEntries(COMPOUNDS.map((c) => [c.key, c.name])),
   custom: "Custom compound",
 };
+
+export function compoundName(key: string): string {
+  return COMPOUND_LABELS[key] ?? key;
+}
 
 export function newCustomCompound(): Compound {
   const base = ARCHETYPES.hepatotoxin!;
@@ -43,7 +52,7 @@ export function defaultSetup(): Setup {
   const c = ARCHETYPES.hepatotoxin!;
   return {
     compoundKey: "hepatotoxin", custom: newCustomCompound(), highDose: c.defaultDoseMgPerKg, fractions: [0.1, 0.3, 1],
-    durationDays: 28, recoveryDays: 14, nPerSex: 5, sexes: ["M", "F"], strain: "SD", ageWeeks: 8, route: "oral", recovery: false, tk: false,
+    durationDays: 28, recoveryDays: 14, nPerSex: 10, sexes: ["M", "F"], strain: "SD", ageWeeks: 8, route: "oral", recovery: false, tk: false,
     disease: "none", seed: 42,
   };
 }
@@ -90,6 +99,23 @@ export function guidelineChecks(s: Setup, constant: (k: string) => number): Tg40
     { item: "Duration", ok: [7, 14, 28, 90].includes(s.durationDays), note: `${s.durationDays} days (TG 407 is 28 days, TG 408 is 90 days)` },
     { item: "Both sexes", ok: s.sexes.length === 2, note: s.sexes.length === 2 ? "Males and females" : "One sex only" },
   ];
+}
+
+/**
+ * The animal shown in the detail views. With recovery groups, pick the high-dose recovery animal so the
+ * timeline covers dosing plus recovery. Otherwise the first male in the highest-dose main group.
+ */
+export function defaultFocusId(study: { design: { groups: Array<{ id: string; kind: string; doseMgPerKg: number }> }; animals: Array<{ id: string; group: string; sex: string }> }): string | null {
+  const groups = study.design.groups;
+  const top = (kind: string) => groups.filter((g) => g.kind === kind && g.doseMgPerKg > 0).sort((a, b) => b.doseMgPerKg - a.doseMgPerKg)[0];
+  const g = top("recovery") ?? top("main") ?? groups[0];
+  if (!g) return null;
+  const inGroup = study.animals.filter((a) => a.group === g.id);
+  return (inGroup.find((a) => a.sex === "M") ?? inGroup[0] ?? study.animals[0])?.id ?? null;
+}
+
+export function sameSetup(a: Setup, b: Setup | null): boolean {
+  return !!b && JSON.stringify(a) === JSON.stringify(b);
 }
 
 export const ORGAN_LABEL: Record<Organ, string> = { liver: "Liver", kidney: "Kidneys", heart: "Heart", brain: "Brain", gut: "Gut", marrow: "Bone marrow" };

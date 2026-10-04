@@ -5,9 +5,10 @@ import {
   type Observables, type Panel, type Necropsy, type CardiacMarkers,
 } from "./observables";
 import {
-  behaviourDaily, homeCageDay, observationBattery, openField, elevatedPlusMaze, sucrosePreference, forcedSwimImmobility, waterMaze,
+  behaviourDaily, homeCageDay, observationBattery, openField, elevatedPlusMaze, sucrosePreference, waterMaze,
   openFieldTrack, type Fob, type HomeCageDay,
 } from "./behaviour";
+import { doseTimesOf, intervalPk, type IntervalPkSummary } from "./pkIntervals";
 import type { HumaneEvent } from "./humane";
 import { ORGANS, type Organ } from "./toxicodynamics";
 import { TISSUES, meanBodyWeightG, type Tissue } from "./physiology";
@@ -53,7 +54,12 @@ export interface AnimalBundle {
   clinpath: DailyClinPath[];
   homeCage: HomeCageDay[];
   fob: Fob[];
-  tests: Array<{ openField: ReturnType<typeof openField>; epm: ReturnType<typeof elevatedPlusMaze>; sucrose: number; forcedSwim: number }>;
+  /** Forced swim is deliberately not exposed: the test is scientifically and ethically contested. */
+  tests: Array<{ openField: ReturnType<typeof openField>; epm: ReturnType<typeof elevatedPlusMaze>; sucrose: number }>;
+  /** PK after the first dose and in the last complete dosing interval (full time resolution) */
+  pkIntervals: IntervalPkSummary | null;
+  /** scheduled length of the record in days (dosing plus any recovery) */
+  scheduledDays: number;
   necropsyTerminal: Necropsy;
   humane: HumaneEvent | null;
   myelosuppression: ReturnType<typeof myelosuppression>;
@@ -96,7 +102,7 @@ export function buildAnimalBundle(r: AnimalResult, obs: Observables, humane: Hum
     fob.push(observationBattery(r, obs, beh, d));
     tests.push({
       openField: openField(beh, d, r.config.seed), epm: elevatedPlusMaze(beh, d, r.config.seed),
-      sucrose: sucrosePreference(beh, d, r.config.seed), forcedSwim: forcedSwimImmobility(beh, obs, d, r.config.seed),
+      sucrose: sucrosePreference(beh, d, r.config.seed),
     });
   }
   const w0 = meanBodyWeightG(r.config.sex, r.config.strain, r.config.ageWeeks);
@@ -123,6 +129,8 @@ export function buildAnimalBundle(r: AnimalResult, obs: Observables, humane: Hum
       tumorVolume: arr(obs.tumorVolume), glucose: arr(obs.glucose), wasting, signIntensity: si, signObserved: so, behaviour: bh,
     },
     clinpath, homeCage, fob, tests, necropsyTerminal: necropsy(r, obs, days), humane, myelosuppression: myelosuppression(ctx),
+    pkIntervals: intervalPk(r.timesH, r.plasma, doseTimesOf(r.config.regimen, r.config.dtH ?? 0.25, r.config.durationDays * 24), r.config.regimen.intervalH),
+    scheduledDays: r.config.durationDays,
     waterMaze: waterMaze(r.config.seed, beh.cognition[days] ?? 1, 20), track: { x: arr(track.x), y: arr(track.y), hz: track.hz },
   };
 }

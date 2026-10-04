@@ -40,8 +40,3 @@ export function safetyMargin(ratNoaelAuc: number, humanAuc: number): number {
 export function therapeuticIndex(toxicDose: number, effectiveDose: number): number {
   return effectiveDose > 0 ? toxicDose / effectiveDose : Infinity;
 }
-
-/** MABEL is a receptor-occupancy and in vitro concept. Only the interface is provided: the caller supplies the in vitro EC10 or similar. */
-export function mabelStub(inVitroEc10Conc: number, humanVolumeOfDistributionLPerKg: number): { doseMgPerKg: number; note: string } {
-  return { doseMgPerKg: inVitroEc10Conc * humanVolumeOfDistributionLPerKg, note: "Stub: needs in vitro pharmacology data and a human PK projection. Not a validated MABEL calculation." };
-}

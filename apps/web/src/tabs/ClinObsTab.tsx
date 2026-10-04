@@ -21,10 +21,10 @@ export default function ClinObsTab() {
           return (
             <>
               <div className="grid wide">
-                <Panel title="Body weight"><LineChart label="Body weight" series={pair(t.daily.bodyWeightG, u.daily.bodyWeightG)} xLabel="day" yLabel="g" yMin={0} /><Legend items={legend} /></Panel>
-                <Panel title="Food and water"><LineChart label="Food intake" series={pair(t.daily.foodG, u.daily.foodG)} xLabel="day" yLabel="g per day" yMin={0} height={150} /><LineChart label="Water intake" series={pair(t.daily.waterMl, u.daily.waterMl)} xLabel="day" yLabel="mL per day" yMin={0} height={150} /></Panel>
-                <Panel title="Sickness index"><LineChart label="Sickness index" series={pair(t.daily.sickness, u.daily.sickness)} xLabel="day" yMin={0} yMax={1} /><Legend items={legend} /></Panel>
-                <Panel title="Grimace score"><LineChart label="Grimace score" series={pair(t.daily.grimace, u.daily.grimace)} xLabel="day" yMin={0} yMax={2} /><p className="small muted">Rat Grimace Scale style, 0 to 2. Scores above the limit trigger a humane endpoint.</p></Panel>
+                <Panel title="Body weight"><LineChart label="Body weight" series={pair(t.daily.bodyWeightG, u.daily.bodyWeightG)} xLabel="Study day" yLabel="Body weight (g)" yMin={0} /><Legend items={legend} /></Panel>
+                <Panel title="Food and water"><LineChart label="Food intake" series={pair(t.daily.foodG, u.daily.foodG)} xLabel="Study day" yLabel="Food (g/day)" yMin={0} height={150} /><LineChart label="Water intake" series={pair(t.daily.waterMl, u.daily.waterMl)} xLabel="Study day" yLabel="Water (mL/day)" yMin={0} height={150} /></Panel>
+                <Panel title="Sickness index"><LineChart label="Sickness index" series={pair(t.daily.sickness, u.daily.sickness)} xLabel="Study day" yLabel="Sickness index (0 to 1)" yMin={0} yMax={1} /><Legend items={legend} /></Panel>
+                <Panel title="Grimace score"><LineChart label="Grimace score" series={pair(t.daily.grimace, u.daily.grimace)} xLabel="Study day" yLabel="Grimace score (0 to 2)" yMin={0} yMax={2} /><p className="small muted">Rat Grimace Scale style, 0 to 2. Scores above the limit trigger a humane endpoint.</p></Panel>
               </div>
               <Panel title="Clinical signs recorded by day (treated animal)">
                 {rows.length === 0 ? <p className="muted">No clinical signs were recorded.</p> : <HeatGrid rows={rows} days={t.days} />}

@@ -68,7 +68,7 @@ export default function BehaviourTab() {
                   <LineChart label="Activity index" series={[
                     { name: "Treated", x: dx, y: t.daily.behaviour.activityIndex!, color: "var(--c1)" },
                     { name: "Untreated twin", x: dx, y: u.daily.behaviour.activityIndex!, color: "var(--c2)", dash: "5 4" },
-                  ]} xLabel="day" yLabel="relative to baseline" yMin={0} marker={day} />
+                  ]} xLabel="Study day" yLabel="relative to baseline" yMin={0} marker={day} />
                   <Legend items={[{ name: "Treated", color: "var(--c1)" }, { name: "Untreated twin", color: "var(--c2)", dash: true }]} />
                   <p className="small muted">Stimulants raise activity, then tolerance builds and a rebound below baseline follows withdrawal. Sickness lowers activity.</p>
                 </Panel>
@@ -76,11 +76,11 @@ export default function BehaviourTab() {
                   <LineChart label="Activity per 15 minutes" series={[
                     { name: "Treated", x: Array.from(hc.hours), y: Array.from(hc.activity), color: "var(--c1)" },
                     { name: "Untreated twin", x: Array.from(hcU.hours), y: Array.from(hcU.activity), color: "var(--c2)", dash: "5 4" },
-                  ]} xLabel="hour of day (lights off 12 to 24)" yLabel="counts" shade={[[12, 24]]} yMin={0} xMin={0} xMax={24} />
+                  ]} xLabel="hour of day (lights off 12 to 24)" yLabel="Activity (counts)" shade={[[12, 24]]} yMin={0} xMin={0} xMax={24} />
                   <LineChart label="Body temperature" series={[
                     { name: "Treated", x: Array.from(hc.hours), y: Array.from(hc.bodyTempC), color: "var(--c6)" },
                     { name: "Untreated twin", x: Array.from(hcU.hours), y: Array.from(hcU.bodyTempC), color: "var(--c2)", dash: "5 4" },
-                  ]} xLabel="hour" yLabel="°C" shade={[[12, 24]]} height={170} xMin={0} xMax={24} yMin={34} yMax={39} />
+                  ]} xLabel="Hour of day" yLabel="Temperature (°C)" shade={[[12, 24]]} height={170} xMin={0} xMax={24} yMin={34} yMax={39} />
                   <p className="small muted">Dark-phase share of activity: {f1(hc.darkFraction * 100, 0)}% treated, {f1(hcU.darkFraction * 100, 0)}% untreated.</p>
                 </Panel>
               </div>
@@ -93,7 +93,6 @@ export default function BehaviourTab() {
                       <tr><td>Open field centre time</td><td className="num">{f1(test.openField.centerTimeFraction * 100, 0)}%</td><td className="num">{f1(testU.openField.centerTimeFraction * 100, 0)}%</td></tr>
                       <tr><td>Elevated plus maze, open arm time</td><td className="num">{f1(test.epm.openArmFraction * 100, 0)}%</td><td className="num">{f1(testU.epm.openArmFraction * 100, 0)}%</td></tr>
                       <tr><td>Sucrose preference</td><td className="num">{f1(test.sucrose * 100, 0)}%</td><td className="num">{f1(testU.sucrose * 100, 0)}%</td></tr>
-                      <tr><td>Forced swim immobility</td><td className="num">{f1(test.forcedSwim * 100, 0)}%</td><td className="num">{f1(testU.forcedSwim * 100, 0)}%</td></tr>
                     </tbody>
                   </table></div>
                 </Panel>
@@ -110,7 +109,7 @@ export default function BehaviourTab() {
               </div>
               <div className="grid">
                 <Panel title="Spatial learning (water-maze style)">
-                  <LineChart label="Escape latency" series={[{ name: "Latency", x: t.waterMaze.latencySec.map((_, i) => i + 1), y: t.waterMaze.latencySec, color: "var(--c1)" }]} xLabel="trial" yLabel="seconds" yMin={0} height={200} />
+                  <LineChart label="Escape latency" series={[{ name: "Latency", x: t.waterMaze.latencySec.map((_, i) => i + 1), y: t.waterMaze.latencySec, color: "var(--c1)" }]} xLabel="Training trial" yLabel="Escape latency (s)" yMin={0} height={200} />
                   <p className="small muted">Learning rate scales with the animal's cognition capacity at the end of the study. A Q-learning agent stands in for the rat.</p>
                 </Panel>
                 <Panel title="Replayable open-field track">

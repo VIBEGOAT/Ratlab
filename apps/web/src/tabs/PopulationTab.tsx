@@ -50,7 +50,7 @@ export default function PopulationTab() {
                       ))}
                     </div>
                     <h3 style={{ marginTop: 8 }}>Survival without a humane endpoint (Kaplan-Meier)</h3>
-                    <LineChart label="Survival curves by dose" series={forecast.data.map((f, i) => ({ name: `${f1(f.doseMgPerKg, 0)} mg/kg`, x: f.survival.map((s) => s.t), y: f.survival.map((s) => s.survival), color: colors[i % colors.length]!, step: true }))} xLabel="day" yMin={0} yMax={1} fmtY={(v) => `${(v * 100).toFixed(0)}%`} />
+                    <LineChart label="Survival curves by dose" series={forecast.data.map((f, i) => ({ name: `${f1(f.doseMgPerKg, 0)} mg/kg`, x: f.survival.map((s) => s.t), y: f.survival.map((s) => s.survival), color: colors[i % colors.length]!, step: true }))} xLabel="Study day" yLabel="Rats without a humane endpoint" yMin={0} yMax={1} fmtY={(v) => `${(v * 100).toFixed(0)}%`} />
                     <Legend items={forecast.data.map((f, i) => ({ name: `${f1(f.doseMgPerKg, 0)} mg/kg`, color: colors[i % colors.length]! }))} />
                   </>
                 ) : forecast.status !== "running" && <p className="muted">Press Run forecast.</p>}

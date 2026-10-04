@@ -54,7 +54,6 @@ export default function TranslationTab() {
                     <Stat label="Safety margin" value={`${f1(margin, 1)}×`} tone={margin >= 10 ? "good" : margin >= 3 ? "warn" : "bad"} />
                     {loael !== null && <Stat label="Therapeutic index" value={`${f1(therapeuticIndex(loael, effDose), 1)}`} hint="LOAEL ÷ effective dose" />}
                   </div>
-                  <p className="small muted">MABEL is a receptor-occupancy concept that needs in vitro pharmacology. Only an interface exists here, with no values.</p>
                 </Panel>
               </div>
             </>

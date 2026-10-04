@@ -1,21 +1,33 @@
 import { create } from "zustand";
-import { configForAnimal, type ForecastResult, type HistoricalRow, type MorrisResult, type Organ, type TwinBundle } from "@eliminate/sim-core";
-import { call } from "./worker/client";
+import { SIM_VERSION, configForAnimal, type ForecastResult, type HistoricalRow, type MorrisResult, type Organ, type TwinBundle } from "@eliminate/sim-core";
+import { call, cancelLane, CancelledError } from "./worker/client";
 import type { StudyPayload, ValidationPayload } from "./worker/protocol";
-import { buildDesign, defaultSetup, designProblems, type Setup } from "./lib/setup";
+import { buildDesign, defaultFocusId, defaultSetup, designProblems, sameSetup, type Setup } from "./lib/setup";
+import { cacheGet, cacheSet } from "./lib/cache";
 
 export type Theme = "system" | "light" | "dark";
+export type Mode = "story" | "lab";
+export type LabSection = "design" | "animal" | "data" | "population" | "trust";
 type Status = "idle" | "running" | "done" | "error";
 interface Job<T> { status: Status; progress: number; error?: string; data: T | null }
 const idle = <T,>(): Job<T> => ({ status: "idle", progress: 0, data: null });
 
 interface State {
-  setup: Setup;
-  setSetup: (p: Partial<Setup>) => void;
+  mode: Mode;
+  setMode: (m: Mode) => void;
+  labSection: LabSection;
+  labView: string;
+  goLab: (section: LabSection, view?: string) => void;
+
   theme: Theme;
   setTheme: (t: Theme) => void;
-  tab: string;
-  setTab: (t: string) => void;
+  cbPalette: boolean;
+  setCbPalette: (on: boolean) => void;
+
+  setup: Setup;
+  /** the setup that produced the current results; null until the first run finishes */
+  ranSetup: Setup | null;
+  setSetup: (p: Partial<Setup>) => void;
 
   study: Job<StudyPayload>;
   runStudy: () => Promise<void>;
@@ -38,36 +50,60 @@ interface State {
 
 let studyToken = 0;
 let twinToken = 0;
+let rerunTimer: ReturnType<typeof setTimeout> | undefined;
 
-const savedTheme = ((): Theme => { try { const t = localStorage.getItem("theme"); return t === "light" || t === "dark" ? t : "system"; } catch { return "system"; } })();
+const ls = {
+  get(k: string): string | null { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k: string, v: string): void { try { localStorage.setItem(k, v); } catch { /* storage may be blocked */ } },
+};
+const savedTheme = ((): Theme => { const t = ls.get("theme"); return t === "light" || t === "dark" ? t : "system"; })();
+const savedMode = ((): Mode => { const h = typeof location !== "undefined" ? location.hash : ""; if (h.startsWith("#lab")) return "lab"; return ls.get("mode") === "lab" ? "lab" : "story"; })();
+const cacheKey = (s: Setup) => `${SIM_VERSION}|${JSON.stringify(s)}`;
+const msg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
 export const useStore = create<State>((set, get) => ({
-  setup: defaultSetup(),
-  setSetup: (p) => set((s) => ({ setup: { ...s.setup, ...p } })),
+  mode: savedMode,
+  setMode: (m) => { ls.set("mode", m); if (typeof history !== "undefined") history.replaceState(null, "", m === "lab" ? `#lab/${get().labSection}` : "#"); set({ mode: m }); },
+  labSection: "design",
+  labView: "",
+  goLab: (section, view = "") => { ls.set("mode", "lab"); if (typeof history !== "undefined") history.replaceState(null, "", `#lab/${section}`); set({ mode: "lab", labSection: section, labView: view }); },
+
   theme: savedTheme,
-  setTheme: (t) => {
-    try { localStorage.setItem("theme", t); } catch { /* ignore */ }
-    set({ theme: t });
+  setTheme: (t) => { ls.set("theme", t); set({ theme: t }); },
+  cbPalette: ls.get("palette") === "cb",
+  setCbPalette: (on) => { ls.set("palette", on ? "cb" : "standard"); set({ cbPalette: on }); },
+
+  setup: defaultSetup(),
+  ranSetup: null,
+  setSetup: (p) => {
+    set((s) => ({ setup: { ...s.setup, ...p } }));
+    // results follow the configuration: re-run shortly after the last change
+    clearTimeout(rerunTimer);
+    rerunTimer = setTimeout(() => { if (designProblems(get().setup).length === 0) void get().runStudy(); }, 650);
   },
-  tab: (typeof location !== "undefined" && location.hash.slice(1)) || "design",
-  setTab: (t) => { if (typeof history !== "undefined") history.replaceState(null, "", `#${t}`); set({ tab: t }); },
 
   study: idle(),
   runStudy: async () => {
     const setup = get().setup;
     const problems = designProblems(setup);
-    if (problems.length) { set({ study: { status: "error", progress: 0, error: problems[0], data: get().study.data } }); return; }
+    if (problems.length) { set((s) => ({ study: { status: "error", progress: 0, error: problems[0], data: s.study.data } })); return; }
     const token = ++studyToken;
+    cancelLane("study"); // stop any run that is still going
     set((s) => ({ study: { status: "running", progress: 0, data: s.study.data }, forecast: { ...idle<ForecastResult[]>(), n: s.forecast.n } }));
     try {
-      const payload = await call("study", { design: buildDesign(setup) }, (done, total) => { if (token === studyToken) set((s) => ({ study: { ...s.study, progress: done / total } })); });
+      const key = cacheKey(setup);
+      let payload = await cacheGet<StudyPayload>(key);
+      if (!payload) {
+        payload = await call("study", { design: buildDesign(setup) }, (done, total) => { if (token === studyToken) set((s) => ({ study: { ...s.study, progress: done / total } })); });
+        void cacheSet(key, payload);
+      }
       if (token !== studyToken) return;
-      set({ study: { status: "done", progress: 1, data: payload } });
-      const main = payload.study.design.groups.filter((g) => g.kind === "main").sort((a, b) => b.doseMgPerKg - a.doseMgPerKg);
-      const pick = payload.study.animals.find((a) => a.group === main[0]!.id && a.sex === "M") ?? payload.study.animals.find((a) => a.group === main[0]!.id) ?? payload.study.animals[0];
-      if (pick) await get().setFocus(pick.id);
+      set({ study: { status: "done", progress: 1, data: payload }, ranSetup: setup });
+      const id = defaultFocusId(payload.study);
+      if (id) await get().setFocus(id);
     } catch (e) {
-      if (token === studyToken) set((s) => ({ study: { status: "error", progress: 0, error: e instanceof Error ? e.message : String(e), data: s.study.data } }));
+      if (e instanceof CancelledError || token !== studyToken) return;
+      set((s) => ({ study: { status: "error", progress: 0, error: msg(e), data: s.study.data } }));
     }
   },
 
@@ -81,10 +117,13 @@ export const useStore = create<State>((set, get) => ({
     const token = ++twinToken;
     set((s) => ({ focusId: id, twin: { status: "running", progress: 0, data: s.twin.data } }));
     try {
-      const bundle = await call("twin", { cfg: configForAnimal(payload.study.design, animal) });
+      const key = `${cacheKey(get().ranSetup ?? get().setup)}|twin|${id}`;
+      let bundle = await cacheGet<TwinBundle>(key);
+      if (!bundle) { bundle = await call("twin", { cfg: configForAnimal(payload.study.design, animal) }); void cacheSet(key, bundle); }
       if (token === twinToken) set({ twin: { status: "done", progress: 1, data: bundle } });
     } catch (e) {
-      if (token === twinToken) set((s) => ({ twin: { status: "error", progress: 0, error: e instanceof Error ? e.message : String(e), data: s.twin.data } }));
+      if (e instanceof CancelledError || token !== twinToken) return;
+      set((s) => ({ twin: { status: "error", progress: 0, error: msg(e), data: s.twin.data } }));
     }
   },
 
@@ -92,6 +131,7 @@ export const useStore = create<State>((set, get) => ({
   runForecast: async (n) => {
     const payload = get().study.data;
     if (!payload) return;
+    cancelLane("aux");
     const design = payload.study.design;
     const base = configForAnimal(design, payload.study.animals.find((a) => a.group === "G1") ?? payload.study.animals[0]!);
     const doses = design.groups.filter((g) => g.kind === "main" && g.doseMgPerKg > 0).map((g) => g.doseMgPerKg);
@@ -99,7 +139,7 @@ export const useStore = create<State>((set, get) => ({
     try {
       const data = await call("forecast", { base: { ...base, durationDays: design.durationDays }, doses, n }, (d, t) => set((s) => ({ forecast: { ...s.forecast, progress: d / t } })));
       set({ forecast: { status: "done", progress: 1, data, n } });
-    } catch (e) { set({ forecast: { status: "error", progress: 0, data: null, n, error: e instanceof Error ? e.message : String(e) } }); }
+    } catch (e) { if (!(e instanceof CancelledError)) set({ forecast: { status: "error", progress: 0, data: null, n, error: msg(e) } }); }
   },
 
   morris: { ...idle<MorrisResult[]>(), organ: "liver" },
@@ -111,9 +151,11 @@ export const useStore = create<State>((set, get) => ({
     if (!high) return;
     set({ morris: { status: "running", progress: 0, data: null, organ } });
     try {
-      const data = await call("morris", { cfg: { ...configForAnimal(design, high), durationDays: Math.min(14, design.durationDays), regimen: { ...configForAnimal(design, high).regimen, nDoses: Math.min(14, design.durationDays) } }, organ, r: 8 });
+      const cfg = configForAnimal(design, high);
+      const days = Math.min(14, design.durationDays);
+      const data = await call("morris", { cfg: { ...cfg, durationDays: days, regimen: { ...cfg.regimen, nDoses: days } }, organ, r: 8 });
       set({ morris: { status: "done", progress: 1, data, organ } });
-    } catch (e) { set({ morris: { status: "error", progress: 0, data: null, organ, error: e instanceof Error ? e.message : String(e) } }); }
+    } catch (e) { if (!(e instanceof CancelledError)) set({ morris: { status: "error", progress: 0, data: null, organ, error: msg(e) } }); }
   },
 
   historical: [],
@@ -126,6 +168,11 @@ export const useStore = create<State>((set, get) => ({
     try {
       const data = await call("validation", { design: payload.study.design, nPerSex: 10, historical: get().historical });
       set({ validation: { status: "done", progress: 1, data } });
-    } catch (e) { set({ validation: { status: "error", progress: 0, data: null, error: e instanceof Error ? e.message : String(e) } }); }
+    } catch (e) { if (!(e instanceof CancelledError)) set({ validation: { status: "error", progress: 0, data: null, error: msg(e) } }); }
   },
 }));
+
+/** True when the visible results were produced by a different setup than the one on screen. */
+export function useResultsStale(): boolean {
+  return useStore((s) => s.ranSetup !== null && !sameSetup(s.setup, s.ranSetup));
+}

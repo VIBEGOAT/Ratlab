@@ -27,11 +27,11 @@ function OrganDetail({ organ, b, day }: { organ: Organ; b: AnimalBundle; day: nu
         <span className="small muted">{v.finding}</span>
         <span className="mono small">damage {v.damage.toFixed(2)}</span>
       </div>
-      <LineChart label={`${organ} damage and drug concentration`} height={190} xLabel="day" marker={day} series={[
+      <LineChart label={`${organ} damage and drug concentration`} height={190} xLabel="Study day" yLabel="Fraction (0 to 1)" marker={day} series={[
         ...(damage ? [{ name: "Damage (0 to 1)", x: hx, y: damage, color: "var(--c6)" }] : []),
         ...(defence ? [{ name: "Defence capacity", x: hx, y: defence, color: "var(--c4)", dash: "5 4" }] : []),
       ]} yMin={0} yMax={1} />
-      <LineChart label={`${organ} tissue concentration`} height={150} xLabel="day" marker={day} yLabel="mg/L" series={[{ name: "Tissue concentration", x: hx, y: b.tissue[det.tissue], color: "var(--c1)" }]} yMin={0} />
+      <LineChart label={`${organ} tissue concentration`} height={150} xLabel="Study day" marker={day} yLabel="Concentration (mg/L)" series={[{ name: "Tissue concentration", x: hx, y: b.tissue[det.tissue], color: "var(--c1)" }]} yMin={0} />
       <Legend items={[{ name: "Damage", color: "var(--c6)" }, { name: "Defence capacity", color: "var(--c4)", dash: true }, { name: "Tissue concentration", color: "var(--c1)" }]} />
       <div className="scroll" style={{ maxHeight: 200 }}><table>
         <thead><tr><th>Marker</th><th className="num">Value</th><th className="num">× ULN</th></tr></thead>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { scaleLinear, scaleLog } from "d3-scale";
 import { area as d3area, line as d3line } from "d3-shape";
+import { fmtSmart } from "../design/format";
 
 export interface Series {
   name: string;
@@ -16,8 +17,9 @@ export interface Series {
 
 export interface LineChartProps {
   series: Series[];
-  xLabel?: string;
-  yLabel?: string;
+  /** axis titles are required and must include units */
+  xLabel: string;
+  yLabel: string;
   height?: number;
   xMin?: number;
   xMax?: number;
@@ -79,8 +81,8 @@ export function LineChart(p: LineChartProps) {
   const sy = p.logY ? scaleLog().domain([Math.max(dom.y0, 1e-6), dom.y1]).range([ih, 0]).clamp(true) : scaleLinear().domain([dom.y0, dom.y1]).range([ih, 0]).nice(5);
   const xt = sx.ticks(Math.max(3, Math.floor(iw / 80)));
   const yt = sy.ticks(5);
-  const fx = p.fmtX ?? ((v: number) => String(+v.toFixed(2)));
-  const fy = p.fmtY ?? ((v: number) => (Math.abs(v) >= 1000 || (Math.abs(v) < 0.01 && v !== 0) ? v.toExponential(0) : String(+v.toFixed(2))));
+  const fx = p.fmtX ?? ((v: number) => fmtSmart(v, 2));
+  const fy = p.fmtY ?? ((v: number) => fmtSmart(v, 2));
 
   const first = p.series[0];
   const onMove = (e: React.MouseEvent<SVGSVGElement>) => {

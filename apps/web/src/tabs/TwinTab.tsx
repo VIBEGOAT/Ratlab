@@ -34,11 +34,11 @@ export default function TwinTab() {
                   </table></div>
                 </Panel>
                 <Panel title="Organ damage, treated animal">
-                  <LineChart label="Organ damage over time" series={ORGANS.filter((o) => t.damage[o]).map((o) => ({ name: o, x: hx, y: t.damage[o]!, color: ORGAN_COLOR[o]! }))} xLabel="day" yLabel="damage" yMin={0} yMax={1} />
+                  <LineChart label="Organ damage over time" series={ORGANS.filter((o) => t.damage[o]).map((o) => ({ name: o, x: hx, y: t.damage[o]!, color: ORGAN_COLOR[o]! }))} xLabel="Study day" yLabel="Damage (0 to 1)" yMin={0} yMax={1} />
                   <Legend items={ORGANS.map((o) => ({ name: ORGAN_LABEL[o], color: ORGAN_COLOR[o]! }))} />
                   <p className="small muted">The untreated twin has no toxicity. Only disease can injure it.</p>
                 </Panel>
-                <Panel title="Body weight"><LineChart label="Body weight, treated and untreated" series={[{ name: "Treated", x: d, y: t.daily.bodyWeightG, color: "var(--c1)" }, { name: "Untreated twin", x: d, y: u.daily.bodyWeightG, color: "var(--c2)", dash: "5 4" }]} xLabel="day" yLabel="g" yMin={0} /><Legend items={[{ name: "Treated", color: "var(--c1)" }, { name: "Untreated twin", color: "var(--c2)", dash: true }]} /></Panel>
+                <Panel title="Body weight"><LineChart label="Body weight, treated and untreated" series={[{ name: "Treated", x: d, y: t.daily.bodyWeightG, color: "var(--c1)" }, { name: "Untreated twin", x: d, y: u.daily.bodyWeightG, color: "var(--c2)", dash: "5 4" }]} xLabel="Study day" yLabel="Body weight (g)" yMin={0} /><Legend items={[{ name: "Treated", color: "var(--c1)" }, { name: "Untreated twin", color: "var(--c2)", dash: true }]} /></Panel>
               </div>
             </>
           );

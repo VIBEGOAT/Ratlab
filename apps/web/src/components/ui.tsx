@@ -2,10 +2,24 @@ import type { ReactNode } from "react";
 import { FIDELITY } from "@eliminate/sim-core";
 import { useStore } from "../store";
 
+/** Short subsystem names so each chip says what it labels, not only the label. */
+const SHORT: Record<string, string> = {
+  rng: "Randomness", pbpk: "PBPK", pd: "PD models", physiology: "Physiology", toxicodynamics: "Organ damage", clinpath: "Blood tests",
+  disease: "Disease", humane: "Humane endpoints", twin: "Twin", behaviour: "Behaviour", statistics: "Statistics", noael: "NOAEL",
+  montecarlo: "Forecast", validation: "Validation", translation: "Translation",
+};
+const WORD: Record<string, string> = { MECHANISTIC: "Mechanistic", "SEMI-QUANTITATIVE": "Semi-quantitative", ILLUSTRATIVE: "Illustrative" };
+
+/** One fidelity chip per subsystem, with the justification on hover or keyboard focus. */
 export function Fidelity({ id }: { id: string }) {
   const f = FIDELITY.find((x) => x.id === id);
   if (!f) return null;
-  return <span className={`chip ${f.label}`} title={`${f.name}: ${f.justification}`}>{f.label}</span>;
+  return (
+    <span className="hovercard">
+      <button type="button" className={`chip ${f.label}`} aria-label={`${f.name}: ${f.label}. ${f.justification}`}>{SHORT[id] ?? f.name} · {WORD[f.label]}</button>
+      <span className="card" role="tooltip"><b>{f.name}</b><br />{f.justification}</span>
+    </span>
+  );
 }
 
 export function Chip({ kind, children }: { kind: string; children: ReactNode }) {
@@ -13,13 +27,14 @@ export function Chip({ kind, children }: { kind: string; children: ReactNode }) 
 }
 
 export function TabHead({ title, blurb, fidelity }: { title: string; blurb: string; fidelity?: string[] }) {
+  const ids = fidelity ? [...new Set(fidelity)] : [];
   return (
     <div className="head">
       <div>
         <h2>{title}</h2>
         <p>{blurb}</p>
       </div>
-      {fidelity && <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>{fidelity.map((f) => <Fidelity key={f} id={f} />)}</div>}
+      {ids.length > 0 && <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>{ids.map((f) => <Fidelity key={f} id={f} />)}</div>}
     </div>
   );
 }
@@ -39,7 +54,7 @@ export function Empty({ children }: { children: ReactNode }) {
 export function Panel({ title, children, right }: { title?: string; children: ReactNode; right?: ReactNode }) {
   return (
     <section className="panel">
-      {(title || right) && <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>{title && <h3>{title}</h3>}{right}</div>}
+      {(title || right) && <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline", flexWrap: "wrap", minWidth: 0 }}>{title && <h3>{title}</h3>}{right}</div>}
       {children}
     </section>
   );
@@ -51,7 +66,7 @@ export function NeedsStudy({ children }: { children: (p: NonNullable<ReturnType<
   if (study.data) return <>{children(study.data)}</>;
   if (study.status === "running") return <Empty>Running the study… {Math.round(study.progress * 100)}%</Empty>;
   if (study.status === "error") return <Banner tone="bad">{study.error}</Banner>;
-  return <Empty>Press Run study in the left panel to simulate a study.</Empty>;
+  return <Empty>The study starts automatically. Open Lab, Design to change it.</Empty>;
 }
 
 /** Wrap content that needs the focus animal and its untreated twin. */
@@ -61,7 +76,7 @@ export function NeedsTwin({ children }: { children: (t: NonNullable<ReturnType<t
   if (twin.data) return <>{children(twin.data)}</>;
   if (twin.status === "running" || study.status === "running") return <Empty>Preparing the selected animal and its untreated twin…</Empty>;
   if (twin.status === "error") return <Banner tone="bad">{twin.error}</Banner>;
-  return <Empty>Run a study first, then choose an animal in the left panel.</Empty>;
+  return <Empty>The study is starting. The animal view appears when it finishes.</Empty>;
 }
 
 export const f1 = (x: number | null | undefined, d = 1) => (x === null || x === undefined || !Number.isFinite(x) ? "n/a" : x.toFixed(d));
