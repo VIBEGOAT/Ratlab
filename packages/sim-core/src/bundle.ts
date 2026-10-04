@@ -10,7 +10,7 @@ import {
 } from "./behaviour";
 import type { HumaneEvent } from "./humane";
 import { ORGANS, type Organ } from "./toxicodynamics";
-import { TISSUES, type Tissue } from "./physiology";
+import { TISSUES, meanBodyWeightG, type Tissue } from "./physiology";
 import { DISEASE_SERIES, type DiseaseReading } from "./disease";
 
 /**
@@ -45,6 +45,8 @@ export interface AnimalBundle {
     bodyWeightG: number[]; weightChangeFraction: number[]; foodG: number[]; waterMl: number[];
     sickness: number[]; pain: number[]; grimace: number[]; cnsEffect: number[]; cnsPeak: number[];
     tumorVolume: number[]; glucose: number[];
+    /** weight shortfall against the growth the animal would have had, 0 to 0.5 */
+    wasting: number[];
     signIntensity: Record<string, number[]>; signObserved: Record<string, number[]>;
     behaviour: Record<string, number[]>;
   };
@@ -97,6 +99,11 @@ export function buildAnimalBundle(r: AnimalResult, obs: Observables, humane: Hum
       sucrose: sucrosePreference(beh, d, r.config.seed), forcedSwim: forcedSwimImmobility(beh, obs, d, r.config.seed),
     });
   }
+  const w0 = meanBodyWeightG(r.config.sex, r.config.strain, r.config.ageWeeks);
+  const wasting = Array.from({ length: days + 1 }, (_, d) => {
+    const expected = obs.bodyWeightG[0]! * (meanBodyWeightG(r.config.sex, r.config.strain, r.config.ageWeeks + d / 7) / w0);
+    return Math.min(0.5, Math.max(0, 1 - obs.bodyWeightG[d]! / expected));
+  });
   const track = openFieldTrack(beh, days, r.config.seed);
   const od = {} as Record<Organ, number[]>;
   for (const o of ORGANS) od[o] = arr(obs.damage[o]);
@@ -113,7 +120,7 @@ export function buildAnimalBundle(r: AnimalResult, obs: Observables, humane: Hum
     daily: {
       damage: od, bodyWeightG: arr(obs.bodyWeightG), weightChangeFraction: arr(obs.weightChangeFraction), foodG: arr(obs.foodG), waterMl: arr(obs.waterMl),
       sickness: arr(obs.sickness), pain: arr(obs.pain), grimace: arr(obs.grimace), cnsEffect: arr(obs.cnsEffect), cnsPeak: arr(obs.cnsPeak),
-      tumorVolume: arr(obs.tumorVolume), glucose: arr(obs.glucose), signIntensity: si, signObserved: so, behaviour: bh,
+      tumorVolume: arr(obs.tumorVolume), glucose: arr(obs.glucose), wasting, signIntensity: si, signObserved: so, behaviour: bh,
     },
     clinpath, homeCage, fob, tests, necropsyTerminal: necropsy(r, obs, days), humane, myelosuppression: myelosuppression(ctx),
     waterMaze: waterMaze(r.config.seed, beh.cognition[days] ?? 1, 20), track: { x: arr(track.x), y: arr(track.y), hz: track.hz },

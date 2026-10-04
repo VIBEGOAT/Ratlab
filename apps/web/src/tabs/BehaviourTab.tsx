@@ -1,7 +1,9 @@
 import { useState } from "react";
 import type { AnimalBundle } from "@eliminate/sim-core";
 import { Legend, LineChart } from "../components/Chart";
-import { Banner, NeedsTwin, Panel, TabHead, f1 } from "../components/ui";
+import { ArenaScene, type ArenaMode } from "../three/ArenaScene";
+import { SceneBoundary, useKickResize, webglAvailable } from "../three/RatScene";
+import { Banner, Empty, NeedsTwin, Panel, TabHead, f1 } from "../components/ui";
 
 const days = (n: number) => Array.from({ length: n + 1 }, (_, i) => i);
 
@@ -13,6 +15,27 @@ function Track({ t }: { t: AnimalBundle["track"] }) {
       <polyline points={pts} fill="none" stroke="var(--c1)" strokeWidth={0.8} />
       <circle cx={t.x[0]! * 200} cy={t.y[0]! * 200} r={3} fill="var(--c3)" />
     </svg>
+  );
+}
+
+const ARENAS: Array<[ArenaMode, string, string]> = [
+  ["open", "Open field", "Five minutes of the last study day replayed at 4× speed. The dashed square is the centre zone."],
+  ["maze", "Water maze", "The last training trial. The gold disc is the hidden platform. A rat with low cognition capacity wanders."],
+  ["home", "Home cage", "A 24 hour day compressed into 24 seconds. The rat rests in the nest when activity is low and visits food and water when it is high."],
+];
+
+function Arena({ t, u, day }: { t: AnimalBundle; u: AnimalBundle; day: number }) {
+  const [mode, setMode] = useState<ArenaMode>("open");
+  const gl = webglAvailable();
+  useKickResize(mode);
+  const info = ARENAS.find((a) => a[0] === mode)!;
+  return (
+    <Panel title="Behaviour arenas" right={<div style={{ display: "flex", gap: 6 }}>{ARENAS.map(([m, l]) => <button key={m} aria-pressed={mode === m} onClick={() => setMode(m)} style={{ fontWeight: mode === m ? 700 : 500 }}>{l}</button>)}</div>}>
+      <div style={{ height: 380, background: "var(--surface-2)", borderRadius: 6, overflow: "hidden" }}>
+        {gl ? <SceneBoundary fallback={<Empty>The 3D arena could not start.</Empty>}><ArenaScene mode={mode} treated={t} untreated={u} day={day} hoursPerSec={1} /></SceneBoundary> : <Empty>WebGL is not available in this browser.</Empty>}
+      </div>
+      <p className="small muted">{info[2]} Both animals show their injury state for the selected day.</p>
+    </Panel>
   );
 }
 
@@ -39,6 +62,7 @@ export default function BehaviourTab() {
                   <b className="mono">{day}</b>
                 </div>
               </Panel>
+              <Arena t={t} u={u} day={day} />
               <div className="grid wide">
                 <Panel title="Home-cage activity over the study">
                   <LineChart label="Activity index" series={[
