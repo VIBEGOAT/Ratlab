@@ -1,5 +1,14 @@
 # Changelog
 
+## Front-end upgrade, phase (f): command palette, chart rebuild
+
+- **Command palette (Ctrl/Cmd+K, or the Search button).** One box for everything: the 12 Story chapters, all 16 Lab views, the six compounds, the four disease models, re-run, the 3- and 8-minute demos, the speaker-notes window, theme, colour-blind palette, 3D quality, sound, and the three exports (only when there is data). Every word you type must match; title starts and whole words rank above keyword hits. It is an accessible combobox dialog: arrow keys, Home and End, Enter to run, Escape to close with focus returned, a result count read out to screen readers, and no focus escape. Toggles are worded by their current state ("Turn sound off").
+- **Lab.** The five-section layout from phase (a) stays; its navigation data moved to `lib/nav.ts` so the palette can use it without loading the Lab.
+- **Charts rebuilt.** Units now sit above the y axis as horizontal text. Series are labelled on the lines themselves (a legend row appears instead on narrow screens, or when a line stops short of the right edge), so the separate legends under the charts are gone. Lines break at missing values instead of joining across them. One readout reads every series at the same x (the old one used the first series' index for all, which was wrong when series had different lengths), with a marker on each line and step-correct values for survival curves. The y axis widens for long numbers. Keyboard: focus a chart and use left and right arrows, Home, End and Escape; the reading is announced. A collapsible data table sits under every chart (evenly sampled to 40 rows for long series). Lines draw in once on mount, and not at all under reduced motion.
+- **Bug fixed.** A Latin-1 multiplication sign in the Behaviour tab would have shown as a broken character ("4? speed"); it is now proper UTF-8.
+- **Phone.** The secondary top-bar buttons (sound, present, colour-blind palette) hide below 720 px; all of them stay in the palette.
+- **Tests.** 15 new unit tests (chart maths, command list and matching) and 3 end-to-end tests (palette open, run, empty state, focus return and Story jump; chart labels, keyboard readout and data table) plus a screenshot test.
+
 ## Front-end upgrade, phase (e): presenter mode, audience prediction, instant first run, optional sound
 
 - **Presenter mode.** Press **P** (or the Present button). The top bar hides, type grows, the page goes full screen where the browser allows it, and the footer disclaimer stays. Right arrow, Page Down, Space or Enter go forward; left arrow or Page Up go back; Home and End jump; **A** toggles auto-advance; **N** opens the notes window; Escape exits. A thin progress bar tracks the whole track. The controls fade out when the mouse is still.

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Panel as PanelT } from "@eliminate/sim-core";
-import { Legend, LineChart } from "../components/Chart";
+import { LineChart } from "../components/Chart";
 import { Banner, NeedsTwin, Panel, Stat, TabHead, f1 } from "../components/ui";
 
 const UNITS: Record<string, string> = { alt: "U/L", ast: "U/L", alp: "U/L", ggt: "U/L", ck: "U/L", bilirubin: "mg/dL", albumin: "g/dL", bun: "mg/dL", creatinine: "mg/dL", troponinI: "ng/mL", glucose: "mg/dL", cholesterol: "mg/dL", triglycerides: "mg/dL", sodium: "mmol/L", potassium: "mmol/L", chloride: "mmol/L", calcium: "mg/dL", phosphorus: "mg/dL", rbc: "10^6/µL", hemoglobin: "g/dL", hematocrit: "%", wbc: "10^3/µL", neutrophils: "10^3/µL", lymphocytes: "10^3/µL", platelets: "10^3/µL", reticulocytes: "%" };
@@ -53,7 +53,6 @@ export default function ClinPathTab() {
                   {Object.keys(all).map((k) => <option key={k} value={k}>{k}</option>)}
                 </select>}>
                 <LineChart label={`${marker} over time`} series={[{ name: "Treated", x: d, y: series(t), color: "var(--c1)" }, { name: "Untreated twin", x: d, y: series(u), color: "var(--c2)", dash: "5 4" }]} xLabel="Study day" yLabel={`${marker} (${unitOf(marker)})`} marker={day} yMin={0} />
-                <Legend items={[{ name: "Treated", color: "var(--c1)" }, { name: "Untreated twin", color: "var(--c2)", dash: true }]} />
               </Panel>
               <div className="grid">
                 <Panel title={`Clinical chemistry, day ${day}`}><Table panel={cp.chemistry} /></Panel>

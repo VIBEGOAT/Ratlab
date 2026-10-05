@@ -1,4 +1,4 @@
-import { Legend, LineChart } from "../components/Chart";
+import { LineChart } from "../components/Chart";
 import { Banner, NeedsTwin, Panel, Stat, TabHead, f1 } from "../components/ui";
 import { useStore } from "../store";
 
@@ -42,21 +42,21 @@ export default function DiseaseTab() {
                 {disease === "cancer" && (
                   <Panel title="Tumor volume">
                     <LineChart label="Tumor volume" series={two("tumorVolume")} xLabel="Study day" yLabel="Tumour volume (mm³)" yMin={0} />
-                    <Legend items={legend} />
+
                     <p className="small muted">Gompertz growth. Drug kill acts on the sensitive population only, so resistant clones can regrow under therapy.</p>
                   </Panel>
                 )}
                 {disease.startsWith("diabetes") && (
                   <>
-                    <Panel title="Blood glucose"><LineChart label="Blood glucose" series={two("glucose")} xLabel="Study day" yLabel="Glucose (mg/dL)" yMin={0} /><Legend items={legend} /></Panel>
-                    <Panel title="HbA1c-like marker"><LineChart label="HbA1c-like marker" series={two("hba1c")} xLabel="Study day" yLabel="%" yMin={0} /><Legend items={legend} /></Panel>
+                    <Panel title="Blood glucose"><LineChart label="Blood glucose" series={two("glucose")} xLabel="Study day" yLabel="Glucose (mg/dL)" yMin={0} /></Panel>
+                    <Panel title="HbA1c-like marker"><LineChart label="HbA1c-like marker" series={two("hba1c")} xLabel="Study day" yLabel="%" yMin={0} /></Panel>
                     <Panel title="Complications">
                       <LineChart label="Complications" series={[
                         { name: "Nephropathy", x: hx, y: t.disease.nephropathy, color: "var(--c1)" },
                         { name: "Neuropathy", x: hx, y: t.disease.neuropathy, color: "var(--c3)" },
                         { name: "Cataract", x: hx, y: t.disease.cataract, color: "var(--c4)" },
                       ]} xLabel="Study day" yLabel="Severity (0 to 1)" yMin={0} yMax={1} />
-                      <Legend items={[{ name: "Nephropathy", color: "var(--c1)" }, { name: "Neuropathy", color: "var(--c3)" }, { name: "Cataract", color: "var(--c4)" }]} />
+
                       <p className="small muted">A diabetic kidney is more sensitive to a nephrotoxin: nephropathy lowers its injury threshold.</p>
                     </Panel>
                   </>
@@ -66,7 +66,6 @@ export default function DiseaseTab() {
                     { name: "Treated", x: d, y: t.daily.bodyWeightG, color: "var(--c1)" },
                     { name: "Untreated twin", x: d, y: u.daily.bodyWeightG, color: "var(--c2)", dash: "5 4" },
                   ]} xLabel="Study day" yLabel="Body weight (g)" yMin={0} />
-                  <Legend items={legend} />
                 </Panel>
               </div>
             </>

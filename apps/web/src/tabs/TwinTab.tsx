@@ -1,5 +1,5 @@
 import { ORGANS, gradeFromDamage } from "@eliminate/sim-core";
-import { Legend, LineChart } from "../components/Chart";
+import { LineChart } from "../components/Chart";
 import { Banner, NeedsTwin, ORGAN_COLOR, Panel, TabHead, f1 } from "../components/ui";
 import { ORGAN_LABEL } from "../lib/setup";
 
@@ -35,10 +35,10 @@ export default function TwinTab() {
                 </Panel>
                 <Panel title="Organ damage, treated animal">
                   <LineChart label="Organ damage over time" series={ORGANS.filter((o) => t.damage[o]).map((o) => ({ name: o, x: hx, y: t.damage[o]!, color: ORGAN_COLOR[o]! }))} xLabel="Study day" yLabel="Damage (0 to 1)" yMin={0} yMax={1} />
-                  <Legend items={ORGANS.map((o) => ({ name: ORGAN_LABEL[o], color: ORGAN_COLOR[o]! }))} />
+
                   <p className="small muted">The untreated twin has no toxicity. Only disease can injure it.</p>
                 </Panel>
-                <Panel title="Body weight"><LineChart label="Body weight, treated and untreated" series={[{ name: "Treated", x: d, y: t.daily.bodyWeightG, color: "var(--c1)" }, { name: "Untreated twin", x: d, y: u.daily.bodyWeightG, color: "var(--c2)", dash: "5 4" }]} xLabel="Study day" yLabel="Body weight (g)" yMin={0} /><Legend items={[{ name: "Treated", color: "var(--c1)" }, { name: "Untreated twin", color: "var(--c2)", dash: true }]} /></Panel>
+                <Panel title="Body weight"><LineChart label="Body weight, treated and untreated" series={[{ name: "Treated", x: d, y: t.daily.bodyWeightG, color: "var(--c1)" }, { name: "Untreated twin", x: d, y: u.daily.bodyWeightG, color: "var(--c2)", dash: "5 4" }]} xLabel="Study day" yLabel="Body weight (g)" yMin={0} /></Panel>
               </div>
             </>
           );

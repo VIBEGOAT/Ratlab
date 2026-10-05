@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { AnimalBundle } from "@eliminate/sim-core";
-import { Legend, LineChart } from "../components/Chart";
+import { LineChart } from "../components/Chart";
 import { ArenaScene, type ArenaMode } from "../three/ArenaScene";
 import { SceneBoundary, useKickResize, webglAvailable } from "../three/RatScene";
 import { Banner, Empty, NeedsTwin, Panel, TabHead, f1 } from "../components/ui";
@@ -19,7 +19,7 @@ function Track({ t }: { t: AnimalBundle["track"] }) {
 }
 
 const ARENAS: Array<[ArenaMode, string, string]> = [
-  ["open", "Open field", "Five minutes of the last study day replayed at 4× speed. The dashed square is the centre zone."],
+  ["open", "Open field", "Five minutes of the last study day replayed at 4Ã— speed. The dashed square is the centre zone."],
   ["maze", "Water maze", "The last training trial. The gold disc is the hidden platform. A rat with low cognition capacity wanders."],
   ["home", "Home cage", "A 24 hour day compressed into 24 seconds. The rat rests in the nest when activity is low and visits food and water when it is high."],
 ];
@@ -69,7 +69,7 @@ export default function BehaviourTab() {
                     { name: "Treated", x: dx, y: t.daily.behaviour.activityIndex!, color: "var(--c1)" },
                     { name: "Untreated twin", x: dx, y: u.daily.behaviour.activityIndex!, color: "var(--c2)", dash: "5 4" },
                   ]} xLabel="Study day" yLabel="relative to baseline" yMin={0} marker={day} />
-                  <Legend items={[{ name: "Treated", color: "var(--c1)" }, { name: "Untreated twin", color: "var(--c2)", dash: true }]} />
+
                   <p className="small muted">Stimulants raise activity, then tolerance builds and a rebound below baseline follows withdrawal. Sickness lowers activity.</p>
                 </Panel>
                 <Panel title={`Day ${day}: 24 hour monitoring`}>

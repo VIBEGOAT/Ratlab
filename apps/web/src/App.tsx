@@ -8,6 +8,7 @@ import { Presenter } from "./presenter/Presenter";
 import { NotesWindow } from "./presenter/NotesWindow";
 import { isNotesWindow } from "./presenter/channel";
 import { SoundToggle } from "./audio/SoundToggle";
+import { CommandPalette, openPalette } from "./palette/CommandPalette";
 
 const LabShell = lazy(() => import("./app/LabShell").then((m) => ({ default: m.LabShell })));
 const SECTIONS: LabSection[] = ["design", "animal", "data", "population", "trust"];
@@ -67,16 +68,18 @@ function MainApp() {
           <button type="button" aria-pressed={mode === "lab"} onClick={() => setMode("lab")}>Lab</button>
         </div>
         <div className="right">
-          <SoundToggle />
-          <button className="ghost" onClick={() => usePresenter.getState().start()} title="Presenter mode (P)">Present</button>
+          <button className="ghost palette-btn" onClick={openPalette} aria-label="Search and commands" aria-keyshortcuts="Control+K Meta+K">Search <kbd>{/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K"}</kbd></button>
+          <SoundToggle className="ghost hide-narrow" />
+          <button className="ghost hide-narrow" onClick={() => usePresenter.getState().start()} title="Presenter mode (P)">Present</button>
           <ExportMenu />
-          <button className="ghost" onClick={() => setCb(!cb)} aria-pressed={cb} title="Colour-blind-safe damage colours">{cb ? "CB palette on" : "CB palette"}</button>
+          <button className="ghost hide-narrow" onClick={() => setCb(!cb)} aria-pressed={cb} title="Colour-blind-safe damage colours">{cb ? "CB palette on" : "CB palette"}</button>
           <button className="ghost" onClick={() => setTheme(nextTheme)} aria-label={`Theme: ${theme}. Switch to ${nextTheme}`}>{theme === "system" ? "Auto" : theme === "dark" ? "Dark" : "Light"}</button>
         </div>
       </header>
       {mode === "story" ? <StoryPage /> : <Suspense fallback={<div className="empty" style={{ margin: 24 }}>Loading the Lab…</div>}><LabShell /></Suspense>}
       <Footer />
       <Presenter />
+      <CommandPalette />
     </div>
   );
 }

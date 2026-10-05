@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { FINDINGS, GRADE_SEVERITY, ORGANS, SIGNS, type AnimalBundle, type Organ, type TwinBundle } from "@eliminate/sim-core";
-import { Legend, LineChart } from "../components/Chart";
+import { LineChart } from "../components/Chart";
 import { Banner, Empty, NeedsTwin, Panel, Stat, TabHead, f1 } from "../components/ui";
 import { ORGAN_LABEL } from "../lib/setup";
 import { useStore } from "../store";
@@ -33,7 +33,7 @@ function OrganDetail({ organ, b, day }: { organ: Organ; b: AnimalBundle; day: nu
         ...(defence ? [{ name: "Defence capacity", x: hx, y: defence, color: "var(--c4)", dash: "5 4" }] : []),
       ]} yMin={0} yMax={1} />
       <LineChart label={`${organ} tissue concentration`} height={150} xLabel="Study day" marker={day} yLabel="Concentration (mg/L)" series={[{ name: "Tissue concentration", x: hx, y: b.tissue[det.tissue], color: "var(--c1)" }]} yMin={0} />
-      <Legend items={[{ name: "Damage", color: "var(--c6)" }, { name: "Defence capacity", color: "var(--c4)", dash: true }, { name: "Tissue concentration", color: "var(--c1)" }]} />
+
       <div className="scroll" style={{ maxHeight: 200 }}><table>
         <thead><tr><th>Marker</th><th className="num">Value</th><th className="num">× ULN</th></tr></thead>
         <tbody>{det.markers.map((m) => { const a = cp[m.panel === "chemistry" ? "chemistry" : "hematology"][m.key]; return a ? <tr key={m.key} className={a.flag ? "flag" : ""}><td>{m.key}</td><td className="num">{f1(a.value, a.value < 10 ? 2 : 0)}</td><td className="num">{f1(a.xUln, 2)}</td></tr> : null; })}</tbody>

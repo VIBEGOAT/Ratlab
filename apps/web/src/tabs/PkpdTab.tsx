@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { TISSUES } from "@eliminate/sim-core";
-import { Legend, LineChart, type Series } from "../components/Chart";
+import { LineChart, type Series } from "../components/Chart";
 import { NeedsStudy, NeedsTwin, Panel, Stat, TabHead, f1 } from "../components/ui";
 import { fmt } from "../design/format";
 
@@ -64,7 +64,6 @@ export default function PkpdTab() {
                   <button aria-pressed={log} onClick={() => setLog(!log)}>{log ? "Log scale" : "Linear scale"}</button>
                 </div>}>
                 <LineChart label="Plasma and tissue concentration" series={series} xLabel={whole ? "Time since first dose (days)" : "Time after dose (h)"} yLabel="Concentration (mg/L)" logY={log} height={280} />
-                <Legend items={series.map((s) => ({ name: s.name, color: s.color }))} />
               </Panel>
               <div className="grid">
                 <Panel title="Exposure by tissue">
