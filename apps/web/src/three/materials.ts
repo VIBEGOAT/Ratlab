@@ -19,12 +19,14 @@ export interface BodyUniforms {
   uTremor: { value: number };
   uRuffle: { value: number };
   uSkinColor: { value: THREE.Color };
+  /** x position of the X-ray sweep: fur shows below it, X-ray above it */
+  uSweep: { value: number };
 }
 
 export function makeBodyUniforms(): BodyUniforms {
   return {
     uTime: { value: 0 }, uBreath: { value: 1.4 }, uHunch: { value: 0 }, uWaste: { value: 0 }, uWalk: { value: 0 },
-    uTremor: { value: 0 }, uRuffle: { value: 0 }, uSkinColor: { value: new THREE.Color("#e8a9a2") },
+    uTremor: { value: 0 }, uRuffle: { value: 0 }, uSkinColor: { value: new THREE.Color("#e8a9a2") }, uSweep: { value: 99 },
   };
 }
 
@@ -75,8 +77,9 @@ export function makeFurMaterial(u: BodyUniforms, furColor: THREE.Color, shell: n
         transformed += normal * uShell * uFurLen * ruff * (1.0 - skinW);
         transformed.y -= uShell * uShell * uFurLen * 0.35 * (1.0 - uRuffle);`);
     sh.fragmentShader = sh.fragmentShader
-      .replace("#include <common>", `#include <common>\n${HASH_GLSL}\nuniform float uShell; uniform vec3 uSkinColor; uniform float uRuffle; varying float vSkinW; varying vec3 vObj;`)
+      .replace("#include <common>", `#include <common>\n${HASH_GLSL}\nuniform float uShell; uniform vec3 uSkinColor; uniform float uRuffle; uniform float uSweep; varying float vSkinW; varying vec3 vObj;`)
       .replace("#include <color_fragment>", `#include <color_fragment>
+        if (vObj.x > uSweep) discard;
         if (uShell > 0.0) {
           if (vSkinW > 0.5) discard;
           float strand = ratHash(floor(vObj * 170.0));
@@ -98,15 +101,17 @@ export function makeXrayMaterial(u: BodyUniforms, color: THREE.Color): THREE.Sha
   return new THREE.ShaderMaterial({
     uniforms: { ...u, uColor: { value: color } },
     vertexShader: `${DEFORM_GLSL}
-      varying vec3 vN; varying vec3 vV;
+      varying vec3 vN; varying vec3 vV; varying float vX;
       void main() {
+        vX = position.x;
         vec3 p = ratDeform(position);
         vec4 mv = modelViewMatrix * vec4(p, 1.0);
         vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz);
         gl_Position = projectionMatrix * mv;
       }`,
-    fragmentShader: `uniform vec3 uColor; varying vec3 vN; varying vec3 vV;
+    fragmentShader: `uniform vec3 uColor; uniform float uSweep; varying vec3 vN; varying vec3 vV; varying float vX;
       void main() {
+        if (vX < uSweep) discard;
         float f = pow(1.0 - abs(dot(normalize(vN), normalize(vV))), 2.4);
         gl_FragColor = vec4(uColor, 0.035 + 0.75 * f);
       }`,

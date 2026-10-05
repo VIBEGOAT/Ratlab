@@ -48,12 +48,16 @@ export function newCustomCompound(): Compound {
   };
 }
 
+/**
+ * Default scenario: the heart-toxic anticancer archetype in tumour-bearing rats. It shows efficacy and
+ * toxicity together, and untreated tumours reach the humane limit, which the story needs to be honest.
+ */
 export function defaultSetup(): Setup {
-  const c = ARCHETYPES.hepatotoxin!;
+  const c = ARCHETYPES.cardiotoxin!;
   return {
-    compoundKey: "hepatotoxin", custom: newCustomCompound(), highDose: c.defaultDoseMgPerKg, fractions: [0.1, 0.3, 1],
+    compoundKey: "cardiotoxin", custom: newCustomCompound(), highDose: c.defaultDoseMgPerKg, fractions: [0.1, 0.3, 1],
     durationDays: 28, recoveryDays: 14, nPerSex: 10, sexes: ["M", "F"], strain: "SD", ageWeeks: 8, route: "oral", recovery: false, tk: false,
-    disease: "none", seed: 42,
+    disease: "cancer", seed: 42,
   };
 }
 

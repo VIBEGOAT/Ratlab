@@ -5,9 +5,10 @@ import { fmt, fmtP, fmtPct, fmtSmart } from "../design/format";
 import { GRADE_HEX, gradeVar } from "../design/damage";
 
 describe("default study and focus animal", () => {
-  it("defaults to the liver-toxic compound, 28 days, 10 per sex per group", () => {
+  it("defaults to the heart-toxic anticancer compound in tumour-bearing rats, 28 days, 10 per sex per group", () => {
     const s = defaultSetup();
-    expect(s.compoundKey).toBe("hepatotoxin");
+    expect(s.compoundKey).toBe("cardiotoxin");
+    expect(s.disease).toBe("cancer");
     expect(s.durationDays).toBe(28);
     expect(s.nPerSex).toBe(10);
   });

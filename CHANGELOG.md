@@ -1,5 +1,19 @@
 # Changelog
 
+## Front-end upgrade, phase (c): Story chapters 1 to 6
+
+- **One pinned 3D scene** for the whole story, lazy-loaded behind a poster frame. The camera choreography is bound to scroll: a turntable hero, a side view for the X-ray sweep, a three-quarter view for choosing, close-up flow for dose day, a slow orbit for damage, and a pull-back for the moment. The distance adapts to the stage's shape so the whole rat stays in frame. Lenis smooth scrolling is used, except under reduced motion.
+- **Chapters.**
+  - Hero: turntable rat and an animals-spared count whose assumptions show on hover.
+  - Meet the rat: an X-ray sweep from head to tail as you scroll, with organs named.
+  - Choose: compound cards and a single dose dial. The dial is a real slider, by drag or keyboard, with announced values. Changing either re-runs the study.
+  - Dose day: a capsule travels to the stomach, then glowing particles carry the dose through the gut, portal vein, liver, vena cava, heart, aorta and kidneys. Particle density follows plasma concentration and organ glow follows tissue concentration, both from the PBPK output hour by hour.
+  - Damage: the day advances with scroll. It shows organ grade pills in the damage scale, a biomarker ribbon (ALT, bilirubin, creatinine, troponin as multiples of the upper limit, with sparklines), a Hy's Law alert when met, visible signs, and the treated against untreated tumour size.
+  - The moment: the screen dims, the rat's motion slows, three calm lines appear in turn, then the count of virtual rats and how many would have reached a humane endpoint. There are no alarms or red flashing. Under reduced motion the text shows at once.
+- **Default scenario changed** from the liver-toxic compound to the heart-toxic anticancer compound in tumour-bearing rats. It shows efficacy and toxicity together, and untreated tumours reach the humane limit (16 of 20 control rats, from day 16), which the moment needs in order to be honest.
+- **Finding for review, not changed.** In the current core mapping, severe organ injury on its own almost never reaches a humane endpoint. Of the five toxic compounds at 1, 1.5 and 2 times their reference dose, only the nerve-toxic one did, through convulsions. Weight loss, grimace and sickness stay under their thresholds even with grade 4 to 5 liver damage. This is likely under-calibrated. Recalibrating the sickness mapping is a change to the simulation core and needs approval.
+- **Tests.** 5 new end-to-end story tests: the full chapter run, dial keyboard control, the moment text, reduced motion, and screenshots of all 6 chapters at 1440, 1920 and 390 wide with no horizontal scroll.
+
 ## Front-end upgrade, phase (b): 3D rat rebuild
 
 - **One continuous body.** The rat is now a signed distance field (torso, chest, head, snout, four legs and paws blended smoothly) meshed by surface nets into a single closed mesh. A test proves it is one connected piece and that the paws rest on the floor.

@@ -34,6 +34,14 @@ export interface RatModelProps {
   /** organ exposure 0 to 1, shown as a teal glow (used by the dose-day sequence) */
   exposure?: Partial<Record<Organ, number>>;
   palette?: "standard" | "cb";
+  /** X-ray sweep position along the body (head is about +3, tail root -1.6); undefined means no sweep */
+  sweep?: number;
+  /** live sweep position read every frame (overrides `sweep`) */
+  sweepRef?: React.MutableRefObject<number>;
+  /** "grade" shows injured organs, "names" labels every organ (anatomy tour) */
+  labelMode?: "grade" | "names";
+  /** animation speed, 1 normal, 0 still */
+  tempo?: number;
 }
 
 // ---------- geometry built once and shared by every rat on the page
@@ -85,7 +93,8 @@ function organColour(organ: Organ, damage: number): THREE.Color {
   return new THREE.Color(a).lerp(new THREE.Color(b), Math.min(1, damage * 1.1));
 }
 
-function OrganPart({ organ, shapes, damage, grade, selected, hovered, setHovered, onSelect, showLabel, label, exposure, palette, quality, meshRef }: {
+function OrganPart({ organ, shapes, damage, grade, selected, hovered, setHovered, onSelect, showLabel, label, exposure, palette, quality, meshRef, labelMode = "grade" }: {
+  labelMode?: "grade" | "names";
   organ: Organ; shapes: OrganShape[]; damage: number; grade: number; selected: boolean; hovered: boolean; setHovered: (o: Organ | null) => void;
   onSelect?: (o: Organ) => void; showLabel: boolean; label: string; exposure: number; palette: "standard" | "cb"; quality: Quality; meshRef?: React.MutableRefObject<THREE.Group | null>;
 }) {
@@ -114,9 +123,9 @@ function OrganPart({ organ, shapes, damage, grade, selected, hovered, setHovered
           <meshStandardMaterial ref={(m) => { if (m) mats.current[i] = m; }} color={color} roughness={0.42} metalness={0.02} />
         </mesh>
       ))}
-      {showLabel && grade >= 1 && (
+      {showLabel && label && (grade >= 1 || labelMode === "names") && (
         <Html center position={[shapes[0]!.center[0], shapes[0]!.center[1] + shapes[0]!.radii[1] + 0.12, shapes[0]!.center[2]]} zIndexRange={[10, 0]} style={{ pointerEvents: "none" }}>
-          <div style={{ font: "600 11px 'Geist Mono', monospace", padding: "2px 7px", borderRadius: 999, background: "rgba(8,12,13,0.82)", color: GRADE_HEX[palette][Math.min(5, grade)], border: "1px solid currentColor", whiteSpace: "nowrap", backdropFilter: "blur(4px)" }}>{label} · G{grade}</div>
+          <div style={{ font: "600 11px 'Geist Mono', monospace", padding: "2px 7px", borderRadius: 999, background: "rgba(8,12,13,0.82)", color: GRADE_HEX[palette][Math.min(5, grade)], border: "1px solid currentColor", whiteSpace: "nowrap", backdropFilter: "blur(4px)" }}>{grade >= 1 ? `${label} · G${grade}` : label}</div>
         </Html>
       )}
     </group>
@@ -152,7 +161,8 @@ function Vessels() {
   return <group>{geo.map(({ v, g }) => <mesh key={v.id} geometry={g}><meshStandardMaterial color={v.kind === "artery" ? "#c8323c" : v.kind === "portal" ? "#8a4fb0" : "#4a6fc8"} roughness={0.5} emissive={v.kind === "artery" ? "#4a0c10" : "#101a40"} /></mesh>)}</group>;
 }
 
-export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale = 1, animate = true, quality = "high", exposure = {}, palette = "standard" }: RatModelProps) {
+export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale = 1, animate = true, quality = "high", exposure = {}, palette = "standard", sweep, sweepRef, labelMode = "grade", tempo = 1 }: RatModelProps) {
+  const clockT = useRef(0);
   const root = useRef<THREE.Group>(null);
   const heartRef = useRef<THREE.Group | null>(null);
   const [hovered, setHovered] = useState<Organ | null>(null);
@@ -185,9 +195,11 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
     for (const m of furMats) m.color.copy(fur);
   }, [skin, fur, furMats, skinMat, uniforms]);
 
-  useFrame(({ clock }) => {
-    const t = animate ? clock.elapsedTime : 0;
+  useFrame((_, dt) => {
+    if (animate) clockT.current += Math.min(dt, 0.1) * tempo;
+    const t = clockT.current;
     uniforms.uTime.value = t;
+    uniforms.uSweep.value = sweepRef ? sweepRef.current : sweep !== undefined ? sweep : layers.xray ? -99 : 99;
     uniforms.uBreath.value = (v.respirationBpm / 60) * 0.45 * (1 - 0.4 * v.lethargy);
     uniforms.uHunch.value = v.hunch;
     uniforms.uWaste.value = v.wasting;
@@ -210,14 +222,13 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
   const earBack = 0.55 * v.grimace;
   const organThin = 1 - 0.3 * v.wasting;
   const og = (o: Organ) => v.organs[o];
-  const common = (o: Organ) => ({ organ: o, damage: og(o).damage, grade: og(o).grade, selected: selected === o, hovered: hovered === o, setHovered, onSelect, showLabel: layers.labels && (layers.xray || selected === o), exposure: exposure[o] ?? 0, palette, quality });
+  const common = (o: Organ) => ({ organ: o, damage: og(o).damage, grade: og(o).grade, selected: selected === o, hovered: hovered === o, setHovered, onSelect, showLabel: layers.labels && (labelMode === "names" || layers.xray || selected === o), labelMode, exposure: exposure[o] ?? 0, palette, quality });
 
   return (
     <group ref={root} scale={v.size * scale}>
       {/* skin and fur */}
-      {layers.xray
-        ? <mesh geometry={body} material={xray} renderOrder={10} />
-        : furMats.map((m, i) => <mesh key={i} geometry={body} material={m} renderOrder={i} castShadow={i === 0} />)}
+      {(sweepRef || sweep !== undefined || layers.xray) && <mesh geometry={body} material={xray} renderOrder={20} />}
+      {(sweepRef || sweep !== undefined || !layers.xray) && furMats.map((m, i) => <mesh key={i} geometry={body} material={m} renderOrder={i} castShadow={i === 0} />)}
       <mesh geometry={tail} material={skinMat} />
 
       {/* ears, seated on the skull (base sunk into the skin), flattening back with a grimace */}
