@@ -56,7 +56,7 @@ export function analyseEndpoints(s: StudyResult, opts: AnalysisOptions = {}): En
       const all = [cv, ...tv];
       const constant = all.every((g) => g.every((v) => v === all[0]![0]));
       if (constant) continue;
-      let method: Method = opts.method && opts.method !== "auto" ? opts.method : all.some((g) => g.length < 3 || Math.abs(skewness(g)) > 1.5) ? "kruskal-dunn" : "dunnett";
+      const method: Method = opts.method && opts.method !== "auto" ? opts.method : all.some((g) => g.length < 3 || Math.abs(skewness(g)) > 1.5) ? "kruskal-dunn" : "dunnett";
       let p: number[];
       if (method === "dunnett") p = dunnett(cv, tv).rows.map((r) => r.pAdj);
       else p = dunnVsControl(cv, tv).rows.map((r) => r.pAdj);

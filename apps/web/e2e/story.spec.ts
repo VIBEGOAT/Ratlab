@@ -7,7 +7,7 @@ mkdirSync(SHOTS, { recursive: true });
 async function fresh(page: Page) {
   await page.goto("about:blank");
   await page.goto("/");
-  await page.evaluate(async () => { localStorage.clear(); localStorage.setItem("quality", "low"); await new Promise<void>((r) => { const q = indexedDB.deleteDatabase("eliminate-lab"); q.onsuccess = q.onerror = q.onblocked = () => r(); }); });
+  await page.evaluate(async () => { localStorage.clear(); localStorage.setItem("quality", "low"); localStorage.setItem("force3d", "1"); await new Promise<void>((r) => { const q = indexedDB.deleteDatabase("eliminate-lab"); q.onsuccess = q.onerror = q.onblocked = () => r(); }); });
   await page.goto("about:blank");
   await page.goto("/");
   await expect(page.getByText(/virtual rats ready|Preparing/).first()).toBeAttached();
@@ -46,7 +46,7 @@ test("story chapters 1 to 6 tell the dose-to-humane-endpoint story", async ({ pa
   await scrollTo(page, 3, 0.6);
   await expect(page.getByText("Hour", { exact: true })).toBeVisible();
   await scrollTo(page, 4, 0.9);
-  await expect(page.getByText("Study day", { exact: true })).toBeVisible();
+  await expect(page.locator(".day-counter").getByText("Study day", { exact: true })).toBeVisible();
   await expect(page.getByRole("group", { name: /Blood tests on day/ })).toBeVisible();
 
   await scrollTo(page, 5, 0.75);

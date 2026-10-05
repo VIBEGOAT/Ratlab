@@ -1,5 +1,5 @@
 import { REQUIRED_DATASETS } from "@eliminate/sim-core";
-import { Banner, Chip, NeedsStudy, Panel, TabHead, f1 } from "../components/ui";
+import { Banner, Chip, NeedsStudy, Panel, TabHead, f1, ScrollBox } from "../components/ui";
 import { useStore } from "../store";
 import { parseHistoricalCsv } from "../lib/csv";
 import { download } from "../lib/export";
@@ -44,10 +44,10 @@ export default function ValidationTab() {
                 {v.report.checks.length > 0 && (
                   <>
                     <p className="small">Pass rate {f1(v.report.passRate * 100, 0)}% of {v.report.checks.length} checks. A check passes when the simulated mean is within two historical SDs and the SD is between half and double.</p>
-                    <div className="scroll"><table>
+                    <ScrollBox><table>
                       <thead><tr><th>Endpoint</th><th>Sex</th><th className="num">Sim mean</th><th className="num">Hist mean</th><th className="num">z</th><th className="num">SD ratio</th><th>Result</th></tr></thead>
                       <tbody>{v.report.checks.map((c, i) => <tr key={i} className={c.pass ? "" : "flag"}><td>{c.endpoint}</td><td>{c.sex}</td><td className="num">{f1(c.simulatedMean, 2)}</td><td className="num">{f1(c.historicalMean, 2)}</td><td className="num">{f1(c.zMean, 2)}</td><td className="num">{f1(c.sdRatio, 2)}</td><td>{c.reason}</td></tr>)}</tbody>
-                    </table></div>
+                    </table></ScrollBox>
                   </>
                 )}
                 {v.eligibility && <Banner tone={v.eligibility.eligible ? "good" : "warn"}><b>Virtual control groups.</b> {v.eligibility.message} ({f1(v.eligibility.fractionConsistent * 100, 0)}% of endpoints consistent.){v.usedDemo ? " Based on simulated demo data only." : ""}</Banner>}
@@ -57,10 +57,10 @@ export default function ValidationTab() {
         )}
       </NeedsStudy>
       <Panel title="Datasets to source before any claim of validity">
-        <div className="scroll"><table>
-          <thead><tr><th>Dataset</th><th>Used for</th><th>Access</th><th /></tr></thead>
+        <ScrollBox><table>
+          <thead><tr><th>Dataset</th><th>Used for</th><th>Access</th><th><span className="sr-only">Link</span></th></tr></thead>
           <tbody>{REQUIRED_DATASETS.map((d) => <tr key={d.name}><td>{d.name}</td><td>{d.usedFor}</td><td className="small">{d.access}</td><td><Chip kind="NO_DATA">{d.status}</Chip></td></tr>)}</tbody>
-        </table></div>
+        </table></ScrollBox>
       </Panel>
     </>
   );

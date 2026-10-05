@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FINDINGS, GRADE_SEVERITY, ORGANS, mean, sd, type Organ, type Sex } from "@eliminate/sim-core";
-import { NeedsStudy, Panel, TabHead, f1, pfmt } from "../components/ui";
+import { NeedsStudy, Panel, TabHead, f1, pfmt, ScrollBox } from "../components/ui";
 import { ORGAN_LABEL } from "../lib/setup";
 
 export default function NecropsyTab() {
@@ -19,7 +19,7 @@ export default function NecropsyTab() {
           return (
             <>
               <Panel right={<div style={{ display: "flex", gap: 6 }}>{sexes.map((x) => <button key={x} aria-pressed={x === s} onClick={() => setSex(x)} style={{ fontWeight: x === s ? 700 : 500 }}>{x === "M" ? "Males" : "Females"}</button>)}</div>} title="Microscopic findings">
-                <div className="scroll"><table>
+                <ScrollBox><table>
                   <thead><tr><th>Organ</th><th>Group</th><th className="num">Dose</th><th className="num">n</th><th className="num">Grade ≥1</th><th className="num">Grade ≥2</th><th className="num">Mean grade</th><th>Worst finding</th><th className="num">p vs control</th></tr></thead>
                   <tbody>
                     {histo.filter((h) => h.maxGrade > 0 || h.groupId === groups[groups.length - 1]!.id).map((h) => (
@@ -30,18 +30,18 @@ export default function NecropsyTab() {
                       </tr>
                     ))}
                   </tbody>
-                </table></div>
+                </table></ScrollBox>
                 <p className="small muted">Incidence compared with control by Fisher's exact test on grade 2 or higher, Holm adjusted within each organ.</p>
               </Panel>
               <Panel title="Relative organ weights (% of body weight, mean ± SD)">
-                <div className="scroll"><table>
+                <ScrollBox><table>
                   <thead><tr><th>Organ</th>{groups.map((g) => <th key={g.id} className="num">{g.id} · {f1(g.doseMgPerKg, 0)} mg/kg</th>)}</tr></thead>
                   <tbody>
                     {["liver", "kidney", "heart", "brain", "spleen"].map((o) => (
                       <tr key={o}><td>{o}</td>{groups.map((g) => { const v = wt(g.id, `organ.${o}.relative`); return <td key={g.id} className="num">{v.length ? `${mean(v).toFixed(3)} ± ${sd(v).toFixed(3)}` : "n/a"}</td>; })}</tr>
                     ))}
                   </tbody>
-                </table></div>
+                </table></ScrollBox>
               </Panel>
               <p className="small muted">Organs shown: {ORGANS.map((o) => ORGAN_LABEL[o]).join(", ")}.</p>
             </>

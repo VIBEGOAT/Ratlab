@@ -68,12 +68,12 @@ function MainApp() {
           <button type="button" aria-pressed={mode === "lab"} onClick={() => setMode("lab")}>Lab</button>
         </div>
         <div className="right">
-          <button className="ghost palette-btn" onClick={openPalette} aria-label="Search and commands" aria-keyshortcuts="Control+K Meta+K">Search <kbd>{/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K"}</kbd></button>
+          <button className="ghost palette-btn" onClick={openPalette} aria-keyshortcuts="Control+K Meta+K">Search <kbd>{/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K"}</kbd></button>
           <SoundToggle className="ghost hide-narrow" />
           <button className="ghost hide-narrow" onClick={() => usePresenter.getState().start()} title="Presenter mode (P)">Present</button>
           <ExportMenu />
           <button className="ghost hide-narrow" onClick={() => setCb(!cb)} aria-pressed={cb} title="Colour-blind-safe damage colours">{cb ? "CB palette on" : "CB palette"}</button>
-          <button className="ghost" onClick={() => setTheme(nextTheme)} aria-label={`Theme: ${theme}. Switch to ${nextTheme}`}>{theme === "system" ? "Auto" : theme === "dark" ? "Dark" : "Light"}</button>
+          <button className="ghost" onClick={() => setTheme(nextTheme)} title={`Switch to ${nextTheme}`}>Theme: {theme === "system" ? "Auto" : theme === "dark" ? "Dark" : "Light"}</button>
         </div>
       </header>
       {mode === "story" ? <StoryPage /> : <Suspense fallback={<div className="empty" style={{ margin: 24 }}>Loading the Lab…</div>}><LabShell /></Suspense>}

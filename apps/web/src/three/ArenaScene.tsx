@@ -1,3 +1,4 @@
+import { fastShaders } from "./webgl";
 import { useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Html, Line, OrbitControls } from "@react-three/drei";
@@ -138,7 +139,7 @@ function HomeCage({ t, u, day, hoursPerSec }: { t: AnimalBundle; u: AnimalBundle
 
 export function ArenaScene({ mode, treated, untreated, day, hoursPerSec }: { mode: ArenaMode; treated: AnimalBundle; untreated: AnimalBundle; day: number; hoursPerSec: number }) {
   return (
-    <Canvas key={mode} camera={{ position: [0, 6.5, 6.5], fov: 40 }} dpr={[1, 2]} gl={{ antialias: true, alpha: true }} style={{ touchAction: "none" }}>
+    <Canvas onCreated={fastShaders} key={mode} camera={{ position: [0, 6.5, 6.5], fov: 40 }} dpr={[1, 2]} gl={{ antialias: true, alpha: true }} style={{ touchAction: "none" }}>
       <ambientLight intensity={0.8} />
       <directionalLight position={[3, 8, 4]} intensity={0.9} />
       {mode === "open" && <OpenField t={treated} u={untreated} day={day} />}

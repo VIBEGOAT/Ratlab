@@ -1,4 +1,4 @@
-import { Component, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { AdaptiveDpr, ContactShadows, Environment, Html, Lightformer, MeshReflectorMaterial, OrbitControls, PerformanceMonitor } from "@react-three/drei";
 import { Bloom, DepthOfField, EffectComposer, Vignette } from "@react-three/postprocessing";
@@ -7,29 +7,8 @@ import type { AnimalBundle, Organ } from "@eliminate/sim-core";
 import { ORGAN_FOCUS, RatModel, type Layers, type Quality } from "./RatModel";
 import { ratVisualState } from "./ratState";
 
-export function webglAvailable(): boolean {
-  try {
-    // an explicit opt-out for very slow graphics (and for tests that do not need 3D)
-    if (localStorage.getItem("no3d") === "1") return false;
-    const c = document.createElement("canvas");
-    return !!(c.getContext("webgl2") || c.getContext("webgl"));
-  } catch { return false; }
-}
-
-/** Some browsers do not report the first layout of a freshly mounted canvas. Ask for one more measurement. */
-export function useKickResize(dep: unknown): void {
-  useEffect(() => {
-    const ids = [60, 300, 900].map((ms) => window.setTimeout(() => window.dispatchEvent(new Event("resize")), ms));
-    return () => ids.forEach((i) => window.clearTimeout(i));
-  }, [dep]);
-}
-
-export class SceneBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { failed: boolean }> {
-  override state = { failed: false };
-  static getDerivedStateFromError() { return { failed: true }; }
-  override componentDidCatch(e: unknown) { console.error("3D scene failed", e); }
-  override render() { return this.state.failed ? this.props.fallback : this.props.children; }
-}
+import { SceneBoundary, fastShaders, useKickResize, webglAvailable } from "./webgl";
+export { SceneBoundary, useKickResize, webglAvailable };
 
 export type QualitySetting = "auto" | "low" | "high";
 
@@ -109,7 +88,7 @@ export function RatScene(p: RatSceneProps) {
   const reduceMotion = typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   return (
-    <Canvas key={p.resetKey} camera={{ position: home.pos.toArray(), fov: 34, near: 0.05, far: 100 }} dpr={q === "high" ? [1, 2] : [1, 1.25]} gl={{ antialias: true, powerPreference: "high-performance" }} style={{ touchAction: "none" }}
+    <Canvas onCreated={fastShaders} key={p.resetKey} camera={{ position: home.pos.toArray(), fov: 34, near: 0.05, far: 100 }} dpr={q === "high" ? [1, 2] : [1, 1.25]} gl={{ antialias: true, powerPreference: "high-performance" }} style={{ touchAction: "none" }}
       onPointerMissed={() => p.onSelect(null)}>
       <color attach="background" args={[bg]} />
       <fog attach="fog" args={[bg, 14, 30]} />

@@ -1,0 +1,40 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # regenerates the generated docs and the pre-baked study, then lints, type-checks, runs the unit tests and checks bundle budgets
+      - run: npm run ci
+      - name: Fail if generated files changed (they must be committed)
+        run: git diff --exit-code -- data docs/fidelity-table.md apps/web/public/prewarm
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: checks
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # accessibility (axe) and behaviour tests. Visual baselines are Windows renderings; regenerate them on this
+      # runner with --update-snapshots before enabling visual.spec.ts here.
+      - run: npx playwright test --ignore-snapshots -x --grep-invert "screenshots"
+        working-directory: apps/web
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: apps/web/test-results

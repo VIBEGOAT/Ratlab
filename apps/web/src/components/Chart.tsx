@@ -1,3 +1,6 @@
+/* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions --
+   The chart is a custom keyboard widget (arrow keys move a crosshair) and its data table is a scrollable region that must be
+   focusable. Heat-grid cells are a pointer shortcut only; the same information is in the signs table. */
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { scaleLinear, scaleLog } from "d3-scale";
 import { area as d3area, line as d3line } from "d3-shape";

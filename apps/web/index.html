@@ -4,12 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>ELIMINATE-Lab</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" />
+    <meta name="description" content="A virtual laboratory rat that shows what a compound would do before any animal is dosed. A research and education prototype that supports replacing, reducing and refining animal studies." />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Static first paint of the hero, using the same classes as the app so it looks identical. React replaces it on mount. -->
+      <div class="app" aria-hidden="true">
+        <header class="topbar" style="visibility:hidden;height:53px"></header>
+        <main class="story"><div class="story-grid"><div class="story-text">
+          <section class="chapter-sec hero-sec">
+            <div class="eyebrow">Replace · Reduce · Refine</div>
+            <h1>Every animal we spare starts with a simulation <span class="accent">we can trust.</span></h1>
+            <p class="lede">A virtual laboratory rat that shows what a compound would do, before any animal is dosed.</p>
+            <div class="cta" style="visibility:hidden"><button class="primary">Begin</button><button>Open the Lab</button></div>
+            <div style="margin-top:36px;visibility:hidden"><div class="big-number">0</div><div class="big-caption">animals a year one lab could avoid using, on example assumptions. Hover or focus to see them.</div></div>
+          </section>
+        </div></div></main>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

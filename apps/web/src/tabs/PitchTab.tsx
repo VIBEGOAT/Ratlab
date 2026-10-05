@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { REFERENCES, animalsSpared } from "@eliminate/sim-core";
-import { Banner, Chip, Panel, Stat, TabHead, f1 } from "../components/ui";
+import { Banner, Chip, Panel, Stat, TabHead, f1, ScrollBox } from "../components/ui";
 
 function Field({ label, value, onChange, step = 1, max }: { label: string; value: number; onChange: (v: number) => void; step?: number; max?: number }) {
   const id = `pf-${label.replace(/\W/g, "")}`;
@@ -53,7 +53,7 @@ export default function PitchTab() {
       </div>
       <Panel title="References">
         <p className="small muted">VERIFIED means the bibliographic record was confirmed against a live source. It does not mean every number taken from the paper was checked.</p>
-        <div className="scroll"><table>
+        <ScrollBox><table>
           <thead><tr><th>Status</th><th>Reference</th><th>Used for</th></tr></thead>
           <tbody>{REFERENCES.map((x) => (
             <tr key={x.id}>
@@ -61,7 +61,7 @@ export default function PitchTab() {
               <td>{x.authors} ({x.year ?? "n.d."}). {x.title}. <span className="muted">{x.venue}</span>{x.doi ? <> · <a href={`https://doi.org/${x.doi}`} target="_blank" rel="noreferrer">doi:{x.doi}</a></> : x.url ? <> · <a href={x.url} target="_blank" rel="noreferrer">link</a></> : null}{x.note ? <div className="small muted">{x.note}</div> : null}</td>
               <td className="small">{x.usedFor}</td>
             </tr>))}</tbody>
-        </table></div>
+        </table></ScrollBox>
       </Panel>
     </>
   );

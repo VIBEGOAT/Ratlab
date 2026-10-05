@@ -4,9 +4,9 @@ import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import type { Organ } from "@eliminate/sim-core";
 import { type RatVisualState } from "./ratState";
-import { BODY_BOUNDS, LEGS, MARROW_SITES, ORGAN_SHAPES, SPINE_PATH, TAIL_BASE, TAIL_PATH, TAIL_TIP, VESSELS, features, gutPath, ratSdf, type OrganShape, type Vec3 } from "./anatomy";
-import { surfaceNets } from "./surfaceNets";
-import { makeBodyUniforms, makeFurMaterial, makeXrayMaterial, skinWeights } from "./materials";
+import { LEGS, MARROW_SITES, ORGAN_SHAPES, SPINE_PATH, TAIL_BASE, TAIL_PATH, TAIL_TIP, VESSELS, features, gutPath, type OrganShape, type Vec3 } from "./anatomy";
+import { useBodyGeometry } from "./bodyGeometry";
+import { makeBodyUniforms, makeFurMaterial, makeXrayMaterial } from "./materials";
 import { GRADE_HEX } from "../design/damage";
 
 /**
@@ -45,20 +45,6 @@ export interface RatModelProps {
 }
 
 // ---------- geometry built once and shared by every rat on the page
-
-let bodyGeometry: THREE.BufferGeometry | null = null;
-function getBodyGeometry(): THREE.BufferGeometry {
-  if (bodyGeometry) return bodyGeometry;
-  const m = surfaceNets((p) => ratSdf(p), BODY_BOUNDS.min, BODY_BOUNDS.max, 0.035);
-  const g = new THREE.BufferGeometry();
-  g.setAttribute("position", new THREE.BufferAttribute(m.positions, 3));
-  g.setAttribute("normal", new THREE.BufferAttribute(m.normals, 3));
-  g.setAttribute("skinW", new THREE.BufferAttribute(skinWeights(m.positions), 1));
-  g.setIndex(new THREE.BufferAttribute(m.indices, 1));
-  g.computeBoundingSphere();
-  bodyGeometry = g;
-  return g;
-}
 
 function taperedTube(path: Vec3[], r0: number, r1: number, segments = 64, radial = 10): THREE.BufferGeometry {
   const curve = new THREE.CatmullRomCurve3(path.map((p) => new THREE.Vector3(...p)));
@@ -166,7 +152,16 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
   const root = useRef<THREE.Group>(null);
   const heartRef = useRef<THREE.Group | null>(null);
   const [hovered, setHovered] = useState<Organ | null>(null);
-  const body = useMemo(getBodyGeometry, []);
+  const body = useBodyGeometry();
+  // until the real body arrives from the worker, a degenerate triangle lets the fur and X-ray shaders compile early
+  const placeholder = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(9), 3));
+    g.setAttribute("normal", new THREE.BufferAttribute(new Float32Array([0, 1, 0, 0, 1, 0, 0, 1, 0]), 3));
+    g.setAttribute("skinW", new THREE.BufferAttribute(new Float32Array(3), 1));
+    g.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 0);
+    return g;
+  }, []);
   const feat = useMemo(() => features(0), []);
   const tail = useMemo(() => taperedTube(TAIL_PATH, TAIL_BASE, TAIL_TIP, quality === "high" ? 72 : 36, quality === "high" ? 12 : 6), [quality]);
   const gut = useMemo(() => taperedTube(gutPath(), 0.042, 0.038, quality === "high" ? 220 : 110, quality === "high" ? 10 : 6), [quality]);
@@ -227,8 +222,8 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
   return (
     <group ref={root} scale={v.size * scale}>
       {/* skin and fur */}
-      {(sweepRef || sweep !== undefined || layers.xray) && <mesh geometry={body} material={xray} renderOrder={20} />}
-      {(sweepRef || sweep !== undefined || !layers.xray) && furMats.map((m, i) => <mesh key={i} geometry={body} material={m} renderOrder={i} castShadow={i === 0} />)}
+      {(sweepRef || sweep !== undefined || layers.xray) && <mesh geometry={body ?? placeholder} material={xray} renderOrder={20} />}
+      {(sweepRef || sweep !== undefined || !layers.xray) && furMats.map((m, i) => <mesh key={i} geometry={body ?? placeholder} material={m} renderOrder={i} castShadow={i === 0} />)}
       <mesh geometry={tail} material={skinMat} />
 
       {/* ears, seated on the skull (base sunk into the skin), flattening back with a grimace */}

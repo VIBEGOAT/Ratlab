@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions, jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events, jsx-a11y/no-autofocus --
+   Modal dialog: Escape closes it from the keyboard, the backdrop click is a pointer shortcut, and focus moves to Close on open. */
 import { useState } from "react";
 import { CONSTANTS, DISCLAIMER, REFERENCES, SIM_VERSION, listUnverifiedConstants, listUnverifiedReferences } from "@eliminate/sim-core";
 import { useStore } from "../store";
@@ -20,7 +22,7 @@ export function Footer() {
       {open && (
         <>
           <div className="drawer-backdrop" onClick={() => setOpen(false)} />
-          <aside className="drawer" role="dialog" aria-modal="true" aria-labelledby="honesty-title" onKeyDown={(e) => e.key === "Escape" && setOpen(false)}>
+          <div className="drawer" role="dialog" aria-modal="true" aria-labelledby="honesty-title" onKeyDown={(e) => e.key === "Escape" && setOpen(false)}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <h2 id="honesty-title">What this prototype is</h2>
               <button className="ghost" onClick={() => setOpen(false)} autoFocus aria-label="Close">Close</button>
@@ -41,7 +43,7 @@ export function Footer() {
               <button className="primary" onClick={() => { setOpen(false); goLab("trust", "fidelity"); }}>See every parameter and its source</button>
               <button onClick={() => { setOpen(false); goLab("trust", "validation"); }}>Validation status</button>
             </div>
-          </aside>
+          </div>
         </>
       )}
     </>

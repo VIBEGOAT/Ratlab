@@ -23,8 +23,8 @@ export function ChapterTwin({ tw, day, split }: { tw: TwinBundle | null; day: nu
       <p className="lede">The same rat, with and without treatment. A real animal can only ever be one of these.</p>
       <p className="small muted">Drag the divider, or use the arrow keys. Day {day}.</p>
       <div className="compare" role="table" aria-label="Treated against untreated twin">
-        <div role="row" className="compare-head"><span /><b>Treated</b><b>Untreated</b></div>
-        {rows.map(([k, a, b]) => <div role="row" key={k}><span className="muted">{k}</span><b>{a}</b><b>{b}</b></div>)}
+        <div role="row" className="compare-head"><span role="columnheader"><span className="sr-only">Measure</span></span><b role="columnheader">Treated</b><b role="columnheader">Untreated</b></div>
+        {rows.map(([k, a, b]) => <div role="row" key={k}><span role="rowheader" className="muted">{k}</span><b role="cell">{a}</b><b role="cell">{b}</b></div>)}
       </div>
       {u.humane && <p className="small">Without treatment this rat reaches a humane endpoint on day {u.humane.day}. {t.humane ? `With treatment, on day ${t.humane.day}.` : "With treatment, it does not."}</p>}
       <span className="sr-only">Divider at {Math.round(split * 100)} percent.</span>
@@ -91,8 +91,8 @@ export function ChapterBehaviour({ tw }: { tw: TwinBundle | null }) {
       <p className="lede">A sick rat moves less, explores less and keeps to itself.</p>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}><Fidelity id="behaviour" /><span className="small muted">Modelled endpoints, not what the animal feels.</span></div>
       <div className="compare" role="table" aria-label="Behaviour, treated against untreated">
-        <div role="row" className="compare-head"><span /><b>Treated</b><b>Untreated</b></div>
-        {rows.map(([k, a, b]) => <div role="row" key={k}><span className="muted">{k}</span><b>{fmt(a, 2)}</b><b>{fmt(b, 2)}</b></div>)}
+        <div role="row" className="compare-head"><span role="columnheader"><span className="sr-only">Measure</span></span><b role="columnheader">Treated</b><b role="columnheader">Untreated</b></div>
+        {rows.map(([k, a, b]) => <div role="row" key={k}><span role="rowheader" className="muted">{k}</span><b role="cell">{fmt(a, 2)}</b><b role="cell">{fmt(b, 2)}</b></div>)}
       </div>
       <p className="small muted">Open-field tracks on the last study day. 1.00 is the animal's own healthy baseline.</p>
     </>

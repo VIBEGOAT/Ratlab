@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/label-has-associated-control --
+   These labels have visible text in nested spans and an explicit htmlFor/id pair; the rule cannot see through the spans. */
 import { ARCHETYPES } from "@eliminate/sim-core";
 import { useStore, useResultsStale } from "../store";
 import { COMPOUNDS, designProblems, type DiseaseChoice } from "../lib/setup";

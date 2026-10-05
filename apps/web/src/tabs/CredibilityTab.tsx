@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CONTEXT_PRESETS, ORGANS, assessCredibility, type ContextOfUse, type Level, type Organ } from "@eliminate/sim-core";
 import { BarList } from "../components/Chart";
-import { Banner, Chip, NeedsStudy, Panel, TabHead } from "../components/ui";
+import { Banner, Chip, NeedsStudy, Panel, TabHead, ScrollBox } from "../components/ui";
 import { useStore } from "../store";
 import { ORGAN_LABEL } from "../lib/setup";
 
@@ -41,14 +41,14 @@ export default function CredibilityTab() {
         <p className="small muted">The risk matrix and the 0 to 3 evidence scale are an illustrative mapping. V&V 40 was written for medical devices and is applied here by analogy.</p>
       </Panel>
       <Panel title="3. Credibility factors">
-        <div className="scroll"><table>
+        <ScrollBox><table>
           <thead><tr><th>Factor</th><th>Area</th><th className="num">Achieved</th><th className="num">Required</th><th>Evidence and gap</th></tr></thead>
           <tbody>{report.factors.map((f) => (
             <tr key={f.id} className={f.shortfall > 0 ? "flag" : ""}>
               <td>{f.name}</td><td>{f.category}</td><td className="num">{f.achieved}</td><td className="num">{f.required}</td>
               <td className="small">{f.evidence.join("; ")}{f.gap ? <><br /><span className="muted">Gap: {f.gap}</span></> : null}</td>
             </tr>))}</tbody>
-        </table></div>
+        </table></ScrollBox>
       </Panel>
       <NeedsStudy>
         {() => (

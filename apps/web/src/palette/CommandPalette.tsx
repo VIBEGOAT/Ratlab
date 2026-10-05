@@ -1,5 +1,8 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions, jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events --
+   Combobox pattern: focus stays in the input, which handles the keys; options are chosen by pointer or by Enter. The backdrop
+   only adds a pointer way to dismiss; Escape is the keyboard way. */
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { useReducedMotion } from "framer-motion";
+import { useReducedMotion } from "../lib/motion";
 import { ARCHETYPES } from "@eliminate/sim-core";
 import { useStore } from "../store";
 import { download, studyToCsv, studyToHtml, studyToJson } from "../lib/export";

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ORGANS } from "@eliminate/sim-core";
 import { BarList, LineChart } from "../components/Chart";
-import { Banner, NeedsStudy, Panel, TabHead, f1 } from "../components/ui";
+import { Banner, NeedsStudy, Panel, TabHead, f1, ScrollBox } from "../components/ui";
 import { useStore } from "../store";
 import { ORGAN_LABEL } from "../lib/setup";
 
@@ -22,10 +22,10 @@ export default function PopulationTab() {
                 {humane.length === 0 ? <p className="muted">None. Every animal reached its scheduled end.</p> : (
                   <>
                     <Banner tone="bad">{humane.length} of {p.study.animals.length} animals reached a humane endpoint. In a live study each would have been euthanised early. Here no animal was harmed.</Banner>
-                    <div className="scroll"><table>
+                    <ScrollBox><table>
                       <thead><tr><th>Animal</th><th>Dose</th><th className="num">Day</th><th>Reason</th></tr></thead>
                       <tbody>{humane.map((a) => <tr key={a.id}><td>{a.id}</td><td>{f1(a.doseMgPerKg, 1)}</td><td className="num">{a.terminalDay}</td><td>{a.humane!.reason}</td></tr>)}</tbody>
-                    </table></div>
+                    </table></ScrollBox>
                   </>
                 )}
               </Panel>

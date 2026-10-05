@@ -16,7 +16,7 @@ async function fresh(page: Page, path = "/", opts: { threeD?: boolean } = {}) {
   await page.goto("about:blank");
   await page.context().clearCookies();
   await page.goto("/");
-  await page.evaluate(async (threeD) => { localStorage.clear(); if (!threeD) localStorage.setItem("no3d", "1"); await new Promise<void>((r) => { const q = indexedDB.deleteDatabase("eliminate-lab"); q.onsuccess = q.onerror = q.onblocked = () => r(); }); }, !!opts.threeD);
+  await page.evaluate(async (threeD) => { localStorage.clear(); if (!threeD) localStorage.setItem("no3d", "1"); else localStorage.setItem("force3d", "1"); await new Promise<void>((r) => { const q = indexedDB.deleteDatabase("eliminate-lab"); q.onsuccess = q.onerror = q.onblocked = () => r(); }); }, !!opts.threeD);
   await page.goto("about:blank");
   await page.goto(path);
 }

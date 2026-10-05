@@ -1,5 +1,16 @@
 # Changelog
 
+## Front-end upgrade, phase (g): performance, accessibility and QA gates, README, demo script
+
+- **Performance.** Lighthouse performance on the production build went from 66 to 94 to 99 on desktop (accessibility 100, best practices 100, SEO 100; mobile profile 84). Entry JavaScript fell from 437 kB to 112 kB gzipped. What did it: the 3D engine left the entry bundle; the rat body mesh is built in a Web Worker; shaders compile in parallel before the first frame; Auto quality starts light and rises when frames are steady; the WebGL probe and the live scene wait for idle (on phones, for the first touch or scroll); Framer Motion was replaced with 30 lines and CSS; Geist is self-hosted, with the stylesheet and Latin font inlined and the hero present in the HTML before any script runs. On a computer that renders WebGL on the CPU, the page shows the still picture with a "Turn on 3D" button. `?3d=0` opens a light version. Details and caveats in `docs/quality-gates.md`.
+- **Accessibility.** axe-core (WCAG 2.2 AA and best practice) is now a test gate over the Story, all Lab sections and views, the palette, the drawer, presenter mode and the notes window, in light, dark and colour-blind palettes. It found and I fixed: light-theme teal, amber and orange a little under 4.5:1 contrast, no level-one heading in the Lab, keyboard-unreachable scrollable tables, empty table headers, an invalid dialog role, the presenter controls outside a landmark, grade colours used as text, `role="row"` without cells, and accessible names that did not start with the visible text.
+- **Visual regression.** 15 baselines: five pages at 1440x900, 1920x1080 and 390x844.
+- **Bundle report and budgets.** `npm run bundle` writes `docs/bundle-report.md` and fails if a budget is exceeded.
+- **Lint.** ESLint 9 with typescript-eslint, react-hooks and jsx-a11y. Clean. Two behaviour-neutral `let` to `const` changes in sim-core (`analysis.ts`, `specialfns.ts`); all 199 simulation tests pass.
+- **CI.** `.github/workflows/ci.yml` runs generation, lint, types, unit tests, the bundle budgets and the end-to-end suite.
+- **Docs.** README rewritten for the product as it now is; `docs/demo-script-3min.md` is a timed, spoken script matching the 3-minute presenter track; `docs/quality-gates.md` records what was measured and what was not.
+- **Bugs fixed on the way.** A missing favicon and `robots.txt`; the Story's 3D import that made every visitor download three.js.
+
 ## Front-end upgrade, phase (f): command palette, chart rebuild
 
 - **Command palette (Ctrl/Cmd+K, or the Search button).** One box for everything: the 12 Story chapters, all 16 Lab views, the six compounds, the four disease models, re-run, the 3- and 8-minute demos, the speaker-notes window, theme, colour-blind palette, 3D quality, sound, and the three exports (only when there is data). Every word you type must match; title starts and whole words rank above keyword hits. It is an accessible combobox dialog: arrow keys, Home and End, Enter to run, Escape to close with focus returned, a result count read out to screen readers, and no focus escape. Toggles are worded by their current state ("Turn sound off").

@@ -16,7 +16,7 @@ export function Fidelity({ id }: { id: string }) {
   if (!f) return null;
   return (
     <span className="hovercard">
-      <button type="button" className={`chip ${f.label}`} aria-label={`${f.name}: ${f.label}. ${f.justification}`}>{SHORT[id] ?? f.name} · {WORD[f.label]}</button>
+      <button type="button" className={`chip ${f.label}`} aria-label={`${SHORT[id] ?? f.name} · ${WORD[f.label]}. ${f.name}: ${f.justification}`}>{SHORT[id] ?? f.name} · {WORD[f.label]}</button>
       <span className="card" role="tooltip"><b>{f.name}</b><br />{f.justification}</span>
     </span>
   );
@@ -82,3 +82,9 @@ export function NeedsTwin({ children }: { children: (t: NonNullable<ReturnType<t
 export const f1 = (x: number | null | undefined, d = 1) => (x === null || x === undefined || !Number.isFinite(x) ? "n/a" : x.toFixed(d));
 export const pfmt = (p: number) => (p < 0.001 ? "<0.001" : p.toFixed(3));
 export const ORGAN_COLOR: Record<string, string> = { liver: "var(--c3)", kidney: "var(--c1)", heart: "var(--c6)", brain: "var(--c2)", gut: "var(--c4)", marrow: "var(--c5)" };
+
+/** A horizontally scrollable wrapper for wide tables. Focusable, so keyboard users can scroll it. */
+export function ScrollBox({ children }: { children: ReactNode }) {
+  // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a scrollable region must be focusable (WCAG 2.1.1)
+  return <div className="scroll" tabIndex={0} role="group" aria-label="Scrollable table">{children}</div>;
+}

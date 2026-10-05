@@ -16,7 +16,7 @@ test("command palette: open, search, run, close, restore focus", async ({ page }
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await fresh(page);
-  await page.getByRole("button", { name: "Search and commands" }).focus();
+  await page.getByRole("button", { name: /^Search/ }).focus();
   await page.keyboard.press("Control+k");
   const dialog = page.getByRole("dialog", { name: "Command palette" });
   await expect(dialog).toBeVisible();
@@ -32,13 +32,13 @@ test("command palette: open, search, run, close, restore focus", async ({ page }
   await expect(page).toHaveURL(/#lab\/trust/);
 
   // nonsense shows an honest empty state; Escape closes and returns focus
-  await page.getByRole("button", { name: "Search and commands" }).focus();
+  await page.getByRole("button", { name: /^Search/ }).focus();
   await page.keyboard.press("Control+k");
   await box.fill("zzzzqq");
   await expect(dialog).toContainText("Nothing matches");
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
-  await expect(page.getByRole("button", { name: "Search and commands" })).toBeFocused();
+  await expect(page.getByRole("button", { name: /^Search/ })).toBeFocused();
 
   // arrow keys move the selection; a compound can be chosen from here
   await page.keyboard.press("Control+k");
@@ -100,7 +100,7 @@ test("phase (f) screenshots: palette, dark theme, phone charts, log-axis PK char
   await page.keyboard.press("Escape");
   await page.evaluate(() => document.documentElement.removeAttribute("data-theme"));
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole("button", { name: "Search and commands" }).click();
+  await page.getByRole("button", { name: /^Search/ }).click();
   await page.screenshot({ path: `${SHOTS}/palette-390.png` });
   await page.keyboard.press("Escape");
   await page.screenshot({ path: `${SHOTS}/pkpd-390.png` });

@@ -13,13 +13,22 @@
     "build": "npm run build -w @eliminate/web",
     "dev": "npm run dev -w @eliminate/web",
     "gen:needs": "node scripts/gen-needs-check.mjs",
-    "ci": "npm run gen:needs && npm run gen:docs && npm run gen:prewarm && npm run typecheck && npm test",
+    "ci": "npm run gen:needs && npm run gen:docs && npm run gen:prewarm && npm run lint && npm run typecheck && npm test && npm run bundle",
     "gen:docs": "tsx scripts/gen-docs.ts",
-    "gen:prewarm": "tsx scripts/gen-prewarm.ts"
+    "gen:prewarm": "tsx scripts/gen-prewarm.ts",
+    "lint": "eslint .",
+    "bundle": "npm run build && node scripts/bundle-report.mjs",
+    "test:e2e": "npm run test:e2e -w @eliminate/web"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^17.13.0",
     "tsx": "^4.23.15",
     "typescript": "^5.6.0",
+    "typescript-eslint": "^8.71.0",
     "vitest": "^2.1.0"
   }
 }

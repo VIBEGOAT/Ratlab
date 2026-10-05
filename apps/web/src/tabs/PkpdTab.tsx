@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { TISSUES } from "@eliminate/sim-core";
 import { LineChart, type Series } from "../components/Chart";
-import { NeedsStudy, NeedsTwin, Panel, Stat, TabHead, f1 } from "../components/ui";
+import { NeedsStudy, NeedsTwin, Panel, Stat, TabHead, f1, ScrollBox } from "../components/ui";
 import { fmt } from "../design/format";
 
 type Window = "first" | "last" | "all";
@@ -39,10 +39,10 @@ export default function PkpdTab() {
               <Panel title="Exposure per dose">
                 {iv ? (
                   <>
-                    <div className="scroll"><table>
+                    <ScrollBox><table>
                       <thead><tr><th>Interval</th><th className="num">Cmax (mg/L)</th><th className="num">Tmax after dose (h)</th><th className="num">AUC over {fmt(tau, 0)} h (mg·h/L)</th><th className="num">Trough (mg/L)</th></tr></thead>
                       <tbody>{row("First dose", iv.first)}{row(iv.last ? `Last dose (dose ${iv.last.dose}, steady state)` : "Last dose", iv.last)}</tbody>
-                    </table></div>
+                    </table></ScrollBox>
                     <div className="stats">
                       <span className="hovercard">
                         <Stat label="Accumulation ratio" value={iv.accumulationRatio === null ? "n/a" : fmt(iv.accumulationRatio, 2)} hint="last over first dose, hover to read" />
@@ -67,10 +67,10 @@ export default function PkpdTab() {
               </Panel>
               <div className="grid">
                 <Panel title="Exposure by tissue">
-                  <div className="scroll"><table>
+                  <ScrollBox><table>
                     <thead><tr><th>Tissue</th><th className="num">Cmax mg/L</th><th className="num">AUC mg·h/L</th></tr></thead>
                     <tbody>{TISSUES.map((tis) => <tr key={tis}><td>{tis}</td><td className="num">{f1(pk.organCmax[tis], 2)}</td><td className="num">{f1(pk.organAuc[tis], 0)}</td></tr>)}</tbody>
-                  </table></div>
+                  </table></ScrollBox>
                 </Panel>
                 {pd.length > 0 && (
                   <Panel title="Pharmacodynamic response">

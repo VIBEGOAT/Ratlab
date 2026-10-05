@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useReducedMotion } from "framer-motion";
+import { useReducedMotion } from "../lib/motion";
 import type { Organ } from "@eliminate/sim-core";
 import { useStore } from "../store";
 import { ORGAN_LABEL } from "../lib/setup";
@@ -145,7 +145,7 @@ export function Presenter() {
   const total = trackSeconds(p.track);
 
   return (
-    <>
+    <div role="region" aria-label="Presenter">
       <div className="p-progress" role="progressbar" aria-label="Demo progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)}>
         <i style={{ width: `${progress * 100}%` }} />
       </div>
@@ -205,6 +205,6 @@ export function Presenter() {
         </div>
         <span className="sr-only" role="status">Slide {p.index + 1} of {TRACKS[p.track].slides.length}: {slide.title}. {Math.round(total / 60)} minute track.</span>
       </div>
-    </>
+    </div>
   );
 }

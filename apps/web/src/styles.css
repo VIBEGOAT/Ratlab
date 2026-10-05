@@ -13,30 +13,30 @@
   --c1: #39d3bb; --c2: #8b9c9a; --c3: #f2b14c; --c4: #b79cff; --c5: #6db3ff; --c6: #ff6b5e;
   --shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 20px 50px -20px rgba(0, 0, 0, 0.6);
   --radius: 14px; --radius-sm: 9px;
-  --f-display: "Geist", "Inter Tight", "Segoe UI", system-ui, sans-serif;
-  --f-body: "Geist", "Inter", "Segoe UI", system-ui, sans-serif;
-  --f-mono: "Geist Mono", "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  --f-display: "Geist Variable", "Geist", "Inter Tight", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Geist Variable", "Geist", "Inter", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "Geist Mono Variable", "Geist Mono", "IBM Plex Mono", ui-monospace, Consolas, monospace;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   color-scheme: dark;
 }
 :root[data-theme="light"] {
   --bg: #f4f6f5; --bg-2: #e9eeec; --surface: rgba(255, 255, 255, 0.78); --surface-solid: #ffffff; --surface-2: #eef2f1;
-  --ink: #0c1413; --ink-2: #2b3a38; --muted: #5d6e6c; --line: rgba(12, 20, 19, 0.1); --line-strong: rgba(12, 20, 19, 0.18); --grid: rgba(12, 20, 19, 0.07);
-  --accent: #0a8a77; --accent-ink: #ffffff; --accent-soft: rgba(10, 138, 119, 0.1);
-  --good: #0a8a77; --warn: #a85f00; --bad: #c42b1f; --info: #2a5fb0;
-  --g0: #0a8a77; --g1: #5f8a10; --g2: #b8960a; --g3: #d1500f; --g4: #c42b3a; --g5: #a326a0;
-  --c1: #0a8a77; --c2: #6c7b7a; --c3: #b87400; --c4: #6e47c9; --c5: #2a6fb0; --c6: #c42b1f;
+  --ink: #0c1413; --ink-2: #2b3a38; --muted: #4f605e; --line: rgba(12, 20, 19, 0.1); --line-strong: rgba(12, 20, 19, 0.18); --grid: rgba(12, 20, 19, 0.07);
+  --accent: #067060; --accent-ink: #ffffff; --accent-soft: rgba(6, 112, 96, 0.1);
+  --good: #067060; --warn: #8a4d00; --bad: #b02418; --info: #2a5fb0;
+  --g0: #067060; --g1: #4f7a0d; --g2: #7f6600; --g3: #b03f08; --g4: #c42b3a; --g5: #a326a0;
+  --c1: #067060; --c2: #6c7b7a; --c3: #b87400; --c4: #6e47c9; --c5: #2a6fb0; --c6: #c42b1f;
   --shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 18px 40px -22px rgba(12, 20, 19, 0.35);
   color-scheme: light;
 }
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
     --bg: #f4f6f5; --bg-2: #e9eeec; --surface: rgba(255, 255, 255, 0.78); --surface-solid: #ffffff; --surface-2: #eef2f1;
-    --ink: #0c1413; --ink-2: #2b3a38; --muted: #5d6e6c; --line: rgba(12, 20, 19, 0.1); --line-strong: rgba(12, 20, 19, 0.18); --grid: rgba(12, 20, 19, 0.07);
-    --accent: #0a8a77; --accent-ink: #ffffff; --accent-soft: rgba(10, 138, 119, 0.1);
-    --good: #0a8a77; --warn: #a85f00; --bad: #c42b1f; --info: #2a5fb0;
-    --g0: #0a8a77; --g1: #5f8a10; --g2: #b8960a; --g3: #d1500f; --g4: #c42b3a; --g5: #a326a0;
-    --c1: #0a8a77; --c2: #6c7b7a; --c3: #b87400; --c4: #6e47c9; --c5: #2a6fb0; --c6: #c42b1f;
+    --ink: #0c1413; --ink-2: #2b3a38; --muted: #4f605e; --line: rgba(12, 20, 19, 0.1); --line-strong: rgba(12, 20, 19, 0.18); --grid: rgba(12, 20, 19, 0.07);
+    --accent: #067060; --accent-ink: #ffffff; --accent-soft: rgba(6, 112, 96, 0.1);
+    --good: #067060; --warn: #8a4d00; --bad: #b02418; --info: #2a5fb0;
+    --g0: #067060; --g1: #4f7a0d; --g2: #7f6600; --g3: #b03f08; --g4: #c42b3a; --g5: #a326a0;
+    --c1: #067060; --c2: #6c7b7a; --c3: #b87400; --c4: #6e47c9; --c5: #2a6fb0; --c6: #c42b1f;
     --shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 18px 40px -22px rgba(12, 20, 19, 0.35);
     color-scheme: light;
   }
@@ -390,3 +390,12 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
 .palette-list .none { color: var(--muted); cursor: default; justify-content: center; }
 .palette-foot { display: flex; gap: 16px; padding: 8px 14px; font-size: 11.5px; color: var(--muted); border-top: 1px solid var(--line); }
 @media (max-width: 720px) { .hide-narrow { display: none !important; } }
+
+.gl-note { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; max-width: calc(100% - 24px); padding: 8px 12px; border-radius: 12px; font-size: 12.5px; color: var(--ink-2); background: color-mix(in srgb, var(--surface-solid) 90%, transparent); border: 1px solid var(--line-strong); z-index: 3; }
+.gdot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 0.05em; }
+
+/* gentle press feedback on the main call to action (was a JS spring) */
+.press { transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1); }
+.press:hover { transform: scale(1.03); }
+.press:active { transform: scale(0.97); }
+@media (prefers-reduced-motion: reduce) { .press, .press:hover, .press:active { transition: none; transform: none; } }

@@ -91,7 +91,7 @@ function erfcLarge(x: number): number {
   const tiny = 1e-300;
   let f = tiny, c = f, d = 0;
   // Lentz on  erfc(x) = exp(-x^2)/sqrt(pi) * 1/(x + (1/2)/(x + 1/(x + (3/2)/(x + ...))))
-  let b = x;
+  const b = x;
   f = b; c = b; d = 0;
   for (let n = 1; n < 300; n++) {
     const a = n / 2;

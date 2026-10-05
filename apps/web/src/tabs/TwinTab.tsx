@@ -1,6 +1,6 @@
 import { ORGANS, gradeFromDamage } from "@eliminate/sim-core";
 import { LineChart } from "../components/Chart";
-import { Banner, NeedsTwin, ORGAN_COLOR, Panel, TabHead, f1 } from "../components/ui";
+import { Banner, NeedsTwin, ORGAN_COLOR, Panel, TabHead, f1, ScrollBox } from "../components/ui";
 import { ORGAN_LABEL } from "../lib/setup";
 
 export default function TwinTab() {
@@ -28,10 +28,10 @@ export default function TwinTab() {
               {delay !== null && delay < 0 && <Banner tone="bad">{delay < -1e8 ? "The treated animal reached a humane endpoint and its untreated twin did not. The treatment caused the harm." : `Treatment brought the first humane endpoint forward by ${-delay} days.`}</Banner>}
               <div className="grid wide">
                 <Panel title="Summary">
-                  <div className="scroll"><table>
+                  <ScrollBox><table>
                     <thead><tr><th>Measure</th><th className="num">Treated</th><th className="num">Untreated twin</th></tr></thead>
                     <tbody>{rows.map(([a, b, c]) => <tr key={a}><td>{a}</td><td className="num">{b}</td><td className="num">{c}</td></tr>)}</tbody>
-                  </table></div>
+                  </table></ScrollBox>
                 </Panel>
                 <Panel title="Organ damage, treated animal">
                   <LineChart label="Organ damage over time" series={ORGANS.filter((o) => t.damage[o]).map((o) => ({ name: o, x: hx, y: t.damage[o]!, color: ORGAN_COLOR[o]! }))} xLabel="Study day" yLabel="Damage (0 to 1)" yMin={0} yMax={1} />

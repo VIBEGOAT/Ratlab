@@ -1,15 +1,15 @@
 import { useState } from "react";
 import type { Panel as PanelT } from "@eliminate/sim-core";
 import { LineChart } from "../components/Chart";
-import { Banner, NeedsTwin, Panel, Stat, TabHead, f1 } from "../components/ui";
+import { Banner, NeedsTwin, Panel, Stat, TabHead, f1, ScrollBox } from "../components/ui";
 
 const UNITS: Record<string, string> = { alt: "U/L", ast: "U/L", alp: "U/L", ggt: "U/L", ck: "U/L", bilirubin: "mg/dL", albumin: "g/dL", bun: "mg/dL", creatinine: "mg/dL", troponinI: "ng/mL", glucose: "mg/dL", cholesterol: "mg/dL", triglycerides: "mg/dL", sodium: "mmol/L", potassium: "mmol/L", chloride: "mmol/L", calcium: "mg/dL", phosphorus: "mg/dL", rbc: "10^6/µL", hemoglobin: "g/dL", hematocrit: "%", wbc: "10^3/µL", neutrophils: "10^3/µL", lymphocytes: "10^3/µL", platelets: "10^3/µL", reticulocytes: "%" };
 const unitOf = (k: string) => UNITS[k] ?? "";
 
 function Table({ panel }: { panel: PanelT }) {
   return (
-    <div className="scroll"><table>
-      <thead><tr><th>Marker</th><th>Unit</th><th className="num">Value</th><th className="num">Low</th><th className="num">High</th><th className="num">× ULN</th><th /></tr></thead>
+    <ScrollBox><table>
+      <thead><tr><th>Marker</th><th>Unit</th><th className="num">Value</th><th className="num">Low</th><th className="num">High</th><th className="num">× ULN</th><th><span className="sr-only">Flag</span></th></tr></thead>
       <tbody>
         {Object.entries(panel).map(([k, a]) => (
           <tr key={k} className={a.flag ? "flag" : ""}>
@@ -17,7 +17,7 @@ function Table({ panel }: { panel: PanelT }) {
           </tr>
         ))}
       </tbody>
-    </table></div>
+    </table></ScrollBox>
   );
 }
 

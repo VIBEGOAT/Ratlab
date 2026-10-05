@@ -7,7 +7,7 @@ mkdirSync(SHOTS, { recursive: true });
 async function fresh(page: Page) {
   await page.goto("about:blank");
   await page.goto("/");
-  await page.evaluate(async () => { localStorage.clear(); localStorage.setItem("quality", "low"); await new Promise<void>((r) => { const q = indexedDB.deleteDatabase("eliminate-lab"); q.onsuccess = q.onerror = q.onblocked = () => r(); }); });
+  await page.evaluate(async () => { localStorage.clear(); localStorage.setItem("quality", "low"); localStorage.setItem("force3d", "1"); await new Promise<void>((r) => { const q = indexedDB.deleteDatabase("eliminate-lab"); q.onsuccess = q.onerror = q.onblocked = () => r(); }); });
   await page.goto("about:blank");
   await page.goto("/");
   await expect(page.getByText(/virtual rats ready|Preparing/).first()).toBeAttached();

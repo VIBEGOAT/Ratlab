@@ -1,5 +1,7 @@
+/* eslint-disable jsx-a11y/no-noninteractive-tabindex --
+   The animals-spared figure is focusable so its assumptions (a tooltip) are available to keyboard users. */
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { animate, motion, useReducedMotion } from "framer-motion";
+import { tween, useReducedMotion } from "../lib/motion";
 import Lenis from "lenis";
 import { lenisHolder } from "../presenter/scroll";
 import { useStorySound } from "../audio/useStorySound";
@@ -9,15 +11,14 @@ import { COMPOUNDS, ORGAN_LABEL } from "../lib/setup";
 import { fmt, fmtInt, fmtPct } from "../design/format";
 import { GRADE_WORD, gradeVar } from "../design/damage";
 import { ratVisualState } from "../three/ratState";
-import { ArenaScene } from "../three/ArenaScene";
-import { SceneBoundary } from "../three/RatScene";
+import { SceneBoundary, force3d, softwareGraphics, webglAvailable } from "../three/webgl";
 import { ChapterBehaviour, ChapterFinale, ChapterForecast, ChapterHuman, ChapterTrust, ChapterTwin, scaleDose } from "./chapters";
 import { ForecastField, HumanScale, SplitDivider } from "./overlays";
-import { webglAvailable } from "../three/RatScene";
 import { useStoryScroll, type StoryPos } from "./useStoryScroll";
 import { DoseDial } from "./Dial";
 import type { Quality } from "../three/RatModel";
 
+const ArenaScene = lazy(() => import("../three/ArenaScene").then((m) => ({ default: m.ArenaScene })));
 const StoryScene = lazy(() => import("./StoryScene").then((m) => ({ default: m.StoryScene })));
 
 /** Conservative example assumptions. Shown on hover and editable in the Pitch view. */
@@ -29,8 +30,7 @@ export function CountUp({ to, duration = 1.6 }: { to: number; duration?: number 
   const [v, setV] = useState(reduce ? to : 0);
   useEffect(() => {
     if (reduce) { setV(to); return; }
-    const c = animate(0, to, { duration, ease: [0.22, 1, 0.36, 1], onUpdate: (x) => setV(x) });
-    return () => c.stop();
+    return tween(0, to, duration, setV);
   }, [to, duration, reduce]);
   return <>{fmtInt(v)}</>;
 }
@@ -120,10 +120,42 @@ export function StoryPage() {
   const setSetup = useStore((s) => s.setSetup);
   const cb = useStore((s) => s.cbPalette);
   const qualitySetting = useStore((s) => s.quality);
-  const [autoQ, setAutoQ] = useState<Quality>("high");
+  // Auto starts light so the page is usable at once, then rises to high when frames stay steady (and never again after a drop)
+  const [autoQ, setAutoQ] = useState<Quality>("low");
+  const declined = useRef(false);
   const quality: Quality = qualitySetting === "auto" ? autoQ : qualitySetting;
   const bg = useThemeBackground();
-  const gl = useMemo(() => webglAvailable(), []);
+  const [glOk, setGlOk] = useState(false);
+  // paint the page with the poster first, then bring the live 3D scene up when the browser is idle
+  const [sceneReady, setSceneReady] = useState(false);
+  const [software, setSoftware] = useState(false);
+  useEffect(() => {
+    let t = 0, idle = 0, live = true;
+    const go = () => {
+      // the first WebGL context starts the GPU process, which is slow, so even the probe waits for idle
+      const start = () => {
+        if (!live) return;
+        const ok = webglAvailable();
+        setGlOk(ok);
+        if (!ok) return;
+        const sw = softwareGraphics();
+        setSoftware(sw);
+        if (!sw) setSceneReady(true);
+      };
+      const ric = (window as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
+      if (ric) idle = ric(start, { timeout: 2500 }); else t = window.setTimeout(start, 600);
+    };
+    // phones and tablets: wait for the first touch or scroll, so the first seconds go to the page itself
+    const coarse = window.matchMedia?.("(pointer: coarse)").matches || window.innerWidth < 760;
+    const onFirstInput = () => go();
+    if (coarse) {
+      window.addEventListener("scroll", onFirstInput, { once: true, passive: true });
+      window.addEventListener("pointerdown", onFirstInput, { once: true });
+      window.addEventListener("keydown", onFirstInput, { once: true });
+    } else if (document.readyState === "complete") t = window.setTimeout(go, 700); else window.addEventListener("load", () => { t = window.setTimeout(go, 700); }, { once: true });
+    return () => { live = false; window.removeEventListener("scroll", onFirstInput); window.removeEventListener("pointerdown", onFirstInput); window.removeEventListener("keydown", onFirstInput); window.clearTimeout(t); if (idle) (window as { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback?.(idle); };
+  }, []);
+  const gl = glOk && sceneReady && !software;
   const plasmaRef = useRef(0);
   const stageRef = useRef<HTMLDivElement>(null);
   const splitRef = useRef(0.5);
@@ -196,7 +228,7 @@ export function StoryPage() {
             <h1 id="c0">Every animal we spare starts with a simulation <span className="accent">we can trust.</span></h1>
             <p className="lede">A virtual laboratory rat that shows what a compound would do, before any animal is dosed.</p>
             <div className="cta">
-              <motion.button className="primary" whileHover={reduce ? undefined : { scale: 1.03 }} whileTap={reduce ? undefined : { scale: 0.97 }} transition={{ type: "spring", stiffness: 400, damping: 22 }} onClick={() => document.querySelector("[data-chapter='1']")?.scrollIntoView({ behavior: reduce ? "auto" : "smooth" })}>Begin</motion.button>
+              <button className="primary press" onClick={() => document.querySelector("[data-chapter='1']")?.scrollIntoView({ behavior: reduce ? "auto" : "smooth" })}>Begin</button>
               <button onClick={() => goLab("design")}>Open the Lab</button>
             </div>
             <div className="hovercard" style={{ marginTop: 36 }}>
@@ -267,7 +299,7 @@ export function StoryPage() {
                 <div className="grade-row">
                   {(["heart", "liver", "kidney", "marrow"] as Organ[]).map((o) => {
                     const g = vDay.organs[o].grade;
-                    return <div key={o} className="grade-pill" style={{ borderColor: gradeVar(g), color: gradeVar(g) }}><span>{ORGAN_LABEL[o]}</span><b>{GRADE_WORD[g]}</b></div>;
+                    return <div key={o} className="grade-pill" style={{ borderColor: gradeVar(g) }}><span>{ORGAN_LABEL[o]}</span><b><i className="gdot" style={{ background: gradeVar(g) }} aria-hidden="true" />{GRADE_WORD[g]}</b></div>;
                   })}
                 </div>
                 <BiomarkerRibbon b={t} day={damageDay} />
@@ -335,12 +367,18 @@ export function StoryPage() {
           {gl ? (
             <Suspense fallback={<div className="poster"><RatPoster /></div>}>
               <StoryScene posRef={posRef as React.MutableRefObject<StoryPos>} chapter={pos.chapter} treated={t} untreated={u} day={damageDay} moment={moment} exposure={exposure} plasmaRef={plasmaRef}
-                reduceMotion={reduce} palette={cb ? "cb" : "standard"} quality={quality} onDecline={() => setAutoQ("low")} background={bg} paused={paused} splitRef={splitRef} twinDay={twinDay} />
+                reduceMotion={reduce} palette={cb ? "cb" : "standard"} quality={quality} onDecline={() => { declined.current = true; setAutoQ("low"); }} onIncline={() => { if (!declined.current) setAutoQ("high"); }} background={bg} paused={paused} splitRef={splitRef} twinDay={twinDay} />
             </Suspense>
           ) : <div className="poster"><RatPoster /></div>}
+          {glOk && software && (
+            <div className="gl-note" role="status">
+              <span>Software graphics detected, so live 3D is paused to keep the page responsive.</span>
+              <button type="button" onClick={() => { force3d(); setSoftware(false); setSceneReady(true); }}>Turn on 3D</button>
+            </div>
+          )}
           {pos.chapter === 6 && t && u && <SplitDivider split={split} onChange={setSplit} stage={stageRef} />}
           {pos.chapter === 7 && <div className="stage-overlay"><ForecastField outcomes={popMode === "treated" ? population.treated : population.untreated} total={population.total / 2 || 1000} mode={popMode} palette={cb ? "cb" : "standard"} sorted={sorted && population.status === "done"} /></div>}
-          {pos.chapter === 8 && t && u && gl && <div className="stage-overlay"><SceneBoundary fallback={<div className="poster"><RatPoster /></div>}><ArenaScene mode="open" treated={t} untreated={u} day={days} hoursPerSec={1} /></SceneBoundary></div>}
+          {pos.chapter === 8 && t && u && gl && <div className="stage-overlay"><SceneBoundary fallback={<div className="poster"><RatPoster /></div>}><Suspense fallback={null}><ArenaScene mode="open" treated={t} untreated={u} day={days} hoursPerSec={1} /></Suspense></SceneBoundary></div>}
           {pos.chapter === 9 && <div className="stage-overlay center"><HumanScale progress={humanP} ratDose={noael} hedDose={scaled.hed} ratLabel="rat dose, no adverse effect" /></div>}
           {!t && <div className="stage-status" role="status">Preparing the virtual study…</div>}
         </div>

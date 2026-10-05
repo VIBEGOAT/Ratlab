@@ -3,7 +3,7 @@ import type { AnimalBundle } from "@eliminate/sim-core";
 import { LineChart } from "../components/Chart";
 import { ArenaScene, type ArenaMode } from "../three/ArenaScene";
 import { SceneBoundary, useKickResize, webglAvailable } from "../three/RatScene";
-import { Banner, Empty, NeedsTwin, Panel, TabHead, f1 } from "../components/ui";
+import { Banner, Empty, NeedsTwin, Panel, TabHead, f1, ScrollBox } from "../components/ui";
 
 const days = (n: number) => Array.from({ length: n + 1 }, (_, i) => i);
 
@@ -86,7 +86,7 @@ export default function BehaviourTab() {
               </div>
               <div className="grid">
                 <Panel title="Behavioural tests (treated vs untreated twin)">
-                  <div className="scroll"><table>
+                  <ScrollBox><table>
                     <thead><tr><th>Test</th><th className="num">Treated</th><th className="num">Untreated</th></tr></thead>
                     <tbody>
                       <tr><td>Open field distance (cm / 5 min)</td><td className="num">{f1(test.openField.distanceCm, 0)}</td><td className="num">{f1(testU.openField.distanceCm, 0)}</td></tr>
@@ -94,17 +94,17 @@ export default function BehaviourTab() {
                       <tr><td>Elevated plus maze, open arm time</td><td className="num">{f1(test.epm.openArmFraction * 100, 0)}%</td><td className="num">{f1(testU.epm.openArmFraction * 100, 0)}%</td></tr>
                       <tr><td>Sucrose preference</td><td className="num">{f1(test.sucrose * 100, 0)}%</td><td className="num">{f1(testU.sucrose * 100, 0)}%</td></tr>
                     </tbody>
-                  </table></div>
+                  </table></ScrollBox>
                 </Panel>
                 <Panel title="Observation battery (Irwin and FOB style)">
-                  <div className="scroll"><table>
+                  <ScrollBox><table>
                     <thead><tr><th>Item</th><th className="num">Treated</th><th className="num">Untreated</th></tr></thead>
                     <tbody>
                       {(["posture", "gait", "arousal", "reactivity", "tremor", "ataxia", "convulsions"] as const).map((k) => <tr key={k}><td>{k} (0 normal)</td><td className="num">{fob[k]}</td><td className="num">{fobU[k]}</td></tr>)}
                       {(["gripStrengthPct", "rotarodLatencyPct", "startleAmplitudePct", "prepulseInhibitionPct", "hindLimbSplayPct"] as const).map((k) => <tr key={k}><td>{k.replace(/Pct$/, "")} (% of baseline)</td><td className="num">{f1(fob[k], 0)}</td><td className="num">{f1(fobU[k], 0)}</td></tr>)}
                       <tr><td>righting reflex success</td><td className="num">{f1(fob.rightingReflex * 100, 0)}%</td><td className="num">{f1(fobU.rightingReflex * 100, 0)}%</td></tr>
                     </tbody>
-                  </table></div>
+                  </table></ScrollBox>
                 </Panel>
               </div>
               <div className="grid">

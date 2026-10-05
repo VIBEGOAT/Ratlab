@@ -14,7 +14,6 @@ export default function DiseaseTab() {
           const d = Array.from({ length: t.days + 1 }, (_, i) => i);
           const hx = t.hoursH.map((h) => h / 24);
           const key = (a: typeof t, k: keyof typeof t.disease) => a.disease[k];
-          const legend = [{ name: "Treated", color: "var(--c1)" }, { name: "Untreated twin", color: "var(--c2)", dash: true }];
           const two = (k: keyof typeof t.disease) => [
             { name: "Treated", x: hx, y: key(t, k), color: "var(--c1)" },
             { name: "Untreated twin", x: hx, y: key(u, k), color: "var(--c2)", dash: "5 4" },

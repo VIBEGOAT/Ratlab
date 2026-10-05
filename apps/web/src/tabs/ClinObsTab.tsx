@@ -15,7 +15,6 @@ export default function ClinObsTab() {
         {(tw) => {
           const t = tw.treated, u = tw.untreated;
           const d = Array.from({ length: t.days + 1 }, (_, i) => i);
-          const legend = [{ name: "Treated", color: "var(--c1)" }, { name: "Untreated twin", color: "var(--c2)", dash: true }];
           const pair = (a: number[], b: number[]) => [{ name: "Treated", x: d, y: a, color: "var(--c1)" }, { name: "Untreated twin", x: d, y: b, color: "var(--c2)", dash: "5 4" }];
           const rows = SIGNS.map((s) => ({ label: LABEL[s]!, on: t.daily.signObserved[s]! })).filter((r) => r.on.some((v) => v === 1));
           return (

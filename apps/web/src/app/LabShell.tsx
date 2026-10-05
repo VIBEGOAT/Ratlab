@@ -1,5 +1,5 @@
 import { lazy, Suspense, type LazyExoticComponent } from "react";
-import { useStore, type LabSection } from "../store";
+import { useStore } from "../store";
 import { AnimalPicker, SetupPanel } from "./SetupPanel";
 import { SECTIONS, type ViewId } from "../lib/nav";
 
@@ -39,12 +39,13 @@ export function LabShell() {
         ))}
       </nav>
       <main className="lab-main" id="main">
+        <h1 className="sr-only">Lab: {sec.label}</h1>
         {sec.id === "design" && <SetupPanel />}
         {(sec.views.length > 1 || sec.picker) && (
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 12, flexWrap: "wrap" }}>
             {sec.views.length > 1 ? (
               <div className="segmented" role="tablist" aria-label={`${sec.label} views`}>
-                {sec.views.map(([v, l]) => <button key={v} role="tab" type="button" aria-selected={v === viewId} aria-pressed={v === viewId} onClick={() => goLab(sec.id, v)}>{l}</button>)}
+                {sec.views.map(([v, l]) => <button key={v} role="tab" type="button" aria-selected={v === viewId} onClick={() => goLab(sec.id, v)}>{l}</button>)}
               </div>
             ) : <span />}
             {sec.picker && <AnimalPicker />}

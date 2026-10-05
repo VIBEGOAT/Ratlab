@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Banner, NeedsStudy, Panel, Stat, TabHead, f1, pfmt } from "../components/ui";
+import { Banner, NeedsStudy, Panel, Stat, TabHead, f1, pfmt, ScrollBox } from "../components/ui";
 
 export default function StatsTab() {
   const [onlySig, setOnlySig] = useState(true);
@@ -37,13 +37,13 @@ export default function StatsTab() {
                   <label className="small">Minimum change {minPct}% <input type="range" min={0} max={100} value={minPct} onChange={(e) => setMinPct(+e.target.value)} style={{ width: 120 }} /></label>
                   <input type="text" placeholder="Filter endpoint, for example chem.alt" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Filter endpoint" style={{ maxWidth: 260 }} />
                 </div>
-                <div className="scroll"><table>
+                <ScrollBox><table>
                   <thead><tr><th>Endpoint</th><th>Sex</th><th>Group</th><th className="num">Dose</th><th className="num">Control</th><th className="num">Treated</th><th className="num">Change %</th><th className="num">Hedges g</th><th className="num">Adj. p</th><th className="num">Trend p</th><th>Method</th></tr></thead>
                   <tbody>{rows.map((r, i) => (
                     <tr key={i} className={r.significant ? "flag" : ""}>
                       <td>{r.endpoint}</td><td>{r.sex}</td><td>{r.groupId}</td><td className="num">{f1(r.dose, 1)}</td><td className="num">{f1(r.meanControl, 2)}</td><td className="num">{f1(r.meanTreated, 2)}</td><td className="num">{f1(r.pctChange, 0)}</td><td className="num">{f1(r.hedgesG, 2)}</td><td className="num">{pfmt(r.pAdj)}</td><td className="num">{pfmt(r.trendP)}</td><td>{r.method === "dunnett" ? "Dunnett" : "KW + Dunn"}</td>
                     </tr>))}</tbody>
-                </table></div>
+                </table></ScrollBox>
                 <p className="small muted">{rows.length} rows shown of {p.rows.length}. About 1 in 20 comparisons can reach p &lt; 0.05 by chance in a study with no effect.</p>
               </Panel>
             </>
