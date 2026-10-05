@@ -3,6 +3,11 @@ import { useStore, type LabSection } from "./store";
 import { Footer } from "./app/Footer";
 import { StoryPage } from "./story/StoryPage";
 import { download, studyToCsv, studyToHtml, studyToJson } from "./lib/export";
+import { usePresenter } from "./presenter/store";
+import { Presenter } from "./presenter/Presenter";
+import { NotesWindow } from "./presenter/NotesWindow";
+import { isNotesWindow } from "./presenter/channel";
+import { SoundToggle } from "./audio/SoundToggle";
 
 const LabShell = lazy(() => import("./app/LabShell").then((m) => ({ default: m.LabShell })));
 const SECTIONS: LabSection[] = ["design", "animal", "data", "population", "trust"];
@@ -21,7 +26,7 @@ function ExportMenu() {
   );
 }
 
-export function App() {
+function MainApp() {
   const mode = useStore((s) => s.mode);
   const setMode = useStore((s) => s.setMode);
   const theme = useStore((s) => s.theme);
@@ -62,6 +67,8 @@ export function App() {
           <button type="button" aria-pressed={mode === "lab"} onClick={() => setMode("lab")}>Lab</button>
         </div>
         <div className="right">
+          <SoundToggle />
+          <button className="ghost" onClick={() => usePresenter.getState().start()} title="Presenter mode (P)">Present</button>
           <ExportMenu />
           <button className="ghost" onClick={() => setCb(!cb)} aria-pressed={cb} title="Colour-blind-safe damage colours">{cb ? "CB palette on" : "CB palette"}</button>
           <button className="ghost" onClick={() => setTheme(nextTheme)} aria-label={`Theme: ${theme}. Switch to ${nextTheme}`}>{theme === "system" ? "Auto" : theme === "dark" ? "Dark" : "Light"}</button>
@@ -69,6 +76,12 @@ export function App() {
       </header>
       {mode === "story" ? <StoryPage /> : <Suspense fallback={<div className="empty" style={{ margin: 24 }}>Loading the Lab…</div>}><LabShell /></Suspense>}
       <Footer />
+      <Presenter />
     </div>
   );
+}
+
+/** The speaker-notes window (#notes) is a light page with no simulation; everything else is the app. */
+export function App() {
+  return isNotesWindow() ? <NotesWindow /> : <MainApp />;
 }

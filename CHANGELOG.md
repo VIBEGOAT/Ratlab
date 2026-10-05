@@ -1,5 +1,16 @@
 # Changelog
 
+## Front-end upgrade, phase (e): presenter mode, audience prediction, instant first run, optional sound
+
+- **Presenter mode.** Press **P** (or the Present button). The top bar hides, type grows, the page goes full screen where the browser allows it, and the footer disclaimer stays. Right arrow, Page Down, Space or Enter go forward; left arrow or Page Up go back; Home and End jump; **A** toggles auto-advance; **N** opens the notes window; Escape exits. A thin progress bar tracks the whole track. The controls fade out when the mouse is still.
+- **Two scripted tracks.** A 3-minute (12 slides) and an 8-minute (14 slides) demo. Each slide scrolls to its chapter and drifts through it, so day counters and the humane-endpoint lines play in order. With auto-advance on, each slide moves on after its planned time. Reduced motion jumps instead of drifting.
+- **Speaker notes on a second screen.** `#notes` opens a light window linked over BroadcastChannel (same browser, nothing leaves the machine): notes for this slide, the next slide, elapsed and planned time, the room's tally, and Back, Next, Auto-advance and End buttons that drive the main window. The notes state the caveats out loud (does not replace animal studies, parameters unverified, never guide a real dose, behaviour is not a claim about feelings).
+- **"Which organ will fail first?"** Five big buttons (keys 1 to 5), counted on this device only, with Undo and Clear. The reveal slide shows which organ first reached mild injury in the simulation (or, if none did, the highest peak), the share of the room that chose it, and a plain note that it is a modelled result for a virtual rat. The answer is visible to the presenter in the notes window before the reveal.
+- **Instant first run.** `npm run gen:prewarm` bakes the default study, its twin and the 1,000-rat population into `public/prewarm/default.json` (about 1.9 MB). It is used only when the simulator version and the whole setup match, otherwise the study computes live. A unit test fails if the file goes stale, and `npm run ci` regenerates it.
+- **Optional sound.** Off by default, never starts by itself, and loads its code only when switched on. Quiet interface ticks on chapter changes and votes, a low ambient bed and a soft heartbeat (the model's resting heart rate, scaled down) during dose day and the damage chapter. The heartbeat and bed fade to complete silence during the humane-endpoint moment. Suspends when the tab is hidden.
+- **Tests.** 17 new unit tests (tracks, prediction answer and tally, scroll arithmetic, sound plan, prebaked file) and 5 end-to-end tests (keyboard navigation, prediction and reveal, notes window sync, auto-advance, sound off by default).
+
+
 ## Front-end upgrade, phase (d): Story chapters 7 to 12
 
 - **7 · Meet the twin.** The treated rat and its untreated twin are drawn in the same scene, split by a draggable divider (a real slider: pointer, arrow keys, Home and End). A table beside it compares tumour, weight, sickness and heart injury on the day the untreated twin reaches its humane endpoint.

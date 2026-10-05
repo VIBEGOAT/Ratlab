@@ -3,7 +3,13 @@ import { SIM_VERSION, configForAnimal, type ForecastResult, type HistoricalRow, 
 import { call, cancelLane, CancelledError } from "./worker/client";
 import type { StudyPayload, ValidationPayload } from "./worker/protocol";
 import { buildDesign, defaultFocusId, defaultSetup, designProblems, sameSetup, type Setup } from "./lib/setup";
-import { cacheGet, cacheSet } from "./lib/cache";
+import { cacheGet as idbGet, cacheSet } from "./lib/cache";
+import { fetchPrewarm, memo, prewarmApplies } from "./lib/prewarm";
+
+/** Pre-baked values first (instant), then IndexedDB. */
+async function cacheGet<T>(key: string): Promise<T | null> {
+  return (memo.get(key) as T | undefined) ?? idbGet<T>(key);
+}
 
 export type Theme = "system" | "light" | "dark";
 export type Mode = "story" | "lab";
@@ -103,6 +109,16 @@ export const useStore = create<State>((set, get) => ({
     try {
       const key = cacheKey(setup);
       let payload = await cacheGet<StudyPayload>(key);
+      if (!payload && sameSetup(setup, defaultSetup())) {
+        // a first visit with the default setup: use the study baked at build time, if it matches this simulator
+        const pre = await fetchPrewarm();
+        if (prewarmApplies(pre, SIM_VERSION, JSON.stringify(setup)) && pre) {
+          payload = pre.payload;
+          memo.set(key, pre.payload);
+          memo.set(`${key}|twin|${pre.focusId}`, pre.twin);
+          memo.set(`${key}|population|${pre.population.n}`, { treated: pre.population.treated, untreated: pre.population.untreated });
+        }
+      }
       if (!payload) {
         payload = await call("study", { design: buildDesign(setup) }, (done, total) => { if (token === studyToken) set((s) => ({ study: { ...s.study, progress: done / total } })); });
         void cacheSet(key, payload);

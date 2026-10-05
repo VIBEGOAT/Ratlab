@@ -1,6 +1,8 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { animate, motion, useReducedMotion } from "framer-motion";
 import Lenis from "lenis";
+import { lenisHolder } from "../presenter/scroll";
+import { useStorySound } from "../audio/useStorySound";
 import { ARCHETYPES, animalsSpared, type AnimalBundle, type Organ, type TwinBundle } from "@eliminate/sim-core";
 import { useStore } from "../store";
 import { COMPOUNDS, ORGAN_LABEL } from "../lib/setup";
@@ -132,6 +134,7 @@ export function StoryPage() {
   const [popMode, setPopMode] = useState<"treated" | "untreated">("treated");
   const [sorted, setSorted] = useState(true);
   const spared = animalsSpared(SPARED_ASSUMPTIONS);
+  useStorySound(posRef as React.MutableRefObject<StoryPos>);
 
   // smooth scrolling, never under reduced motion
   useEffect(() => {
@@ -140,7 +143,8 @@ export function StoryPage() {
     let id = 0;
     const raf = (t: number) => { lenis.raf(t); id = requestAnimationFrame(raf); };
     id = requestAnimationFrame(raf);
-    return () => { cancelAnimationFrame(id); lenis.destroy(); };
+    lenisHolder.current = lenis;
+    return () => { cancelAnimationFrame(id); lenisHolder.current = null; lenis.destroy(); };
   }, [reduce]);
 
   useEffect(() => { if (study.status === "done" && pos.chapter >= 5 && population.status === "idle") void runPopulation(1000); }, [study.status, pos.chapter, population.status, runPopulation]);
