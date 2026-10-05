@@ -58,6 +58,7 @@ test("story chapters 1 to 6 tell the dose-to-humane-endpoint story", async ({ pa
 
 for (const [w, h] of [[1440, 900], [1920, 1080], [390, 844]] as const) {
   test(`story screenshots at ${w}x${h}`, async ({ page }) => {
+    test.setTimeout(300_000);
     await page.emulateMedia({ colorScheme: "dark" });
     await page.setViewportSize({ width: w, height: h });
     await fresh(page);

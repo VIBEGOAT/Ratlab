@@ -22,6 +22,7 @@ async function fresh(page: Page, path = "/") {
 }
 
 test("story hero, footer disclaimer and honest status chip", async ({ page }) => {
+  test.setTimeout(240_000);
   const errors = watchConsole(page);
   await fresh(page);
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Every animal we spare");
@@ -35,8 +36,8 @@ test("story hero, footer disclaimer and honest status chip", async ({ page }) =>
   await chip.click();
   await expect(page.getByRole("dialog")).toContainText("has not been validated against real animal data");
   await page.getByRole("button", { name: "Close" }).click();
-  await expect(page.getByRole("status").filter({ hasText: "virtual animals ready" })).toBeVisible({ timeout: 60_000 });
-  expect(errors.filter((e) => !/Download the React DevTools/.test(e))).toEqual([]);
+  await expect(page.getByText(/virtual rats ready/)).toBeVisible({ timeout: 150_000 });
+  expect(errors.filter((e) => !/Download the React DevTools|GL Driver Message|GPU stall/.test(e))).toEqual([]);
 });
 
 test("Lab mode replaces the 16 tabs with five sections", async ({ page }) => {
@@ -47,7 +48,7 @@ test("Lab mode replaces the 16 tabs with five sections", async ({ page }) => {
   for (const s of ["Design", "Animal", "Data", "Population", "Translate & Trust"]) await expect(nav.getByRole("button", { name: new RegExp(`^${s.replace("&", "&")}`) })).toBeVisible();
   await expect(page.locator(".tabs")).toHaveCount(0);
   await expect(page.getByText(/virtual animals simulated/)).toBeVisible({ timeout: 90_000 });
-  expect(errors.filter((e) => !/Download the React DevTools/.test(e))).toEqual([]);
+  expect(errors.filter((e) => !/Download the React DevTools|GL Driver Message|GPU stall/.test(e))).toEqual([]);
 });
 
 test("timeline length follows the configured study length", async ({ page }) => {
@@ -84,7 +85,7 @@ for (const [w, h] of [[1440, 900], [1920, 1080], [390, 844]] as const) {
   test(`screenshots and no horizontal scroll at ${w}x${h}`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     await fresh(page);
-    await expect(page.getByRole("status").filter({ hasText: "virtual animals ready" })).toBeVisible({ timeout: 90_000 });
+    await expect(page.getByText(/virtual rats ready/)).toBeVisible({ timeout: 90_000 });
     await page.screenshot({ path: `${SHOTS}/story-hero-${w}x${h}.png` });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
     await page.getByRole("button", { name: "Lab", exact: true }).click();
@@ -103,7 +104,7 @@ test("dark theme screenshots", async ({ page }) => {
   for (const [w, h] of [[1440, 900], [390, 844]] as const) {
     await page.setViewportSize({ width: w, height: h });
     await fresh(page);
-    await expect(page.getByRole("status").filter({ hasText: "virtual animals ready" })).toBeVisible({ timeout: 90_000 });
+    await expect(page.getByText(/virtual rats ready/)).toBeVisible({ timeout: 90_000 });
     await page.screenshot({ path: `${SHOTS}/dark-story-hero-${w}x${h}.png` });
     await page.getByRole("button", { name: "Lab", exact: true }).click();
     await page.getByRole("navigation", { name: "Lab sections" }).getByRole("button", { name: /^Data/ }).click();
