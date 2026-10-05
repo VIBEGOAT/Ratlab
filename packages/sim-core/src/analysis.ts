@@ -118,6 +118,16 @@ export const STRONG_EFFECT_SIZE = 3;
 
 const EXCLUDED_FROM_ADVERSITY = new Set(["bodyWeightChangePct", "sicknessIndex", "grimaceScore", "tumorVolumeMm3", "glucoseMgDl"]);
 
+/**
+ * Endpoints where a rise against control is not a sign of harm. In a disease model the control group is
+ * itself unwell, so a treated group that is heavier, eats more or has healthier blood counts is showing
+ * benefit, not toxicity. Only falls in these endpoints can be adverse.
+ */
+const BENIGN_WHEN_HIGHER = new Set(["bodyWeightG", "foodGPerDay", "chem.albumin", "heme.rbc", "heme.hemoglobin", "heme.hematocrit", "heme.platelets", "heme.neutrophils", "heme.lymphocytes", "heme.wbc"]);
+
+/** Absolute organ weights follow body weight, so adversity is judged on relative weights only. */
+const isAbsoluteOrganWeight = (endpoint: string) => endpoint.startsWith("organ.") && endpoint.endsWith(".absolute");
+
 export interface GroupFinding { groupId: string; dose: number; adverse: boolean; reasons: string[] }
 export interface NoaelResult {
   loael: number | null;
@@ -139,7 +149,8 @@ export function determineNoael(s: StudyResult, rows = analyseEndpoints(s), histo
   const findings: GroupFinding[] = treated.map((g) => {
     const reasons: string[] = [];
     for (const r of rows) {
-      if (r.groupId !== g.id || EXCLUDED_FROM_ADVERSITY.has(r.endpoint)) continue;
+      if (r.groupId !== g.id || EXCLUDED_FROM_ADVERSITY.has(r.endpoint) || isAbsoluteOrganWeight(r.endpoint)) continue;
+      if (r.pctChange > 0 && BENIGN_WHEN_HIGHER.has(r.endpoint)) continue;
       if (!(r.significant && r.trendP < 0.05 && Math.abs(r.pctChange) >= relevanceThresholdPct(r.endpoint) && Math.abs(r.hedgesG) >= MIN_EFFECT_SIZE)) continue;
       // dose-related: the change must not reverse sign at any higher dose
       const higher = rows.filter((x) => x.endpoint === r.endpoint && x.sex === r.sex && x.dose > r.dose);

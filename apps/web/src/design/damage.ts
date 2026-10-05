@@ -4,7 +4,7 @@ export const GRADE_WORD = ["Healthy", "Minimal", "Mild", "Moderate", "Marked", "
 
 /** Hex values for WebGL, which cannot read CSS variables. Kept in step with tokens in styles.css. */
 export const GRADE_HEX = {
-  standard: ["#39d3bb", "#b9d46a", "#f2b14c", "#ff7a45", "#ff4d5e", "#d63fd1"],
+  standard: ["#39d3bb", "#a5d65a", "#f7d24a", "#ff7a45", "#ff3d5a", "#d63fd1"],
   cb: ["#4aa3df", "#8fc1e3", "#f5c26b", "#ef8a17", "#d55e00", "#8c2d04"],
 } as const;
 

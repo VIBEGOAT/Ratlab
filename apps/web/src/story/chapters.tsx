@@ -69,8 +69,8 @@ export function ChapterForecast({ pop, days, progress, doseMgPerKg, mode, setMod
         <div className="legend" aria-label="Colour key">{GRADE_WORD.map((w, g) => <span key={w}><i style={{ background: GRADE_VAR[g] }} />{w} {counts[g]}</span>)}<span><i style={{ background: "transparent", border: "2px solid var(--ink)", height: 8, width: 8, borderRadius: 4 }} />humane endpoint</span></div>
       )}
       <div className="forecast-stats">
-        <div><span className="eyebrow">Humane endpoint, treated</span><b>{fmtPct(wT.p, 1)}</b><span className="small muted">95% range {fmtPct(wT.low, 1)} to {fmtPct(wT.high, 1)}</span></div>
-        <div><span className="eyebrow">Humane endpoint, untreated</span><b>{fmtPct(wU.p, 1)}</b><span className="small muted">95% range {fmtPct(wU.low, 1)} to {fmtPct(wU.high, 1)}</span></div>
+        <div><span className="eyebrow">Humane endpoint, treated</span><b>{T.length ? fmtPct(wT.p, 1) : "…"}</b><span className="small muted">{T.length ? `95% range ${fmtPct(wT.low, 1)} to ${fmtPct(wT.high, 1)}${T.length < n ? ` (so far, ${fmtInt(T.length)} rats)` : ""}` : "waiting for the first rats"}</span></div>
+        <div><span className="eyebrow">Humane endpoint, untreated</span><b>{U.length ? fmtPct(wU.p, 1) : "…"}</b><span className="small muted">{U.length ? `95% range ${fmtPct(wU.low, 1)} to ${fmtPct(wU.high, 1)}${U.length < n ? ` (so far, ${fmtInt(U.length)} rats)` : ""}` : "waiting for the first rats"}</span></div>
       </div>
       <LineChart label="Survival without a humane endpoint" height={190} xLabel="Study day" yLabel="Rats without a humane endpoint" xMin={0} xMax={days} yMin={0} yMax={1} fmtY={(v) => `${Math.round(v * 100)}%`}
         series={[{ name: "Treated", x: ct.x, y: ct.y, color: "var(--c1)", step: true }, { name: "Untreated", x: cu.x, y: cu.y, color: "var(--c6)", step: true }]} />
@@ -137,7 +137,7 @@ export function ChapterTrust() {
       <p className="lede">Honesty is a feature. Here is exactly how far to trust this.</p>
       <div className="stats"><div className="stat bad"><span>Validated against animal data</span><b>None yet</b></div><div className="stat warn"><span>Unverified parameters</span><b>{listUnverifiedConstants().length} / {Object.keys(CONSTANTS).length}</b></div></div>
       <h3>What would you use it for?</h3>
-      <div className="segmented" role="group" aria-label="Intended use">
+      <div className="segmented wrap" role="group" aria-label="Intended use">
         {(Object.keys(CONTEXT_PRESETS) as Array<keyof typeof CONTEXT_PRESETS>).map((k) => <button key={k} type="button" aria-pressed={key === k} onClick={() => setKey(k)}>{labels[k]}</button>)}
       </div>
       <div className={`banner ${report.adequate ? "good" : "bad"}`} role="status">

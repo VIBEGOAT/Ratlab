@@ -119,6 +119,8 @@ test("story chapters 7 to 12: twin slider, thousand rats, behaviour, humans, tru
   // 10 · humans: arithmetic only, with the unverified flag
   await scrollTo(page, 9, 0.6);
   await expect(page.getByText("Km factors unverified")).toBeVisible();
+  await expect(page.getByText("Suggested first dose")).toBeVisible();
+  await expect(page.getByText(/free of adverse effects/)).toHaveCount(0);
   await expect(page.getByText(/never guide a real dose/)).toBeVisible();
 
   // 11 · trust: teaching passes, replacing an animal study does not
@@ -158,3 +160,32 @@ for (const [w, h] of [[1440, 900], [1920, 1080], [390, 844]] as const) {
     }
   });
 }
+
+
+test("chapters 10 and 11 screenshots without waiting for the thousand-rat run", async ({ page }) => {
+  test.setTimeout(240_000);
+  await page.emulateMedia({ colorScheme: "dark" });
+  for (const [w, h] of [[1440, 900], [390, 844]] as const) {
+    await page.setViewportSize({ width: w, height: h });
+    await fresh(page);
+    await scrollTo(page, 2, 0.3);
+    await expect(page.getByRole("status").filter({ hasText: "virtual rats ready" })).toBeVisible({ timeout: 120_000 });
+    await scrollTo(page, 3, 0.45);
+    await page.waitForTimeout(800);
+    await page.screenshot({ path: `${SHOTS}/4-dose-day-fixed-${w}x${h}.png` });
+    await scrollTo(page, 4, 0.8);
+    await page.waitForTimeout(800);
+    await page.screenshot({ path: `${SHOTS}/5-damage-fixed-${w}x${h}.png` });
+    await scrollTo(page, 7, 0.6);
+    await page.waitForTimeout(1500);
+    await page.screenshot({ path: `${SHOTS}/8-forecast-fixed-${w}x${h}.png` });
+    await scrollTo(page, 9, 0.7);
+    await expect(page.getByText("Suggested first dose")).toBeVisible();
+    await page.waitForTimeout(1200);
+    await page.screenshot({ path: `${SHOTS}/10-human-fixed-${w}x${h}.png` });
+    await scrollTo(page, 10, 0.4);
+    await page.getByRole("button", { name: "Replacing an animal study" }).click();
+    await page.waitForTimeout(800);
+    await page.screenshot({ path: `${SHOTS}/11-trust-fixed-${w}x${h}.png` });
+  }
+});

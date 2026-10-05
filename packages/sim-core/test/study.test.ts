@@ -113,3 +113,19 @@ describe("false positives", () => {
     expect(n.noael).toBeCloseTo(c.tunedDoseRange[1], 6);
   });
 });
+
+describe("NOAEL in a disease model", () => {
+  it("does not call benefit harm: tumour-bearing controls make treated animals look heavier, and that is not adverse", () => {
+    const c = ARCHETYPES.cardiotoxin!;
+    const s = runStudy(defaultDesign(c, { nPerSexPerGroup: 10, durationDays: 28, seed: 42, disease: { cancer: {} } }));
+    const n = determineNoael(s);
+    const all = n.groups.flatMap((g) => g.reasons).join(" ");
+    expect(all).not.toMatch(/bodyWeightG \([MF]\) \+/);
+    expect(all).not.toMatch(/\.absolute/);
+    // the real signal is cardiac and only at the top dose
+    expect(n.loael).toBeCloseTo(c.defaultDoseMgPerKg, 6);
+    expect(n.noael).not.toBeNull();
+    expect(n.noael!).toBeLessThan(c.defaultDoseMgPerKg);
+    expect(n.groups.at(-1)!.reasons.join(" ")).toMatch(/troponin|chem\.ast|chem\.ck|organ\.heart/);
+  }, 60000);
+});

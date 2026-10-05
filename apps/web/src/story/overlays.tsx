@@ -113,7 +113,7 @@ export function HumanScale({ progress, ratDose, hedDose, ratLabel }: { progress:
       <path d="M244 144 L 252 150 L 244 156" stroke="var(--muted)" fill="none" />
       <text x="200" y="136" textAnchor="middle" fill="var(--muted)" style={{ font: "500 11px var(--f-mono)" }}>× 6 ÷ 37</text>
       {shown !== null && <text x="24" y="40" fill="var(--ink)" style={{ font: "700 34px var(--f-display)", letterSpacing: "-0.03em" }}>{shown.toFixed(shown < 10 ? 2 : 1)}<tspan fill="var(--muted)" style={{ font: "500 13px var(--f-mono)" }}> mg/kg</tspan></text>}
-      <text x="24" y="60" fill="var(--muted)" style={{ font: "500 11px var(--f-mono)" }}>{p < 0.5 ? ratLabel : "human equivalent dose"}</text>
+      <text x="24" y="60" fill="var(--muted)" style={{ font: "500 11px var(--f-mono)" }}>{p < 0.03 ? ratLabel : p > 0.97 ? "human equivalent dose" : "scaling by body surface area"}</text>
       <text x="24" y="292" fill="var(--muted)" style={{ font: "500 10px var(--f-mono)" }}>rat</text>
       <text x="300" y="292" textAnchor="middle" fill="var(--muted)" style={{ font: "500 10px var(--f-mono)" }}>human, 60 kg</text>
     </svg>

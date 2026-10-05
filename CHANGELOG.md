@@ -1,5 +1,34 @@
 # Changelog
 
+## Front-end upgrade, phase (d): Story chapters 7 to 12
+
+- **7 · Meet the twin.** The treated rat and its untreated twin are drawn in the same scene, split by a draggable divider (a real slider: pointer, arrow keys, Home and End). A table beside it compares tumour, weight, sickness and heart injury on the day the untreated twin reaches its humane endpoint.
+- **8 · A thousand rats.** One dot per virtual rat, 1,000 treated and the same 1,000 untreated, simulated in 100-rat chunks in their own worker lane so the dots fill in as results arrive. Dots are coloured by the worst organ injury grade, with a ring for a humane endpoint. Survival curves draw themselves as the reader scrolls, with 95% ranges. The ranges state that they cover chance only and not the model's unverified parameters. Results are cached by simulator version. The population run uses a 0.5 h time step (twice as fast); a test confirms the mean grade stays within 0.6 of the 0.25 h result.
+- **9 · How it behaves.** The open-field arena with both rats and their movement trails, labelled as modelled endpoints.
+- **10 · Toward humans.** Rat to human scale-up, arithmetic only, with the Km factors flagged unverified. The safety-margin gauge and the human exposure projection were left out on purpose. If no dose is free of adverse effects, it says so.
+- **11 · How far to trust it.** An intended-use selector drives the V&V 40 style verdict: teaching passes, and screening, study design and replacing an animal study do not. One chip per subsystem, plus the real unverified count and "None yet" for animal validation.
+- **12 · Every animal we spare.** An editable animals-spared calculator, three differentiators, and only VERIFIED references. Virtual controls start at 0%.
+- **New sim-core function** `simulatePopulation`: one outcome per virtual rat. Additive; no existing function changed.
+
+### Bug found by reviewing the screenshots, and fixed
+- **Benefit was being called harm.** In the tumour scenario, the NOAEL rule reported "no dose level free of adverse effects". Cause: the control animals have tumours and waste, so treated animals looked 18 to 26% heavier and had heavier absolute spleens, and the rule counted any large change in either direction. Now:
+  - Rises in body weight, food intake, albumin and blood counts are not adverse.
+  - Adversity is judged on relative organ weights only.
+  - Result: NOAEL 2.4 mg/kg, LOAEL 8 mg/kg, with the real cardiac signal (AST, troponin, CK, heart weight) at the top dose only.
+  - New test: `NOAEL in a disease model`.
+
+### Other fixes
+- **Phone layout:** a later CSS rule overrode the mobile offset, so text could cover the 3D stage. Fixed, and tall chapters get more scroll room on phones.
+- **Misleading ranges:** a "0.0% to 79.3%" range was shown with zero rats loaded. It now says "waiting for the first rats", and says "so far" while the run is partial.
+- **Intended-use switcher:** it was clipped in chapter 11. It now wraps.
+- **Mid-animation label:** the human-scale graphic said "human equivalent dose" while its number was still moving. It now says "scaling by body surface area" until it arrives.
+- **Damage colours:** the mild and moderate grades (amber and orange) were hard to tell apart in the dot field. Mild is now yellow.
+- **Slow tests:** tests that only check the Lab, footer or layout can skip the 3D scene with a `no3d` local-storage flag. Five of them dropped from several minutes to 47 seconds.
+
+### Known
+- Under the default scenario most treated rats show moderate heart injury at the top dose (79% grade 3 in the thousand-rat run), which matches the single-study result. Only 0.1% reach a humane endpoint.
+- The earlier finding stands: in the core, severe organ injury on its own rarely reaches a humane endpoint. Recalibrating that is a simulation-core change and needs approval.
+
 ## Front-end upgrade, phase (c): Story chapters 1 to 6
 
 - **One pinned 3D scene** for the whole story, lazy-loaded behind a poster frame. The camera choreography is bound to scroll: a turntable hero, a side view for the X-ray sweep, a three-quarter view for choosing, close-up flow for dose day, a slow orbit for damage, and a pull-back for the moment. The distance adapts to the stage's shape so the whole rat stays in frame. Lenis smooth scrolling is used, except under reduced motion.

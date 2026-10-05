@@ -8,7 +8,7 @@
   --accent: #39d3bb; --accent-ink: #04201b; --accent-soft: rgba(57, 211, 187, 0.12);
   --good: #39d3bb; --warn: #f2b14c; --bad: #ff6b5e; --info: #8ab4ff;
   /* damage scale, grade 0 to 5: teal -> amber -> red -> magenta */
-  --g0: #39d3bb; --g1: #b9d46a; --g2: #f2b14c; --g3: #ff7a45; --g4: #ff4d5e; --g5: #d63fd1;
+  --g0: #39d3bb; --g1: #a5d65a; --g2: #f7d24a; --g3: #ff7a45; --g4: #ff3d5a; --g5: #d63fd1;
   /* chart series */
   --c1: #39d3bb; --c2: #8b9c9a; --c3: #f2b14c; --c4: #b79cff; --c5: #6db3ff; --c6: #ff6b5e;
   --shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 20px 50px -20px rgba(0, 0, 0, 0.6);
@@ -24,7 +24,7 @@
   --ink: #0c1413; --ink-2: #2b3a38; --muted: #5d6e6c; --line: rgba(12, 20, 19, 0.1); --line-strong: rgba(12, 20, 19, 0.18); --grid: rgba(12, 20, 19, 0.07);
   --accent: #0a8a77; --accent-ink: #ffffff; --accent-soft: rgba(10, 138, 119, 0.1);
   --good: #0a8a77; --warn: #a85f00; --bad: #c42b1f; --info: #2a5fb0;
-  --g0: #0a8a77; --g1: #6f8f12; --g2: #b87400; --g3: #d1500f; --g4: #c42b3a; --g5: #a326a0;
+  --g0: #0a8a77; --g1: #5f8a10; --g2: #b8960a; --g3: #d1500f; --g4: #c42b3a; --g5: #a326a0;
   --c1: #0a8a77; --c2: #6c7b7a; --c3: #b87400; --c4: #6e47c9; --c5: #2a6fb0; --c6: #c42b1f;
   --shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 18px 40px -22px rgba(12, 20, 19, 0.35);
   color-scheme: light;
@@ -35,7 +35,7 @@
     --ink: #0c1413; --ink-2: #2b3a38; --muted: #5d6e6c; --line: rgba(12, 20, 19, 0.1); --line-strong: rgba(12, 20, 19, 0.18); --grid: rgba(12, 20, 19, 0.07);
     --accent: #0a8a77; --accent-ink: #ffffff; --accent-soft: rgba(10, 138, 119, 0.1);
     --good: #0a8a77; --warn: #a85f00; --bad: #c42b1f; --info: #2a5fb0;
-    --g0: #0a8a77; --g1: #6f8f12; --g2: #b87400; --g3: #d1500f; --g4: #c42b3a; --g5: #a326a0;
+    --g0: #0a8a77; --g1: #5f8a10; --g2: #b8960a; --g3: #d1500f; --g4: #c42b3a; --g5: #a326a0;
     --c1: #0a8a77; --c2: #6c7b7a; --c3: #b87400; --c4: #6e47c9; --c5: #2a6fb0; --c6: #c42b1f;
     --shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 18px 40px -22px rgba(12, 20, 19, 0.35);
     color-scheme: light;
@@ -286,3 +286,8 @@ details.more[open] summary { margin-bottom: 10px; }
 .finale .cta { display: flex; gap: 10px; flex-wrap: wrap; }
 .finale .diffs b { font-size: 22px; }
 @media (max-width: 900px) { .stage-overlay { padding: 8px; } .split-handle { width: 40px; height: 40px; } }
+
+.segmented.wrap { flex-wrap: wrap; overflow: visible; border-radius: 18px; }
+
+/* must come last: on phones the sticky text sits below the pinned stage, not over it */
+@media (max-width: 900px) { .chapter-sec.tall { min-height: 290vh; } .chapter-sec.tall .sticky-block { top: calc(42vh + 62px); } .chapter-sec.tall .sticky-block > * { background: color-mix(in srgb, var(--bg) 88%, transparent); border-radius: 10px; } }
