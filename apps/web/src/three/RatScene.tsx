@@ -9,6 +9,8 @@ import { ratVisualState } from "./ratState";
 
 export function webglAvailable(): boolean {
   try {
+    // an explicit opt-out for very slow graphics (and for tests that do not need 3D)
+    if (localStorage.getItem("no3d") === "1") return false;
     const c = document.createElement("canvas");
     return !!(c.getContext("webgl2") || c.getContext("webgl"));
   } catch { return false; }

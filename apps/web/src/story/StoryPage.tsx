@@ -7,6 +7,10 @@ import { COMPOUNDS, ORGAN_LABEL } from "../lib/setup";
 import { fmt, fmtInt, fmtPct } from "../design/format";
 import { GRADE_WORD, gradeVar } from "../design/damage";
 import { ratVisualState } from "../three/ratState";
+import { ArenaScene } from "../three/ArenaScene";
+import { SceneBoundary } from "../three/RatScene";
+import { ChapterBehaviour, ChapterFinale, ChapterForecast, ChapterHuman, ChapterTrust, ChapterTwin, scaleDose } from "./chapters";
+import { ForecastField, HumanScale, SplitDivider } from "./overlays";
 import { webglAvailable } from "../three/RatScene";
 import { useStoryScroll, type StoryPos } from "./useStoryScroll";
 import { DoseDial } from "./Dial";
@@ -119,6 +123,14 @@ export function StoryPage() {
   const bg = useThemeBackground();
   const gl = useMemo(() => webglAvailable(), []);
   const plasmaRef = useRef(0);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const splitRef = useRef(0.5);
+  const [split, setSplitState] = useState(0.5);
+  const setSplit = (v: number) => { splitRef.current = v; setSplitState(v); };
+  const population = useStore((s) => s.population);
+  const runPopulation = useStore((s) => s.runPopulation);
+  const [popMode, setPopMode] = useState<"treated" | "untreated">("treated");
+  const [sorted, setSorted] = useState(true);
   const spared = animalsSpared(SPARED_ASSUMPTIONS);
 
   // smooth scrolling, never under reduced motion
@@ -130,6 +142,8 @@ export function StoryPage() {
     id = requestAnimationFrame(raf);
     return () => { cancelAnimationFrame(id); lenis.destroy(); };
   }, [reduce]);
+
+  useEffect(() => { if (study.status === "done" && pos.chapter >= 5 && population.status === "idle") void runPopulation(1000); }, [study.status, pos.chapter, population.status, runPopulation]);
 
   const t = twin?.treated ?? null;
   const u = twin?.untreated ?? null;
@@ -151,6 +165,11 @@ export function StoryPage() {
     plasmaRef.current = (s[hour] ?? 0) / Math.max(...s, 1e-9);
   }, [t, hour]);
 
+  const twinDay = u?.humane ? Math.min(days, u.humane.day) : days;
+  const noael = study.data?.noael.noael ?? null;
+  const scaled = scaleDose(noael);
+  const humanP = pos.chapter === 9 ? Math.min(1, Math.max(0, (pos.progress - 0.15) / 0.6)) : pos.chapter > 9 ? 1 : 0;
+  const paused = pos.chapter >= 7 && pos.chapter <= 9;
   const damageDay = pos.chapter === 4 ? Math.min(days, Math.round(Math.min(1, pos.progress / 0.85) * days)) : days;
   const vDay = t ? ratVisualState(t, damageDay) : null;
   const animals = study.data?.study.animals ?? [];
@@ -261,20 +280,64 @@ export function StoryPage() {
             <h2 id="c5" className="sr-only">The humane endpoint</h2>
           </section>
 
-          <section className="chapter-sec" aria-label="More chapters">
-            <span className="n">07 to 12</span>
-            <h2>More of the story</h2>
-            <p className="small muted">The untreated twin, a thousand virtual rats, behaviour, toward humans, how much to trust this, and what it could spare. Built in the next phase.</p>
+          {/* 7 · untreated twin */}
+          <section data-chapter={6} className="chapter-sec" aria-labelledby="c6">
+            <span className="n">07</span>
+            <h2 id="c6">Meet the twin.</h2>
+            <ChapterTwin tw={twin} day={twinDay} split={split} />
+          </section>
+
+          {/* 8 · forecast */}
+          <section data-chapter={7} className="chapter-sec tall" aria-labelledby="c7">
+            <div className="sticky-block">
+              <span className="n">08</span>
+              <h2 id="c7">A thousand rats.</h2>
+              <ChapterForecast pop={population} days={days} progress={pos.chapter === 7 ? pos.progress : pos.chapter > 7 ? 1 : 0} doseMgPerKg={population.doseMgPerKg || setup.highDose} mode={popMode} setMode={setPopMode} sorted={sorted} setSorted={setSorted} />
+            </div>
+          </section>
+
+          {/* 9 · behaviour */}
+          <section data-chapter={8} className="chapter-sec" aria-labelledby="c8">
+            <span className="n">09</span>
+            <h2 id="c8">How it behaves.</h2>
+            <ChapterBehaviour tw={twin} />
+          </section>
+
+          {/* 10 · humans */}
+          <section data-chapter={9} className="chapter-sec tall" aria-labelledby="c9">
+            <div className="sticky-block">
+              <span className="n">10</span>
+              <h2 id="c9">Toward humans.</h2>
+              <ChapterHuman noael={noael} scaled={scaled} />
+            </div>
+          </section>
+
+          {/* 11 · trust */}
+          <section data-chapter={10} className="chapter-sec" aria-labelledby="c10">
+            <span className="n">11</span>
+            <h2 id="c10">How far to trust it.</h2>
+            <ChapterTrust />
+          </section>
+
+          {/* 12 · finale */}
+          <section data-chapter={11} className="chapter-sec finale" aria-labelledby="c11">
+            <span className="n">12</span>
+            <h2 id="c11">Every animal we spare.</h2>
+            <ChapterFinale initial={SPARED_ASSUMPTIONS} />
           </section>
         </div>
 
-        <div className="story-stage" aria-hidden={pos.chapter === 5 ? true : undefined}>
+        <div className="story-stage" ref={stageRef} aria-hidden={pos.chapter === 5 ? true : undefined}>
           {gl ? (
             <Suspense fallback={<div className="poster"><RatPoster /></div>}>
               <StoryScene posRef={posRef as React.MutableRefObject<StoryPos>} chapter={pos.chapter} treated={t} untreated={u} day={damageDay} moment={moment} exposure={exposure} plasmaRef={plasmaRef}
-                reduceMotion={reduce} palette={cb ? "cb" : "standard"} quality={quality} onDecline={() => setAutoQ("low")} background={bg} />
+                reduceMotion={reduce} palette={cb ? "cb" : "standard"} quality={quality} onDecline={() => setAutoQ("low")} background={bg} paused={paused} splitRef={splitRef} twinDay={twinDay} />
             </Suspense>
           ) : <div className="poster"><RatPoster /></div>}
+          {pos.chapter === 6 && t && u && <SplitDivider split={split} onChange={setSplit} stage={stageRef} />}
+          {pos.chapter === 7 && <div className="stage-overlay"><ForecastField outcomes={popMode === "treated" ? population.treated : population.untreated} total={population.total / 2 || 1000} mode={popMode} palette={cb ? "cb" : "standard"} sorted={sorted && population.status === "done"} /></div>}
+          {pos.chapter === 8 && t && u && gl && <div className="stage-overlay"><SceneBoundary fallback={<div className="poster"><RatPoster /></div>}><ArenaScene mode="open" treated={t} untreated={u} day={days} hoursPerSec={1} /></SceneBoundary></div>}
+          {pos.chapter === 9 && <div className="stage-overlay center"><HumanScale progress={humanP} ratDose={noael} hedDose={scaled.hed} ratLabel="rat dose, no adverse effect" /></div>}
           {!t && <div className="stage-status" role="status">Preparing the virtual study…</div>}
         </div>
       </div>

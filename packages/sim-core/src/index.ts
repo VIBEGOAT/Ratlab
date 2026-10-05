@@ -27,3 +27,4 @@ export * from "./credibility";
 export * from "./virtualControl";
 export * from "./bundle";
 export * from "./pkIntervals";
+export * from "./population";

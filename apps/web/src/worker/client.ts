@@ -4,7 +4,7 @@ import type { Request, ResultOf, Response } from "./protocol";
  * Worker RPC with lanes. Each lane is its own worker, so a long forecast never blocks a study re-run,
  * and a lane can be cancelled by terminating its worker (the only reliable way to stop a busy worker).
  */
-export type Lane = "study" | "aux";
+export type Lane = "study" | "aux" | "pop";
 
 type Pending = { lane: Lane; resolve: (v: unknown) => void; reject: (e: Error) => void; onProgress?: (done: number, total: number) => void };
 
@@ -51,7 +51,7 @@ export function cancelLane(lane: Lane): void {
 
 type Payload<T extends Request["type"]> = Omit<Extract<Request, { type: T }>, "id" | "type">;
 
-export function call<T extends Request["type"]>(type: T, payload: Payload<T>, onProgress?: (done: number, total: number) => void, lane: Lane = type === "study" || type === "twin" ? "study" : "aux"): Promise<ResultOf<T>> {
+export function call<T extends Request["type"]>(type: T, payload: Payload<T>, onProgress?: (done: number, total: number) => void, lane: Lane = type === "study" || type === "twin" ? "study" : type === "population" ? "pop" : "aux"): Promise<ResultOf<T>> {
   const id = nextId++;
   return new Promise<ResultOf<T>>((resolve, reject) => {
     pending.set(id, { lane, resolve: resolve as (v: unknown) => void, reject, onProgress });

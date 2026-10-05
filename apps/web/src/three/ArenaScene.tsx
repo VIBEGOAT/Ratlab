@@ -89,6 +89,8 @@ function OpenField({ t, u, day }: { t: AnimalBundle; u: AnimalBundle; day: numbe
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}><planeGeometry args={[S, S]} /><meshStandardMaterial color="#2c3a3a" /></mesh>
       <Line points={[[-S / 4, 0.01, -S / 4], [S / 4, 0.01, -S / 4], [S / 4, 0.01, S / 4], [-S / 4, 0.01, S / 4], [-S / 4, 0.01, -S / 4]]} color="#7a8b8a" dashed dashSize={0.15} gapSize={0.1} lineWidth={1} />
       {[[0, -S / 2, S, 0.2], [0, S / 2, S, 0.2], [-S / 2, 0, 0.2, S], [S / 2, 0, 0.2, S]].map(([x, z, w, d], i) => <mesh key={i} position={[x!, 0.15, z!]}><boxGeometry args={[w!, 0.3, d!]} /><meshStandardMaterial color="#445555" /></mesh>)}
+      <Line points={t.track.x.map((x, i) => [(x - 0.5) * (S - 0.6), 0.012, (t.track.y[i]! - 0.5) * (S - 0.6)] as [number, number, number])} color="#3fd0b8" lineWidth={1} transparent opacity={0.45} />
+      <Line points={u.track.x.map((x, i) => [(x - 0.5) * (S - 0.6), 0.011, (u.track.y[i]! - 0.5) * (S - 0.6)] as [number, number, number])} color="#a9b8b6" lineWidth={1} transparent opacity={0.4} />
       <ArenaRat bundle={t} day={day} pose={trackPose(t, 4, S - 0.6)} color="#3fd0b8" label="Treated" />
       <ArenaRat bundle={u} day={day} pose={trackPose(u, 4, S - 0.6)} color="#8a9bad" label="Untreated twin" />
     </>

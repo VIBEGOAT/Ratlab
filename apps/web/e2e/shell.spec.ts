@@ -12,11 +12,11 @@ function watchConsole(page: Page): string[] {
 }
 
 /** Start from a clean browser state: fresh context storage, then a real load of the target path. */
-async function fresh(page: Page, path = "/") {
+async function fresh(page: Page, path = "/", opts: { threeD?: boolean } = {}) {
   await page.goto("about:blank");
   await page.context().clearCookies();
   await page.goto("/");
-  await page.evaluate(async () => { localStorage.clear(); await new Promise<void>((r) => { const q = indexedDB.deleteDatabase("eliminate-lab"); q.onsuccess = q.onerror = q.onblocked = () => r(); }); });
+  await page.evaluate(async (threeD) => { localStorage.clear(); if (!threeD) localStorage.setItem("no3d", "1"); await new Promise<void>((r) => { const q = indexedDB.deleteDatabase("eliminate-lab"); q.onsuccess = q.onerror = q.onblocked = () => r(); }); }, !!opts.threeD);
   await page.goto("about:blank");
   await page.goto(path);
 }
@@ -115,7 +115,7 @@ test("dark theme screenshots", async ({ page }) => {
 
 test("3D rat renders, organs open their detail, and quality can be set", async ({ page }) => {
   const errors = watchConsole(page);
-  await fresh(page, "/#lab/animal");
+  await fresh(page, "/#lab/animal", { threeD: true });
   await expect(page.locator("canvas")).toBeVisible({ timeout: 90_000 });
   await expect(page.getByText(/Day \d+ \/ 28/)).toBeVisible();
   await page.locator("button.organ", { hasText: "Liver" }).click();

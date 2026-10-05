@@ -1,6 +1,6 @@
 import type {
   AnimalConfig, ForecastResult, HistoricalRow, MorrisResult, NoaelResult, Organ, StudyDesign, StudyResult, TwinBundle,
-  EndpointRow, HistoRow, ValidationReport, Eligibility,
+  EndpointRow, HistoRow, ValidationReport, Eligibility, RatOutcome,
 } from "@eliminate/sim-core";
 
 export interface StudyPayload {
@@ -21,7 +21,8 @@ export type Request =
   | { id: number; type: "twin"; cfg: AnimalConfig }
   | { id: number; type: "forecast"; base: AnimalConfig; doses: number[]; n: number }
   | { id: number; type: "morris"; cfg: AnimalConfig; organ: Organ; r: number }
-  | { id: number; type: "validation"; design: StudyDesign; nPerSex: number; historical: HistoricalRow[] };
+  | { id: number; type: "validation"; design: StudyDesign; nPerSex: number; historical: HistoricalRow[] }
+  | { id: number; type: "population"; base: AnimalConfig; n: number; offset: number; dtH: number; idPrefix: string };
 
 export type Response =
   | { id: number; type: "progress"; done: number; total: number }
@@ -33,4 +34,5 @@ export type ResultOf<T extends Request["type"]> = T extends "study" ? StudyPaylo
   : T extends "forecast" ? ForecastResult[]
   : T extends "morris" ? MorrisResult[]
   : T extends "validation" ? ValidationPayload
+  : T extends "population" ? RatOutcome[]
   : never;

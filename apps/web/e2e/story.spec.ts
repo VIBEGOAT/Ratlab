@@ -83,3 +83,78 @@ test("reduced motion shows the moment without animation", async ({ page }) => {
   await scrollTo(page, 5, 0.3);
   await expect(page.getByText("Here, no one did.")).toBeVisible();
 });
+
+test("story chapters 7 to 12: twin slider, thousand rats, behaviour, humans, trust, finale", async ({ page }) => {
+  test.setTimeout(420_000);
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await fresh(page);
+  await scrollTo(page, 2, 0.3);
+  await expect(page.getByRole("status").filter({ hasText: "virtual rats ready" })).toBeVisible({ timeout: 120_000 });
+
+  // 7 · twin: the divider is a keyboard-operable slider
+  await scrollTo(page, 6, 0.5);
+  await expect(page.getByRole("heading", { name: "Meet the twin." })).toBeVisible();
+  const divider = page.getByRole("slider", { name: "Compare treated and untreated" });
+  await expect(divider).toBeVisible();
+  const before = Number(await divider.getAttribute("aria-valuenow"));
+  await divider.focus();
+  await page.keyboard.press("ArrowRight");
+  expect(Number(await divider.getAttribute("aria-valuenow"))).toBeGreaterThan(before);
+  await expect(page.getByRole("table", { name: /Treated against untreated twin/ })).toBeVisible();
+
+  // 8 · a thousand rats: the field fills and the numbers have ranges
+  await scrollTo(page, 7, 0.6);
+  await expect(page.getByText(/Simulating… \d+ of 2[.,\s]?000|Dose \d+ mg\/kg\/day for 28 days/)).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText(/Dose \d+ mg\/kg\/day for 28 days/)).toBeVisible({ timeout: 360_000 });
+  await expect(page.getByRole("img", { name: /1,?000 of 1,?000 virtual rats simulated|1.000 of 1.000 virtual rats simulated/ })).toBeVisible();
+  await expect(page.getByText(/95% range/).first()).toBeVisible();
+  await page.getByRole("button", { name: "Untreated", exact: true }).click();
+  await expect(page.getByRole("img", { name: /without treatment/ })).toBeVisible();
+
+  // 9 · behaviour is labelled as modelled, not felt
+  await scrollTo(page, 8, 0.4);
+  await expect(page.getByText(/Modelled endpoints, not what the animal feels/)).toBeVisible();
+
+  // 10 · humans: arithmetic only, with the unverified flag
+  await scrollTo(page, 9, 0.6);
+  await expect(page.getByText("Km factors unverified")).toBeVisible();
+  await expect(page.getByText(/never guide a real dose/)).toBeVisible();
+
+  // 11 · trust: teaching passes, replacing an animal study does not
+  await scrollTo(page, 10, 0.4);
+  await expect(page.getByText("Adequate for this use.")).toBeVisible();
+  await page.getByRole("button", { name: "Replacing an animal study" }).click();
+  await expect(page.getByText("Not yet credible for this use.")).toBeVisible();
+  await expect(page.getByText("None yet")).toBeVisible();
+
+  // 12 · finale: editable assumptions change the number, references shown are verified
+  await scrollTo(page, 11, 0.3);
+  const big = page.locator(".finale .big-number");
+  const v1 = await big.textContent();
+  await page.getByLabel("Studies a year").fill("40");
+  await expect.poll(async () => big.textContent()).not.toBe(v1);
+  await expect(page.getByText(/Verified sources/)).toBeVisible();
+  await expect(page.getByText(/does not replace animal studies/)).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+for (const [w, h] of [[1440, 900], [1920, 1080], [390, 844]] as const) {
+  test(`story chapters 7-12 screenshots at ${w}x${h}`, async ({ page }) => {
+    test.setTimeout(480_000);
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.setViewportSize({ width: w, height: h });
+    await fresh(page);
+    await scrollTo(page, 2, 0.3);
+    await expect(page.getByRole("status").filter({ hasText: "virtual rats ready" })).toBeVisible({ timeout: 120_000 });
+    await scrollTo(page, 7, 0.6);
+    await expect(page.getByText(/Dose \d+ mg\/kg\/day for 28 days/)).toBeVisible({ timeout: 360_000 });
+    const shots: Array<[string, number, number]> = [["7-twin", 6, 0.5], ["8-forecast", 7, 0.85], ["9-behaviour", 8, 0.4], ["10-human", 9, 0.7], ["11-trust", 10, 0.4], ["12-finale", 11, 0.3]];
+    for (const [name, n, f] of shots) {
+      await scrollTo(page, n, f);
+      await page.waitForTimeout(1500);
+      await page.screenshot({ path: `${SHOTS}/${name}-${w}x${h}.png` });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+    }
+  });
+}

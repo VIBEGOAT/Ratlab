@@ -1,0 +1,3 @@
+import { ARCHETYPES, simulatePopulation } from "../packages/sim-core/src";
+const base = { seed: 9, animalId: "x", sex: "M" as const, strain: "SD" as const, ageWeeks: 8, compound: ARCHETYPES.cardiotoxin!, durationDays: 28, regimen: { route: "oral" as const, doseMgPerKg: 8, intervalH: 24, startH: 0, nDoses: 28 }, disease: { cancer: {} } };
+for (const dt of [0.25, 0.5, 1]) { const t = performance.now(); simulatePopulation(base, { n: 40, dtH: dt }); console.log("dt", dt, ((performance.now() - t) / 40).toFixed(1), "ms per rat -> 1000 rats", (((performance.now() - t) / 40) * 1000 / 1000).toFixed(1), "s"); }

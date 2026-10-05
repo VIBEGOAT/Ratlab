@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { SIM_VERSION, configForAnimal, type ForecastResult, type HistoricalRow, type MorrisResult, type Organ, type TwinBundle } from "@eliminate/sim-core";
+import { SIM_VERSION, configForAnimal, type ForecastResult, type HistoricalRow, type MorrisResult, type Organ, type RatOutcome, type TwinBundle } from "@eliminate/sim-core";
 import { call, cancelLane, CancelledError } from "./worker/client";
 import type { StudyPayload, ValidationPayload } from "./worker/protocol";
 import { buildDesign, defaultFocusId, defaultSetup, designProblems, sameSetup, type Setup } from "./lib/setup";
@@ -41,6 +41,10 @@ interface State {
 
   forecast: Job<ForecastResult[]> & { n: number };
   runForecast: (n: number) => Promise<void>;
+
+  /** 1,000 virtual rats treated and the same rats untreated, filled in chunks so the dot field fills progressively */
+  population: { status: Status; done: number; total: number; treated: RatOutcome[]; untreated: RatOutcome[]; error?: string; doseMgPerKg: number };
+  runPopulation: (n?: number) => Promise<void>;
 
   morris: Job<MorrisResult[]> & { organ: Organ };
   runMorris: (organ: Organ) => Promise<void>;
@@ -94,7 +98,8 @@ export const useStore = create<State>((set, get) => ({
     if (problems.length) { set((s) => ({ study: { status: "error", progress: 0, error: problems[0], data: s.study.data } })); return; }
     const token = ++studyToken;
     cancelLane("study"); // stop any run that is still going
-    set((s) => ({ study: { status: "running", progress: 0, data: s.study.data }, forecast: { ...idle<ForecastResult[]>(), n: s.forecast.n } }));
+    set((s) => ({ study: { status: "running", progress: 0, data: s.study.data }, forecast: { ...idle<ForecastResult[]>(), n: s.forecast.n }, population: { status: "idle", done: 0, total: 0, treated: [], untreated: [], doseMgPerKg: 0 } }));
+    cancelLane("pop");
     try {
       const key = cacheKey(setup);
       let payload = await cacheGet<StudyPayload>(key);
@@ -145,6 +150,34 @@ export const useStore = create<State>((set, get) => ({
       const data = await call("forecast", { base: { ...base, durationDays: design.durationDays }, doses, n }, (d, t) => set((s) => ({ forecast: { ...s.forecast, progress: d / t } })));
       set({ forecast: { status: "done", progress: 1, data, n } });
     } catch (e) { if (!(e instanceof CancelledError)) set({ forecast: { status: "error", progress: 0, data: null, n, error: msg(e) } }); }
+  },
+
+  population: { status: "idle", done: 0, total: 0, treated: [], untreated: [], doseMgPerKg: 0 },
+  runPopulation: async (n = 1000) => {
+    const payload = get().study.data;
+    if (!payload) return;
+    const design = payload.study.design;
+    const top = payload.study.animals.filter((a) => a.kind === "main").sort((a, b) => b.doseMgPerKg - a.doseMgPerKg)[0];
+    if (!top) return;
+    const baseT = { ...configForAnimal(design, top), durationDays: design.durationDays };
+    const baseU = { ...baseT, regimen: { ...baseT.regimen, doseMgPerKg: 0 } };
+    const key = `${cacheKey(get().ranSetup ?? get().setup)}|population|${n}`;
+    cancelLane("pop");
+    const cached = await cacheGet<{ treated: RatOutcome[]; untreated: RatOutcome[] }>(key);
+    if (cached) { set({ population: { status: "done", done: n * 2, total: n * 2, ...cached, doseMgPerKg: top.doseMgPerKg } }); return; }
+    const total = n * 2, CHUNK = 100;
+    set({ population: { status: "running", done: 0, total, treated: [], untreated: [], doseMgPerKg: top.doseMgPerKg } });
+    try {
+      for (const [which, base] of [["treated", baseT], ["untreated", baseU]] as const) {
+        for (let offset = 0; offset < n; offset += CHUNK) {
+          const part = await call("population", { base, n: Math.min(CHUNK, n - offset), offset, dtH: 0.5, idPrefix: "pop" });
+          set((s) => ({ population: { ...s.population, [which]: [...s.population[which], ...part], done: s.population.done + part.length } }));
+        }
+      }
+      const { treated, untreated } = get().population;
+      set((s) => ({ population: { ...s.population, status: "done" } }));
+      void cacheSet(key, { treated, untreated });
+    } catch (e) { if (!(e instanceof CancelledError)) set((s) => ({ population: { ...s.population, status: "error", error: msg(e) } })); }
   },
 
   morris: { ...idle<MorrisResult[]>(), organ: "liver" },

@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 import {
   analyseEndpoints, controlEndpointValues, determineNoael, forecastToxicity, histopathTable, matchHistorical, morrisCompound,
-  runStudy, runVirtualControls, simulatedHistoricalDataset, simulateTwinBundle, validateControls, virtualControlEligibility,
+  runStudy, runVirtualControls, simulatePopulation, simulatedHistoricalDataset, simulateTwinBundle, validateControls, virtualControlEligibility,
 } from "@eliminate/sim-core";
 import type { Request, Response } from "./protocol";
 
@@ -31,6 +31,9 @@ ctx.onmessage = (ev: MessageEvent<Request>) => {
         send({ id: req.id, type: "result", payload: out });
         break;
       }
+      case "population":
+        send({ id: req.id, type: "result", payload: simulatePopulation(req.base, { n: req.n, offset: req.offset, dtH: req.dtH, idPrefix: req.idPrefix }, (done, total) => send({ id: req.id, type: "progress", done, total })) });
+        break;
       case "morris":
         send({ id: req.id, type: "result", payload: morrisCompound(req.cfg, { kind: "peakDamage", organ: req.organ }, req.organ, req.r, 1) });
         break;

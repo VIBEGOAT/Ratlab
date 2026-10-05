@@ -17,6 +17,12 @@ const SHOTS: Array<{ pos: Vec3; target: Vec3 }> = [
   { pos: [1.2, 1.8, 5.0], target: [0.5, 0.85, 0] },   // 3 dose day (follow the flow)
   { pos: [3.6, 2.6, 8.0], target: [-0.6, 0.8, 0] },  // 4 damage unfolds (slow orbit)
   { pos: [2.6, 3.2, 9.5], target: [-0.4, 0.7, 0] },   // 5 the moment (pull back)
+  { pos: [0.4, 1.7, 9.4], target: [-0.7, 0.8, 0] },   // 6 untreated twin (side view for the split)
+  { pos: [3.2, 2.4, 9.6], target: [-0.8, 0.75, 0] },  // 7 forecast (covered by the dot field)
+  { pos: [3.2, 2.4, 9.6], target: [-0.8, 0.75, 0] },  // 8 behaviour (covered by the arena)
+  { pos: [3.2, 2.4, 9.6], target: [-0.8, 0.75, 0] },  // 9 humans (covered by the scale-up)
+  { pos: [3.6, 2.2, 9.8], target: [-0.8, 0.8, 0] },   // 10 trust
+  { pos: [3.6, 2.2, 9.8], target: [-0.8, 0.8, 0] },   // 11 finale
 ];
 
 export interface StorySceneProps {
@@ -38,6 +44,11 @@ export interface StorySceneProps {
   quality: Quality;
   onDecline: () => void;
   background: string;
+  /** a full-stage overlay covers the canvas, so stop rendering */
+  paused: boolean;
+  /** treated / untreated split, 0 to 1, read every frame in chapter 6 */
+  splitRef: React.MutableRefObject<number>;
+  twinDay: number;
 }
 
 function CameraChoreo({ posRef, reduceMotion }: { posRef: React.MutableRefObject<StoryPos>; reduceMotion: boolean }) {
@@ -115,6 +126,40 @@ function Pill({ posRef }: { posRef: React.MutableRefObject<StoryPos> }) {
   return <mesh ref={ref} rotation={[0, 0, Math.PI / 2]}><capsuleGeometry args={[0.035, 0.08, 6, 12]} /><meshStandardMaterial color="#f2b14c" emissive="#f2b14c" emissiveIntensity={0.8} toneMapped={false} /></mesh>;
 }
 
+/** Renders the same scene twice with a scissor: the treated rat left of the divider, its untreated twin right of it. */
+function SplitRenderer({ splitRef, a, b }: { splitRef: React.MutableRefObject<number>; a: React.RefObject<THREE.Group>; b: React.RefObject<THREE.Group> }) {
+  useFrame(({ gl, scene, camera, size }) => {
+    const ga = a.current, gb = b.current;
+    if (!ga || !gb) return;
+    const split = splitRef.current;
+    gl.setScissorTest(true);
+    gl.setViewport(0, 0, size.width, size.height);
+    ga.visible = true; gb.visible = false;
+    gl.setScissor(0, 0, Math.round(size.width * split), size.height);
+    gl.render(scene, camera);
+    ga.visible = false; gb.visible = true;
+    gl.setScissor(Math.round(size.width * split), 0, size.width - Math.round(size.width * split), size.height);
+    gl.render(scene, camera);
+    gl.setScissorTest(false);
+    ga.visible = true; gb.visible = false;
+  }, 1);
+  return null;
+}
+
+function TwinRats({ splitRef, treated, untreated, day, palette, quality }: { splitRef: React.MutableRefObject<number>; treated: AnimalBundle; untreated: AnimalBundle; day: number; palette: "standard" | "cb"; quality: Quality }) {
+  const a = useRef<THREE.Group>(null), b = useRef<THREE.Group>(null);
+  const vt = useMemo(() => ratVisualState(treated, day), [treated, day]);
+  const vu = useMemo(() => ratVisualState(untreated, day), [untreated, day]);
+  const layers: Layers = { ...DEFAULT_LAYERS, xray: false, labels: false };
+  return (
+    <>
+      <group ref={a}><RatModel v={vt} layers={layers} palette={palette} quality={quality} /></group>
+      <group ref={b} visible={false}><RatModel v={vu} layers={layers} palette={palette} quality={quality} /></group>
+      <SplitRenderer splitRef={splitRef} a={a} b={b} />
+    </>
+  );
+}
+
 function Turntable({ chapter, reduceMotion, children }: { chapter: number; reduceMotion: boolean; children: React.ReactNode }) {
   return <group rotation={[0, chapter === 0 && reduceMotion ? -0.5 : 0, 0]}>{children}</group>;
 }
@@ -136,10 +181,11 @@ export function StoryScene(p: StorySceneProps) {
   const bundle = p.chapter === 5 && p.moment ? momentBundle : p.treated;
   const day = p.chapter === 5 && p.moment ? p.moment.day : p.chapter === 4 ? p.day : p.chapter >= 3 ? 0 : 0;
   const v = useMemo(() => (bundle ? ratVisualState(bundle, day) : null), [bundle, day]);
-  const layers: Layers = { ...DEFAULT_LAYERS, xray: p.chapter >= 3, labels: p.chapter === 1 || p.chapter === 4, vessels: p.chapter >= 1 };
+  const layers: Layers = { ...DEFAULT_LAYERS, xray: p.chapter >= 3 && p.chapter <= 5, labels: p.chapter === 1 || p.chapter === 4, vessels: p.chapter >= 1 };
+  const split = p.chapter === 6 && p.treated && p.untreated;
   const tempo = p.chapter === 5 ? 0.25 : 1;
   return (
-    <Canvas camera={{ position: SHOTS[0]!.pos, fov: 34, near: 0.05, far: 100 }} dpr={p.quality === "high" ? [1, 2] : [1, 1.25]} gl={{ antialias: true, powerPreference: "high-performance" }} style={{ touchAction: "pan-y" }}>
+    <Canvas frameloop={p.paused ? "never" : "always"} camera={{ position: SHOTS[0]!.pos, fov: 34, near: 0.05, far: 100 }} dpr={p.quality === "high" ? [1, 2] : [1, 1.25]} gl={{ antialias: true, powerPreference: "high-performance" }} style={{ touchAction: "pan-y" }}>
       <color attach="background" args={[p.background]} />
       <fog attach="fog" args={[p.background, 12, 26]} />
       <PerformanceMonitor onDecline={p.onDecline} flipflops={2} onFallback={p.onDecline} />
@@ -152,7 +198,8 @@ export function StoryScene(p: StorySceneProps) {
         <Lightformer form="rect" intensity={1.2} position={[-6, 2, -3]} rotation-y={Math.PI / 2} scale={[8, 3, 1]} color="#bff3ff" />
       </Environment>
       <CameraChoreo posRef={p.posRef} reduceMotion={p.reduceMotion} />
-      {v && (
+      {split && p.treated && p.untreated && <TwinRats splitRef={p.splitRef} treated={p.treated} untreated={p.untreated} day={p.twinDay} palette={p.palette} quality={p.quality} />}
+      {v && !split && (
         <Turntable chapter={p.chapter} reduceMotion={p.reduceMotion}>
           <SweepRat posRef={p.posRef} v={v} layers={layers} palette={p.palette} quality={p.quality} chapter={p.chapter} exposure={p.chapter === 3 ? p.exposure : {}} tempo={tempo} />
           <DoseFlow plasmaRef={p.plasmaRef} visible={p.chapter === 3} />
@@ -160,7 +207,7 @@ export function StoryScene(p: StorySceneProps) {
         </Turntable>
       )}
       <ContactShadows position={[-0.4, 0.002, 0]} opacity={0.6} scale={16} blur={2.6} far={2.5} resolution={p.quality === "high" ? 1024 : 256} />
-      {p.quality === "high" && (
+      {p.quality === "high" && !split && (
         <EffectComposer multisampling={4}>
           <Bloom intensity={0.8} luminanceThreshold={0.5} luminanceSmoothing={0.3} mipmapBlur />
           <Vignette eskil={false} offset={0.25} darkness={0.5} />
