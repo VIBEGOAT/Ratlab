@@ -7,3 +7,4 @@ apps/web/dist
 apps/web/test-results
 apps/web/playwright-report
 apps/web/dist-prof
+test-results
