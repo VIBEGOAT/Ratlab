@@ -1,6 +1,6 @@
 /**
  * Pre-bakes the default study so the very first visit opens instantly instead of waiting for the simulation.
- * Output: apps/web/public/prewarm/default.json, keyed by SIM_VERSION and the default setup, so the app only
+ * Output: apps/web/src/prewarm/default.json, keyed by SIM_VERSION and the default setup, so the app only
  * uses it when both match. A unit test fails if this file goes stale. Run: npm run gen:prewarm
  */
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -34,7 +34,8 @@ const out = {
   twin,
   population: { n: N, doseMgPerKg: top.doseMgPerKg, treated, untreated },
 };
-mkdirSync("apps/web/public/prewarm", { recursive: true });
-const text = JSON.stringify(out);
-writeFileSync("apps/web/public/prewarm/default.json", text);
-console.log(`wrote apps/web/public/prewarm/default.json, ${(text.length / 1e6).toFixed(2)} MB, sim ${SIM_VERSION}`);
+mkdirSync("apps/web/src/prewarm", { recursive: true });
+// typed arrays (Float64Array and friends) must become plain arrays, or JSON writes them as {"0": …} objects
+const text = JSON.stringify(out, (_k, v: unknown) => (ArrayBuffer.isView(v) && !(v instanceof DataView) ? Array.from(v as unknown as ArrayLike<number>) : v));
+writeFileSync("apps/web/src/prewarm/default.json", text);
+console.log(`wrote apps/web/src/prewarm/default.json, ${(text.length / 1e6).toFixed(2)} MB, sim ${SIM_VERSION}`);

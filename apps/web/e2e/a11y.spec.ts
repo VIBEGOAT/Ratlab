@@ -47,7 +47,7 @@ test("Story chapters with live data have no axe violations", async ({ page }) =>
   }
 });
 
-for (const section of ["design", "animal", "data", "population", "trust"]) {
+for (const section of ["overview", "design", "animal", "data", "population", "trust"]) {
   test(`Lab ${section} has no axe violations (light and dark)`, async ({ page }) => {
     test.setTimeout(240_000);
     await fresh(page, `#lab/${section}`);
@@ -96,4 +96,19 @@ test("presenter mode and the notes window have no axe violations", async ({ page
   await notes.goto("/#notes");
   await expect(notes.getByRole("heading", { name: /The answer|Speaker notes/ })).toBeVisible();
   await scan(notes, "notes window");
+});
+
+test("expert mode and opened expert sections have no axe violations", async ({ page }) => {
+  test.setTimeout(300_000);
+  await fresh(page, "#lab/data");
+  await page.getByRole("tab", { name: "Statistics and NOAEL" }).click();
+  await page.getByRole("button", { name: "Show every endpoint comparison" }).click();
+  await scan(page, "simple mode, section opened");
+  await page.getByRole("group", { name: "Level of detail" }).getByRole("button", { name: "Expert" }).click();
+  for (const [section, view] of [["data", "Statistics and NOAEL"], ["animal", "3D rat"], ["animal", "Behaviour"], ["population", "Humane endpoints and forecast"], ["trust", "Fidelity and parameters"]] as const) {
+    await page.goto(`/#lab/${section}`);
+    await page.getByRole("tab", { name: view }).click();
+    await page.waitForTimeout(900);
+    await scan(page, `expert ${view}`);
+  }
 });

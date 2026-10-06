@@ -18,6 +18,7 @@ export function useStorySound(posRef: React.MutableRefObject<StoryPos>): void {
     const stop = () => window.clearInterval(timer);
     if (soundIsOn()) start();
     const off = onSoundChange((on) => (on ? start() : stop()));
-    return () => { stop(); off(); };
+    // leaving the Story must not leave its bed or heartbeat playing in the Lab
+    return () => { stop(); off(); setSoundPlan({ bed: 0, beat: 0, beatBpm: 60 }); };
   }, [posRef]);
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Expert } from "../components/motion";
 import { CONSTANTS, DISCLAIMER, FIDELITY, SIM_VERSION, listUnverifiedConstants } from "@eliminate/sim-core";
 import { Banner, Chip, Panel, Stat, TabHead, ScrollBox } from "../components/ui";
 import { useStore } from "../store";
@@ -38,12 +39,15 @@ export default function FidelityTab() {
       </Panel>
       <Panel title="Assumptions"><ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>{ASSUMPTIONS.map((a) => <li key={a}>{a}</li>)}</ul></Panel>
       <Panel title="Constants that need an expert check">
+        <p className="small muted">{list.length} constants are waiting for an expert to check the value against its source.</p>
+        <Expert label="every constant">
         <input type="text" placeholder="Filter, for example rat.clinchem" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Filter constants" style={{ maxWidth: 320 }} />
         <ScrollBox><table>
           <thead><tr><th>Key</th><th className="num">Value</th><th>Unit</th><th>Our confidence</th><th>Source</th></tr></thead>
           <tbody>{list.slice(0, 200).map((k) => { const c = CONSTANTS[k]!; return <tr key={k}><td className="mono small">{k}</td><td className="num">{c.value}</td><td className="small">{c.unit}</td><td>{c.confidence}</td><td className="small">{c.source}</td></tr>; })}</tbody>
         </table></ScrollBox>
         <p className="small muted">{list.length} shown. The same list is written to data/needs-expert-check.md.</p>
+        </Expert>
       </Panel>
     </>
   );

@@ -1,6 +1,7 @@
 import { ORGANS, constant, type Organ, type TdOrganParams } from "@eliminate/sim-core";
 import { useStore } from "../store";
 import { buildDesign, compoundOf, guidelineChecks, ORGAN_LABEL } from "../lib/setup";
+import { Expert } from "../components/motion";
 import { Banner, Chip, Fidelity, Panel, TabHead, ScrollBox } from "../components/ui";
 
 function Field({ label, value, onChange, step = 0.01, min = 0 }: { label: string; value: number; onChange: (v: number) => void; step?: number; min?: number }) {
@@ -53,7 +54,7 @@ export default function DesignTab() {
   const checks = guidelineChecks(setup, constant);
   return (
     <>
-      <TabHead title="Study design" blurb="A repeated-dose study laid out in the manner of OECD TG 407 (28 day) and TG 408 (90 day): a vehicle control and three dose groups, optional recovery and toxicokinetic satellites, both sexes, randomised littermates." fidelity={["pbpk", "toxicodynamics"]} />
+      <TabHead title="Groups and guideline check" blurb="A repeated-dose study laid out in the manner of OECD TG 407 (28 day) and TG 408 (90 day): a vehicle control and three dose groups, optional recovery and toxicokinetic satellites, both sexes, randomised littermates." fidelity={["pbpk", "toxicodynamics"]} />
       <div className="grid">
         <Panel title="Groups">
           <ScrollBox><table>
@@ -67,15 +68,19 @@ export default function DesignTab() {
           <p className="small muted">Minimums come from the TG 407 text recorded as VERIFIED in the reference data. Details of TG 408 are still unverified.</p>
         </Panel>
       </div>
-      <Panel title={compound.name} right={<Fidelity id="toxicodynamics" />}>
-        <p>{compound.description}</p>
-        <ScrollBox><table>
-          <thead><tr><th>Target organ</th><th>Exposure driver</th><th className="num">Threshold</th><th className="num">Injury rate /h</th><th className="num">Regeneration /h</th><th className="num">Defence gate</th></tr></thead>
-          <tbody>{Object.entries(compound.td).map(([o, t]) => <tr key={o}><td>{ORGAN_LABEL[o as Organ]}</td><td>{t.driver === "reactive" ? "reactive metabolite flux" : "unbound tissue concentration"}</td><td className="num">{t.thr}</td><td className="num">{t.kinj}</td><td className="num">{t.kreg}</td><td className="num">{t.gate0}</td></tr>)}</tbody>
-        </table></ScrollBox>
-        <p className="small muted">Tuned dose range {compound.tunedDoseRange[0]} to {compound.tunedDoseRange[1]} mg/kg. Outside it, results are extrapolation.</p>
-      </Panel>
-      {setup.compoundKey === "custom" ? <CustomEditor /> : <Banner tone="info">Choose "Custom compound" in the left panel to edit ADME and toxicity parameters.</Banner>}
+      {setup.compoundKey === "custom" ? <CustomEditor /> : (
+        <Expert label="compound parameters">
+          <Panel title={compound.name} right={<Fidelity id="toxicodynamics" />}>
+            <p>{compound.description}</p>
+            <ScrollBox><table>
+              <thead><tr><th>Target organ</th><th>Exposure driver</th><th className="num">Threshold</th><th className="num">Injury rate /h</th><th className="num">Regeneration /h</th><th className="num">Defence gate</th></tr></thead>
+              <tbody>{Object.entries(compound.td).map(([o, t]) => <tr key={o}><td>{ORGAN_LABEL[o as Organ]}</td><td>{t.driver === "reactive" ? "reactive metabolite flux" : "unbound tissue concentration"}</td><td className="num">{t.thr}</td><td className="num">{t.kinj}</td><td className="num">{t.kreg}</td><td className="num">{t.gate0}</td></tr>)}</tbody>
+            </table></ScrollBox>
+            <p className="small muted">Tuned dose range {compound.tunedDoseRange[0]} to {compound.tunedDoseRange[1]} mg/kg. Outside it, results are extrapolation.</p>
+          </Panel>
+          <Banner tone="info">To edit absorption, clearance and toxicity parameters, open "Advanced" above and choose "Custom compound".</Banner>
+        </Expert>
+      )}
     </>
   );
 }

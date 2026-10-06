@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
-import { FINDINGS, GRADE_SEVERITY, ORGANS, SIGNS, type AnimalBundle, type Organ, type TwinBundle } from "@eliminate/sim-core";
+import { FINDINGS, ORGANS, SIGNS, type AnimalBundle, type Organ, type TwinBundle } from "@eliminate/sim-core";
 import { LineChart } from "../components/Chart";
 import { Banner, Empty, NeedsTwin, Panel, Stat, TabHead, f1 } from "../components/ui";
+import { Expert } from "../components/motion";
+import { Icon } from "../components/icons";
+import { endpointLabel } from "../lib/endpoints";
+import { GRADE_WORD, gradeVar } from "../design/damage";
+import { listenHeart, ratChirp } from "../audio";
+import { ambiencePlan } from "../audio/soundPlan";
+import { useRatAmbience } from "../audio/useRatAmbience";
 import { ORGAN_LABEL } from "../lib/setup";
 import { useStore } from "../store";
 import { DEFAULT_LAYERS, type Layers } from "../three/RatModel";
@@ -23,11 +30,12 @@ function OrganDetail({ organ, b, day }: { organ: Organ; b: AnimalBundle; day: nu
   const cp = b.clinpath[Math.min(day, b.days)]!;
   return (
     <Panel title={`${ORGAN_LABEL[organ]} on day ${day}`}>
-      <div className="organ" style={{ borderColor: v.grade >= 3 ? "var(--bad)" : v.grade >= 1 ? "var(--warn)" : undefined }}>
-        <b>Grade {v.grade} · {v.severity}</b>
+      <div className="organ" style={{ borderColor: gradeVar(v.grade) }}>
+        <b><i className="gdot" style={{ background: gradeVar(v.grade) }} aria-hidden="true" />{GRADE_WORD[v.grade]} <span className="small muted">(grade {v.grade} of 5)</span></b>
         <span className="small muted">{v.finding}</span>
-        <span className="mono small">damage {v.damage.toFixed(2)}</span>
+        <Expert label="the damage value"><span className="mono small">damage {v.damage.toFixed(2)} on a 0 to 1 scale</span></Expert>
       </div>
+      {organ === "heart" && <HeartListen bpm={cp.cardiac.heartRateBpm} />}
       <LineChart label={`${organ} damage and drug concentration`} height={190} xLabel="Study day" yLabel="Fraction (0 to 1)" marker={day} series={[
         ...(damage ? [{ name: "Damage (0 to 1)", x: hx, y: damage, color: "var(--c6)" }] : []),
         ...(defence ? [{ name: "Defence capacity", x: hx, y: defence, color: "var(--c4)", dash: "5 4" }] : []),
@@ -36,9 +44,24 @@ function OrganDetail({ organ, b, day }: { organ: Organ; b: AnimalBundle; day: nu
 
       <div className="scroll" style={{ maxHeight: 200 }}><table>
         <thead><tr><th>Marker</th><th className="num">Value</th><th className="num">× ULN</th></tr></thead>
-        <tbody>{det.markers.map((m) => { const a = cp[m.panel === "chemistry" ? "chemistry" : "hematology"][m.key]; return a ? <tr key={m.key} className={a.flag ? "flag" : ""}><td>{m.key}</td><td className="num">{f1(a.value, a.value < 10 ? 2 : 0)}</td><td className="num">{f1(a.xUln, 2)}</td></tr> : null; })}</tbody>
+        <tbody>{det.markers.map((m) => { const a = cp[m.panel === "chemistry" ? "chemistry" : "hematology"][m.key]; return a ? <tr key={m.key} className={a.flag ? "flag" : ""}><td>{endpointLabel(`${m.panel === "chemistry" ? "chem" : "heme"}.${m.key}`)}</td><td className="num">{f1(a.value, a.value < 10 ? 2 : 0)}</td><td className="num">{f1(a.xUln, 2)}</td></tr> : null; })}</tbody>
       </table></div>
     </Panel>
+  );
+}
+
+/** Plays the heart at its modelled rate. Clicking it is the viewer's choice, so it may turn sound on. */
+function HeartListen({ bpm }: { bpm: number }) {
+  const [playing, setPlaying] = useState(false);
+  return (
+    <button type="button" className="listen" disabled={playing} onClick={async () => {
+      setPlaying(true);
+      await listenHeart(bpm, 4);
+      window.setTimeout(() => setPlaying(false), 4000);
+    }}>
+      <Icon name="heart" size={16} className={playing ? "beating" : undefined} />
+      {playing ? `Listening at ${f1(bpm, 0)} beats a minute…` : `Listen to the heart (${f1(bpm, 0)} beats a minute)`}
+    </button>
   );
 }
 
@@ -70,6 +93,13 @@ function RatLab({ tw }: { tw: TwinBundle }) {
   const sd = t.daily;
   const signs = SIGNS.map((s) => ({ s, v: sd.signIntensity[s]![d]! })).filter((x) => x.v > 0.1).sort((a, b) => b.v - a.v);
   const cp = t.clinpath[d]!;
+  const humaneNow = !!t.humane && d >= t.humane.day;
+  useRatAmbience({ active: true, sickness: sd.sickness[d] ?? 0, humane: humaneNow });
+  const select = (o: Organ | null) => {
+    setSelected(o);
+    if (o && ambiencePlan(sd.sickness[d] ?? 0, humaneNow).chirp) ratChirp();
+  };
+  const xrayOn = layers.xray;
 
   return (
     <>
@@ -78,7 +108,7 @@ function RatLab({ tw }: { tw: TwinBundle }) {
         <div style={{ height: 460, position: "relative", background: "var(--surface-2)" }}>
           {gl ? (
             <SceneBoundary fallback={<Empty>The 3D view could not start. All readouts below still work.</Empty>}>
-              <RatScene treated={t} untreated={tw.untreated} day={day} layers={layers} selected={selected} onSelect={setSelected} twins={twins} resetKey={reset} animate quality={quality} palette={cb ? "cb" : "standard"} onQualityChange={setActiveQ} />
+              <RatScene treated={t} untreated={tw.untreated} day={day} layers={layers} selected={selected} onSelect={select} twins={twins} resetKey={reset} animate quality={quality} palette={cb ? "cb" : "standard"} onQualityChange={setActiveQ} />
             </SceneBoundary>
           ) : <Empty>This browser does not offer WebGL, so the 3D rat cannot be drawn. The readouts below still work.</Empty>}
           <div className="small muted" style={{ position: "absolute", right: 10, top: 8, pointerEvents: "none" }}>drag to rotate · scroll to zoom · click an organ</div>
@@ -90,14 +120,22 @@ function RatLab({ tw }: { tw: TwinBundle }) {
             <b className="mono">Day {d} / {t.days}</b>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
-            <label className="small">Speed <select value={speed} onChange={(e) => setSpeed(+e.target.value)} style={{ width: "auto" }}>{[0.5, 1, 2, 4, 8].map((s) => <option key={s} value={s}>{s} days/s</option>)}</select></label>
+            <div className="segmented" role="group" aria-label="View">
+              <button type="button" aria-pressed={!xrayOn} onClick={() => setLayers({ ...layers, xray: false })}>Outside</button>
+              <button type="button" aria-pressed={xrayOn} onClick={() => setLayers({ ...layers, xray: true })}>X-ray</button>
+            </div>
             <label className="small"><input type="checkbox" checked={twins} onChange={(e) => setTwins(e.target.checked)} /> Show untreated twin</label>
             <button onClick={() => { setSelected(null); setReset(reset + 1); }}>Reset view</button>
+          </div>
+          <Expert label="layers, speed and quality">
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
+            <label className="small">Speed <select value={speed} onChange={(e) => setSpeed(+e.target.value)} style={{ width: "auto" }}>{[0.5, 1, 2, 4, 8].map((s) => <option key={s} value={s}>{s} days/s</option>)}</select></label>
             <label className="small">Quality <select value={quality} onChange={(e) => setQuality(e.target.value as "auto" | "low" | "high")} style={{ width: "auto" }}><option value="auto">Auto ({activeQ})</option><option value="high">High</option><option value="low">Low</option></select></label>
           </div>
           <div className="checks" role="group" aria-label="Layers">
             {LAYER_LABEL.map(([k, l]) => <label key={k}><input type="checkbox" checked={layers[k]} onChange={(e) => setLayers({ ...layers, [k]: e.target.checked })} />{l}</label>)}
           </div>
+          </Expert>
         </div>
       </div>
 
@@ -116,10 +154,11 @@ function RatLab({ tw }: { tw: TwinBundle }) {
             {ORGANS.map((o) => {
               const ov = v.organs[o];
               return (
-                <button key={o} className="organ" onClick={() => setSelected(o)} aria-pressed={selected === o} style={{ textAlign: "left", borderColor: selected === o ? "var(--accent)" : ov.grade >= 3 ? "var(--bad)" : ov.grade >= 1 ? "var(--warn)" : undefined }}>
+                <button key={o} className="organ" onClick={() => select(o)} aria-pressed={selected === o} style={{ textAlign: "left", borderColor: selected === o ? "var(--accent)" : ov.grade >= 1 ? gradeVar(ov.grade) : undefined }}>
                   <b>{ORGAN_LABEL[o]}</b>
-                  <span className="mono small">damage {ov.damage.toFixed(2)} · grade {ov.grade}</span>
-                  <span className="small muted">{GRADE_SEVERITY[ov.grade]}: {FINDINGS[o][ov.grade]}</span>
+                  <span className="organ-grade"><i className="gdot" style={{ background: gradeVar(ov.grade) }} aria-hidden="true" />{GRADE_WORD[ov.grade]}</span>
+                  <span className="organ-bar" aria-hidden="true"><i style={{ width: `${Math.max(3, (ov.grade / 5) * 100)}%`, background: gradeVar(ov.grade) }} /></span>
+                  <span className="small muted">{ov.grade === 0 ? "No finding" : FINDINGS[o][ov.grade]}</span>
                 </button>
               );
             })}

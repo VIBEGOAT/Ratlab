@@ -40,13 +40,15 @@ test("story hero, footer disclaimer and honest status chip", async ({ page }) =>
   expect(errors.filter((e) => !/Download the React DevTools|GL Driver Message|GPU stall/.test(e))).toEqual([]);
 });
 
-test("Lab mode replaces the 16 tabs with five sections", async ({ page }) => {
+test("Lab opens on the Overview, with five sections for the full analysis", async ({ page }) => {
   const errors = watchConsole(page);
   await fresh(page);
   await page.getByRole("button", { name: "Lab", exact: true }).click();
   const nav = page.getByRole("navigation", { name: "Lab sections" });
-  for (const s of ["Design", "Animal", "Data", "Population", "Translate & Trust"]) await expect(nav.getByRole("button", { name: new RegExp(`^${s.replace("&", "&")}`) })).toBeVisible();
-  await expect(page.locator(".tabs")).toHaveCount(0);
+  for (const s of ["Overview", "Design", "Animal", "Data", "Population", "Translate & Trust"]) await expect(nav.getByRole("button", { name: new RegExp(`^${s}`) })).toBeVisible();
+  await expect(nav.getByRole("button", { name: /^Overview/ })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("heading", { name: /No adverse effect|Adverse effects/ })).toBeVisible({ timeout: 90_000 });
+  await nav.getByRole("button", { name: /^Design/ }).click();
   await expect(page.getByText(/virtual animals simulated/)).toBeVisible({ timeout: 90_000 });
   expect(errors.filter((e) => !/Download the React DevTools|GL Driver Message|GPU stall/.test(e))).toEqual([]);
 });
@@ -89,6 +91,10 @@ for (const [w, h] of [[1440, 900], [1920, 1080], [390, 844]] as const) {
     await page.screenshot({ path: `${SHOTS}/story-hero-${w}x${h}.png` });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
     await page.getByRole("button", { name: "Lab", exact: true }).click();
+    await expect(page.getByRole("heading", { name: /No adverse effect|Adverse effects/ })).toBeVisible({ timeout: 90_000 });
+    await page.screenshot({ path: `${SHOTS}/lab-overview-${w}x${h}.png`, fullPage: false });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+    await page.getByRole("navigation", { name: "Lab sections" }).getByRole("button", { name: /^Design/ }).click();
     await expect(page.getByText(/virtual animals simulated/)).toBeVisible({ timeout: 90_000 });
     await page.screenshot({ path: `${SHOTS}/lab-design-${w}x${h}.png`, fullPage: false });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
@@ -120,6 +126,8 @@ test("3D rat renders, organs open their detail, and quality can be set", async (
   await expect(page.getByText(/Day \d+ \/ 28/)).toBeVisible();
   await page.locator("button.organ", { hasText: "Liver" }).click();
   await expect(page.getByRole("heading", { name: /Liver on day/ })).toBeVisible();
+  // speed, layers and quality are expert controls, folded away in Simple mode
+  await page.getByRole("button", { name: "Show layers, speed and quality" }).click();
   await page.getByLabel("Quality").selectOption("low");
   await page.waitForTimeout(1500);
   await page.locator("canvas").scrollIntoViewIfNeeded();

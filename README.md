@@ -10,7 +10,7 @@ A web-based in-silico rat laboratory. It simulates a repeated-dose rat study (do
 ## Two ways in
 
 - **Story** (the front page). Twelve scroll chapters around one pinned 3D rat: meet the rat, choose a compound and dose, dose day, days compressed, the humane endpoint, the untreated twin, a thousand virtual rats, behaviour, toward humans, how far to trust it, and an editable animals-spared figure.
-- **Lab** (`#lab/design`). Five sections that hold all sixteen analysis views: Design, Animal, Data, Population, Translate & Trust.
+- **Lab** (`#lab`). Opens on an Overview of the answers, then five sections that hold all sixteen analysis views: Design, Animal, Data, Population, Translate & Trust. A Simple/Expert switch folds expert-only tables away, and optional rat sounds (sniffing, footsteps, a chirp, the heartbeat) are synthesised and off by default.
 
 Also: **presenter mode** (press `P`; 3- and 8-minute scripted tracks, speaker notes on a second screen, a "which organ fails first?" audience prediction), a **command palette** (`Ctrl/Cmd+K`), optional **sound** (off by default), light, dark and colour-blind-safe themes, and exports (CSV, JSON, a printable HTML report).
 
@@ -44,7 +44,7 @@ Visual baselines live in `apps/web/e2e/visual.spec.ts-snapshots` (Windows render
 | `1` to `5` | Count a vote on the prediction slide |
 | `Ctrl/Cmd+K` | Command palette: any chapter, Lab view, compound, demo, theme, export |
 | `Esc` | Close a dialog, or leave presenter mode |
-| `#lab/<section>` | Open a Lab section directly (`design`, `animal`, `data`, `population`, `trust`) |
+| `#lab/<section>` | Open a Lab section directly (`overview`, `design`, `animal`, `data`, `population`, `trust`) |
 | `?3d=0` | Open the lightweight version without the live 3D scene |
 
 On a computer that renders WebGL on the CPU, the page shows a still picture and a "Turn on 3D" button instead of a slow scene.
@@ -63,7 +63,7 @@ Mobile profile (simulated slow 4G and a 4x slower CPU): performance 84, the othe
 
 - **Accessibility:** axe-core finds no violations (WCAG 2.2 AA and best practice) in the Story, all five Lab sections and sixteen views, the palette, the honesty drawer, presenter mode and the notes window, in light, dark and colour-blind palettes. Charts are keyboard-readable and have data tables. Reduced motion is respected.
 - **Bundle:** the entry JavaScript is 111.7 kB gzipped; the 3D engine, the audio engine and each Lab view are separate chunks. Budgets are enforced by `npm run bundle`.
-- **Visual regression:** 15 screenshots (five pages at 1440x900, 1920x1080 and 390x844).
+- **Visual regression:** 18 screenshots (six pages at 1440x900, 1920x1080 and 390x844).
 
 ## What is where
 
@@ -72,7 +72,7 @@ Mobile profile (simulated slow 4G and a 4x slower CPU): performance 84, the othe
 | `packages/sim-core` | Pure TypeScript simulation library, seeded and deterministic, no UI imports |
 | `apps/web` | React and Vite interface. The simulation runs in a Web Worker. 3D uses react-three-fiber |
 | `apps/web/src/story`, `three`, `presenter`, `palette`, `audio` | Story chapters, the procedural 3D rat, presenter mode, command palette, optional sound |
-| `apps/web/public/prewarm` | The pre-baked default study, so a first visit is instant |
+| `apps/web/src/prewarm` | The pre-baked default study (a fingerprinted asset), so a first visit is instant |
 | `data/reference.json` | Every numeric constant with source, confidence and VERIFIED or UNVERIFIED status |
 | `data/references.json` | Bibliography with verification status |
 | `data/needs-expert-check.md` | Generated list of everything unverified |

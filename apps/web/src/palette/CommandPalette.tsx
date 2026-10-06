@@ -29,6 +29,7 @@ export function CommandPalette() {
 
   const cb = useStore((s) => s.cbPalette);
   const data = useStore((s) => s.study.data);
+  const detail = useStore((s) => s.detail);
 
   useEffect(() => {
     const show = () => { returnTo.current = document.activeElement as HTMLElement | null; setQuery(""); setActive(0); setSoundOn(soundIsOn()); setOpen(true); };
@@ -73,9 +74,11 @@ export function CommandPalette() {
       exportJson: () => { const d = st().study.data; if (d) download("study.json", studyToJson(d), "application/json"); },
       exportHtml: () => { const d = st().study.data; if (d) download("study-report.html", studyToHtml(d), "text/html"); },
       rerun: () => { void st().runStudy(); },
+      detail,
+      toggleDetail: () => st().setDetail(st().detail === "simple" ? "expert" : "simple"),
     };
     return buildCommands(actions);
-  }, [cb, data, soundOn, reduce]);
+  }, [cb, data, soundOn, reduce, detail]);
 
   const results = useMemo(() => filterCommands(query, commands, 40), [query, commands]);
   useEffect(() => { setActive(0); }, [query]);

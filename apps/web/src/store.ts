@@ -13,7 +13,8 @@ async function cacheGet<T>(key: string): Promise<T | null> {
 
 export type Theme = "system" | "light" | "dark";
 export type Mode = "story" | "lab";
-export type LabSection = "design" | "animal" | "data" | "population" | "trust";
+export type LabSection = "overview" | "design" | "animal" | "data" | "population" | "trust";
+export type Detail = "simple" | "expert";
 type Status = "idle" | "running" | "done" | "error";
 interface Job<T> { status: Status; progress: number; error?: string; data: T | null }
 const idle = <T,>(): Job<T> => ({ status: "idle", progress: 0, data: null });
@@ -24,6 +25,9 @@ interface State {
   labSection: LabSection;
   labView: string;
   goLab: (section: LabSection, view?: string) => void;
+  /** Simple hides expert-only tables behind "Show details"; Expert shows everything */
+  detail: Detail;
+  setDetail: (d: Detail) => void;
 
   theme: Theme;
   setTheme: (t: Theme) => void;
@@ -77,8 +81,10 @@ const msg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 export const useStore = create<State>((set, get) => ({
   mode: savedMode,
   setMode: (m) => { ls.set("mode", m); if (typeof history !== "undefined") history.replaceState(null, "", m === "lab" ? `#lab/${get().labSection}` : "#"); set({ mode: m }); },
-  labSection: "design",
+  labSection: "overview",
   labView: "",
+  detail: ls.get("detail") === "expert" ? "expert" : "simple",
+  setDetail: (d) => { ls.set("detail", d); set({ detail: d }); },
   goLab: (section, view = "") => { ls.set("mode", "lab"); if (typeof history !== "undefined") history.replaceState(null, "", `#lab/${section}`); set({ mode: "lab", labSection: section, labView: view }); },
 
   theme: savedTheme,

@@ -43,6 +43,14 @@ for (const size of SIZES) {
       await expect(page).toHaveScreenshot(`story-hero-dark-${size.name}.png`, { ...opts, mask: [page.locator(".big-number")] });
     });
 
+    test("lab overview", async ({ page }) => {
+      test.setTimeout(180_000);
+      await fresh(page, "#lab/overview", "light");
+      await expect(page.getByRole("heading", { name: /No adverse effect up to/ })).toBeVisible({ timeout: 120_000 });
+      await settle(page);
+      await expect(page).toHaveScreenshot(`lab-overview-${size.name}.png`, opts);
+    });
+
     test("lab design", async ({ page }) => {
       test.setTimeout(180_000);
       await fresh(page, "#lab/design", "light");

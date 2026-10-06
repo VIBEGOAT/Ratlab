@@ -11,7 +11,7 @@ import { SoundToggle } from "./audio/SoundToggle";
 import { CommandPalette, openPalette } from "./palette/CommandPalette";
 
 const LabShell = lazy(() => import("./app/LabShell").then((m) => ({ default: m.LabShell })));
-const SECTIONS: LabSection[] = ["design", "animal", "data", "population", "trust"];
+const SECTIONS: LabSection[] = ["overview", "design", "animal", "data", "population", "trust"];
 
 function ExportMenu() {
   const data = useStore((s) => s.study.data);

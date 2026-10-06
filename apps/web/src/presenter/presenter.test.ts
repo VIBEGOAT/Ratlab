@@ -3,7 +3,7 @@ import { ARCHETYPES, configForAnimal, defaultDesign, runStudy, simulateTwinBundl
 import { TRACKS, secondsBefore, trackSeconds } from "./tracks";
 import { PREDICT_ORGANS, addVote, emptyVotes, firstToFail, shareCorrect, totalVotes } from "./prediction";
 import { scrollYFor } from "./scroll";
-import { audibleBpm, soundPlan } from "../audio/soundPlan";
+import { ambiencePlan, audibleBpm, soundPlan } from "../audio/soundPlan";
 
 describe("demo tracks", () => {
   it("run for about 3 and 8 minutes", () => {
@@ -117,5 +117,32 @@ describe("sound plan", () => {
     expect(audibleBpm(360)).toBeCloseTo(72, 5);
     expect(audibleBpm(10)).toBe(48);
     expect(audibleBpm(9999)).toBe(110);
+  });
+});
+
+describe("rat ambience", () => {
+  it("a healthy rat sniffs often, chirps when clicked and moves", () => {
+    const p = ambiencePlan(0, false, 1);
+    expect(p.sniffEvery).not.toBeNull();
+    expect(p.chirp).toBe(true);
+    expect(p.sniffStrength).toBe(1);
+    expect(p.steps).toBe(5);
+  });
+  it("a sick rat is quieter and rarer, and does not chirp", () => {
+    const well = ambiencePlan(0, false), sick = ambiencePlan(0.6, false);
+    expect(sick.chirp).toBe(false);
+    expect(sick.sniffStrength).toBeLessThan(well.sniffStrength);
+    expect(sick.sniffEvery![0]).toBeGreaterThan(well.sniffEvery![0]);
+    expect(sick.steps).toBeLessThan(well.steps);
+  });
+  it("is silent at a humane endpoint or when very sick, and never makes a louder sound when sicker", () => {
+    expect(ambiencePlan(0.2, true)).toEqual({ sniffEvery: null, sniffStrength: 0, chirp: false, steps: 0 });
+    expect(ambiencePlan(0.9, false).sniffEvery).toBeNull();
+    let last = Infinity;
+    for (let s = 0; s <= 1; s += 0.05) { const v = ambiencePlan(s, false).sniffStrength; expect(v).toBeLessThanOrEqual(last); last = v; }
+  });
+  it("copes with missing numbers", () => {
+    expect(ambiencePlan(NaN, false).chirp).toBe(true);
+    expect(ambiencePlan(0, false, NaN).steps).toBe(5);
   });
 });

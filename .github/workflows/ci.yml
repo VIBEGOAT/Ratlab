@@ -16,7 +16,7 @@ jobs:
       # regenerates the generated docs and the pre-baked study, then lints, type-checks, runs the unit tests and checks bundle budgets
       - run: npm run ci
       - name: Fail if generated files changed (they must be committed)
-        run: git diff --exit-code -- data docs/fidelity-table.md apps/web/public/prewarm
+        run: git diff --exit-code -- data docs/fidelity-table.md apps/web/src/prewarm
 
   e2e:
     runs-on: ubuntu-latest

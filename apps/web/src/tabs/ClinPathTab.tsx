@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { markerLabel } from "../lib/endpoints";
 import type { Panel as PanelT } from "@eliminate/sim-core";
 import { LineChart } from "../components/Chart";
 import { Banner, NeedsTwin, Panel, Stat, TabHead, f1, ScrollBox } from "../components/ui";
@@ -13,7 +14,7 @@ function Table({ panel }: { panel: PanelT }) {
       <tbody>
         {Object.entries(panel).map(([k, a]) => (
           <tr key={k} className={a.flag ? "flag" : ""}>
-            <td>{k}</td><td className="small muted">{unitOf(k)}</td><td className="num">{f1(a.value, a.value < 10 ? 2 : 0)}</td><td className="num">{f1(a.lln, a.lln < 10 ? 2 : 0)}</td><td className="num">{f1(a.uln, a.uln < 10 ? 2 : 0)}</td><td className="num">{f1(a.xUln, 2)}</td><td>{a.flag}</td>
+            <td>{markerLabel(k)}</td><td className="small muted">{unitOf(k)}</td><td className="num">{f1(a.value, a.value < 10 ? 2 : 0)}</td><td className="num">{f1(a.lln, a.lln < 10 ? 2 : 0)}</td><td className="num">{f1(a.uln, a.uln < 10 ? 2 : 0)}</td><td className="num">{f1(a.xUln, 2)}</td><td>{a.flag}</td>
           </tr>
         ))}
       </tbody>
@@ -50,9 +51,9 @@ export default function ClinPathTab() {
               </div>
               <Panel title="Marker over time" right={
                 <select value={marker} onChange={(e) => setMarker(e.target.value)} aria-label="Marker" style={{ width: "auto" }}>
-                  {Object.keys(all).map((k) => <option key={k} value={k}>{k}</option>)}
+                  {Object.keys(all).map((k) => <option key={k} value={k}>{markerLabel(k)}</option>)}
                 </select>}>
-                <LineChart label={`${marker} over time`} series={[{ name: "Treated", x: d, y: series(t), color: "var(--c1)" }, { name: "Untreated twin", x: d, y: series(u), color: "var(--c2)", dash: "5 4" }]} xLabel="Study day" yLabel={`${marker} (${unitOf(marker)})`} marker={day} yMin={0} />
+                <LineChart label={`${markerLabel(marker)} over time`} series={[{ name: "Treated", x: d, y: series(t), color: "var(--c1)" }, { name: "Untreated twin", x: d, y: series(u), color: "var(--c2)", dash: "5 4" }]} xLabel="Study day" yLabel={`${markerLabel(marker)} (${unitOf(marker)})`} marker={day} yMin={0} />
               </Panel>
               <div className="grid">
                 <Panel title={`Clinical chemistry, day ${day}`}><Table panel={cp.chemistry} /></Panel>

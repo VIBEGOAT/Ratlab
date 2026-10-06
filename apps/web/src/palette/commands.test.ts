@@ -6,7 +6,7 @@ import { COMPOUNDS } from "../lib/setup";
 const actions = (over: Partial<PaletteActions> = {}): PaletteActions => ({
   goStory: vi.fn(), goLab: vi.fn(), setCompound: vi.fn(), setDisease: vi.fn(), startPresenter: vi.fn(), openNotes: vi.fn(),
   setTheme: vi.fn(), toggleCb: vi.fn(), cbOn: false, setQuality: vi.fn(), toggleSound: vi.fn(), soundOn: false, hasData: true,
-  exportCsv: vi.fn(), exportJson: vi.fn(), exportHtml: vi.fn(), rerun: vi.fn(), ...over,
+  exportCsv: vi.fn(), exportJson: vi.fn(), exportHtml: vi.fn(), rerun: vi.fn(), detail: "simple", toggleDetail: vi.fn(), ...over,
 });
 
 describe("command list", () => {
@@ -18,7 +18,9 @@ describe("command list", () => {
     expect(CHAPTERS.length).toBe(12);
     for (const s of SECTIONS) for (const [v] of s.views) expect(ids).toContain(`lab-${v}`);
     for (const c of COMPOUNDS) expect(ids).toContain(`compound-${c.key}`);
-    expect(SECTIONS.flatMap((s) => s.views).length).toBe(16);
+    // the Overview plus the sixteen analysis views
+    expect(SECTIONS.flatMap((s) => s.views).length).toBe(17);
+    expect(ids).toContain("lab-overview");
   });
 
   it("runs the right action", () => {
@@ -39,6 +41,8 @@ describe("command list", () => {
     expect(buildCommands(actions()).filter((c) => c.group === "Export").length).toBe(3);
     expect(buildCommands(actions({ soundOn: true })).find((c) => c.id === "sound")!.title).toBe("Turn sound off");
     expect(buildCommands(actions({ cbOn: true })).find((c) => c.id === "cb")!.title).toMatch(/off/);
+    expect(buildCommands(actions({ detail: "simple" })).find((c) => c.id === "detail")!.title).toBe("Lab: show expert detail");
+    expect(buildCommands(actions({ detail: "expert" })).find((c) => c.id === "detail")!.title).toBe("Lab: simple view");
   });
 });
 

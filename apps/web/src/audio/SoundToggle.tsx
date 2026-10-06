@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { disableSound, enableSound, onSoundChange, soundIsOn, uiTick } from "./index";
 
 /** Off by default. Turning it on is the viewer's choice, and it loads the audio code only then. */
-export function SoundToggle({ className = "ghost" }: { className?: string }) {
+export function SoundToggle({ className = "ghost", offText = "Sound off", onText = "Sound on", hint = "Quiet interface ticks, and a soft heartbeat during the toxicity chapters", children }: { className?: string; offText?: string; onText?: string; hint?: string; children?: React.ReactNode }) {
   const [on, setOn] = useState(soundIsOn());
   const [unavailable, setUnavailable] = useState(false);
   useEffect(() => onSoundChange(setOn), []);
@@ -11,7 +11,7 @@ export function SoundToggle({ className = "ghost" }: { className?: string }) {
       type="button"
       className={className}
       aria-pressed={on}
-      title={unavailable ? "Sound is not available in this browser" : "Quiet interface ticks, and a soft heartbeat during the toxicity chapters"}
+      title={unavailable ? "Sound is not available in this browser" : hint}
       onClick={async () => {
         if (on) { disableSound(); return; }
         const ok = await enableSound();
@@ -19,7 +19,7 @@ export function SoundToggle({ className = "ghost" }: { className?: string }) {
         if (ok) uiTick();
       }}
     >
-      {unavailable ? "Sound unavailable" : on ? "Sound on" : "Sound off"}
+      {children}{unavailable ? "Sound unavailable" : on ? onText : offText}
     </button>
   );
 }

@@ -32,6 +32,8 @@ export interface PaletteActions {
   exportJson: () => void;
   exportHtml: () => void;
   rerun: () => void;
+  detail: "simple" | "expert";
+  toggleDetail: () => void;
 }
 
 const DISEASES: Array<[DiseaseChoice, string]> = [
@@ -58,6 +60,7 @@ export function buildCommands(a: PaletteActions): Command[] {
   out.push({ id: "theme-system", title: "Theme: follow the system", group: "Appearance", keywords: "auto colour color mode", run: () => a.setTheme("system") });
   out.push({ id: "cb", title: a.cbOn ? "Turn off the colour-blind-safe palette" : "Turn on the colour-blind-safe palette", group: "Appearance", keywords: "accessibility colour color", run: a.toggleCb });
   for (const q of ["auto", "high", "low"] as const) out.push({ id: `quality-${q}`, title: `3D quality: ${q}`, group: "Appearance", keywords: "graphics performance", run: () => a.setQuality(q) });
+  out.push({ id: "detail", title: a.detail === "simple" ? "Lab: show expert detail" : "Lab: simple view", group: "Appearance", keywords: "simple expert detail tables advanced", run: a.toggleDetail });
   out.push({ id: "sound", title: a.soundOn ? "Turn sound off" : "Turn sound on", group: "Appearance", keywords: "audio mute heartbeat", run: a.toggleSound });
   if (a.hasData) {
     out.push({ id: "export-csv", title: "Export animal data (CSV)", group: "Export", keywords: "download", run: a.exportCsv });

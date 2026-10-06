@@ -4,6 +4,13 @@ import { LineChart } from "../components/Chart";
 import { ArenaScene, type ArenaMode } from "../three/ArenaScene";
 import { SceneBoundary, useKickResize, webglAvailable } from "../three/RatScene";
 import { Banner, Empty, NeedsTwin, Panel, TabHead, f1, ScrollBox } from "../components/ui";
+import { Expert } from "../components/motion";
+import { useRatAmbience } from "../audio/useRatAmbience";
+
+const FOB_LABEL: Record<string, string> = {
+  posture: "Posture", gait: "Gait", arousal: "Arousal", reactivity: "Reaction to touch", tremor: "Tremor", ataxia: "Unsteady movement (ataxia)", convulsions: "Convulsions",
+  gripStrengthPct: "Grip strength", rotarodLatencyPct: "Time on a rotating rod", startleAmplitudePct: "Startle response", prepulseInhibitionPct: "Prepulse inhibition", hindLimbSplayPct: "Hind-limb splay",
+};
 
 const days = (n: number) => Array.from({ length: n + 1 }, (_, i) => i);
 
@@ -29,6 +36,8 @@ function Arena({ t, u, day }: { t: AnimalBundle; u: AnimalBundle; day: number })
   const gl = webglAvailable();
   useKickResize(mode);
   const info = ARENAS.find((a) => a[0] === mode)!;
+  const d = Math.min(t.days, Math.round(day));
+  useRatAmbience({ active: true, sickness: t.daily.sickness[d] ?? 0, humane: !!t.humane && d >= t.humane.day, activity: t.daily.behaviour.activityIndex?.[d] ?? 1, moving: mode !== "home" });
   return (
     <Panel title="Behaviour arenas" right={<div style={{ display: "flex", gap: 6 }}>{ARENAS.map(([m, l]) => <button key={m} aria-pressed={mode === m} onClick={() => setMode(m)} style={{ fontWeight: mode === m ? 700 : 500 }}>{l}</button>)}</div>}>
       <div style={{ height: 380, background: "var(--surface-2)", borderRadius: 6, overflow: "hidden" }}>
@@ -96,13 +105,16 @@ export default function BehaviourTab() {
                     </tbody>
                   </table></ScrollBox>
                 </Panel>
+              </div>
+              <Expert label="the observation battery, learning curve and track">
+              <div className="grid">
                 <Panel title="Observation battery (Irwin and FOB style)">
                   <ScrollBox><table>
                     <thead><tr><th>Item</th><th className="num">Treated</th><th className="num">Untreated</th></tr></thead>
                     <tbody>
-                      {(["posture", "gait", "arousal", "reactivity", "tremor", "ataxia", "convulsions"] as const).map((k) => <tr key={k}><td>{k} (0 normal)</td><td className="num">{fob[k]}</td><td className="num">{fobU[k]}</td></tr>)}
-                      {(["gripStrengthPct", "rotarodLatencyPct", "startleAmplitudePct", "prepulseInhibitionPct", "hindLimbSplayPct"] as const).map((k) => <tr key={k}><td>{k.replace(/Pct$/, "")} (% of baseline)</td><td className="num">{f1(fob[k], 0)}</td><td className="num">{f1(fobU[k], 0)}</td></tr>)}
-                      <tr><td>righting reflex success</td><td className="num">{f1(fob.rightingReflex * 100, 0)}%</td><td className="num">{f1(fobU.rightingReflex * 100, 0)}%</td></tr>
+                      {(["posture", "gait", "arousal", "reactivity", "tremor", "ataxia", "convulsions"] as const).map((k) => <tr key={k}><td>{FOB_LABEL[k]} (0 is normal)</td><td className="num">{fob[k]}</td><td className="num">{fobU[k]}</td></tr>)}
+                      {(["gripStrengthPct", "rotarodLatencyPct", "startleAmplitudePct", "prepulseInhibitionPct", "hindLimbSplayPct"] as const).map((k) => <tr key={k}><td>{FOB_LABEL[k]} (% of baseline)</td><td className="num">{f1(fob[k], 0)}</td><td className="num">{f1(fobU[k], 0)}</td></tr>)}
+                      <tr><td>Righting reflex success</td><td className="num">{f1(fob.rightingReflex * 100, 0)}%</td><td className="num">{f1(fobU.rightingReflex * 100, 0)}%</td></tr>
                     </tbody>
                   </table></ScrollBox>
                 </Panel>
@@ -117,6 +129,7 @@ export default function BehaviourTab() {
                   <p className="small muted">Five minutes at 5 Hz on the last study day. Dashed square marks the centre zone.</p>
                 </Panel>
               </div>
+              </Expert>
             </>
           );
         }}

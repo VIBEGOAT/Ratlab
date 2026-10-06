@@ -4,7 +4,7 @@ import { SIM_VERSION } from "@eliminate/sim-core";
 import { defaultSetup, defaultFocusId } from "./setup";
 import { prewarmApplies, type PrewarmFile } from "./prewarm";
 
-const path = new URL("../../public/prewarm/default.json", import.meta.url);
+const path = new URL("../prewarm/default.json", import.meta.url);
 
 describe("pre-baked default study", () => {
   it("applies only when the version and the whole setup match", () => {
@@ -25,5 +25,21 @@ describe("pre-baked default study", () => {
     expect(f.population.treated.length).toBe(f.population.n);
     expect(f.population.untreated.length).toBe(f.population.n);
     expect(f.twin.treated.days).toBe(f.payload.study.design.durationDays);
+  });
+});
+
+describe("pre-baked file shape", () => {
+  it("has no number arrays that JSON turned into {\"0\": …} objects (typed arrays must be written as arrays)", () => {
+    const f = JSON.parse(readFileSync(path, "utf8")) as unknown;
+    const bad: string[] = [];
+    const walk = (v: unknown, at: string) => {
+      if (bad.length > 5 || v === null || typeof v !== "object") return;
+      if (Array.isArray(v)) { v.forEach((x, i) => { if (i < 3) walk(x, `${at}[${i}]`); }); return; }
+      const keys = Object.keys(v);
+      if (keys.length > 0 && keys[0] === "0" && keys.every((k, i) => k === String(i))) { bad.push(at); return; }
+      for (const k of keys) walk((v as Record<string, unknown>)[k], `${at}.${k}`);
+    };
+    walk(f, "file");
+    expect(bad).toEqual([]);
   });
 });

@@ -1,5 +1,7 @@
 import type { RatOutcome, TwinBundle } from "@eliminate/sim-core";
 import type { StudyPayload } from "../worker/protocol";
+// imported as a URL, so the built file name carries a content hash and a changed file is never served from an old cache
+import prewarmUrl from "../prewarm/default.json?url";
 
 /**
  * The default study, pre-baked at build time (scripts/gen-prewarm.ts) so a first-ever visit opens instantly.
@@ -26,8 +28,7 @@ export function fetchPrewarm(): Promise<PrewarmFile | null> {
   if (!pending) {
     pending = (async () => {
       try {
-        const base = (import.meta as unknown as { env?: { BASE_URL?: string } }).env?.BASE_URL ?? "/";
-        const res = await fetch(`${base}prewarm/default.json`, { cache: "force-cache" });
+        const res = await fetch(prewarmUrl);
         if (!res.ok) return null;
         const j = (await res.json()) as PrewarmFile;
         return j && j.payload && j.twin && j.population ? j : null;

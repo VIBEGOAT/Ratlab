@@ -106,3 +106,77 @@ test("phase (f) screenshots: palette, dark theme, phone charts, log-axis PK char
   await page.screenshot({ path: `${SHOTS}/pkpd-390.png` });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
 });
+
+test("overview answers first and every tile opens its analysis", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await fresh(page, "#lab/overview");
+  await expect(page.getByRole("heading", { name: "No adverse effect up to 2.4 mg/kg/day. Adverse from 8 mg/kg/day." })).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByText("First sign of harm: AST (liver and muscle enzyme) in males, up 416%.")).toBeVisible();
+  await expect(page.getByRole("list", { name: "Dose groups, lowest first" }).getByRole("listitem")).toHaveCount(4);
+  const tile = page.getByRole("button", { name: /Highest dose with no adverse effect/ });
+  await expect(tile).toContainText("2.4", { timeout: 10_000 });
+  await tile.click();
+  await expect(page.getByRole("tab", { name: "Statistics and NOAEL" })).toHaveAttribute("aria-selected", "true");
+  await expect(page).toHaveURL(/#lab\/data/);
+  await page.getByRole("navigation", { name: "Lab sections" }).getByRole("button", { name: /^Overview/ }).click();
+  await page.getByRole("button", { name: /Humane endpoints/ }).click();
+  await expect(page.getByRole("tab", { name: "Humane endpoints and forecast" })).toHaveAttribute("aria-selected", "true");
+  expect(errors).toEqual([]);
+});
+
+test("simple mode folds expert tables away; expert mode shows them; readable names throughout", async ({ page }) => {
+  await fresh(page, "#lab/data");
+  await page.getByRole("tab", { name: "Statistics and NOAEL" }).click();
+  await expect(page.getByText("Troponin I (heart damage) in males, up 1510%")).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByText("chem.troponinI")).toHaveCount(0);
+  const reveal = page.getByRole("button", { name: "Show every endpoint comparison" });
+  await expect(reveal).toHaveAttribute("aria-expanded", "false");
+  await expect(page.getByRole("heading", { name: "Endpoint comparisons" })).toHaveCount(0);
+  await reveal.click();
+  await expect(page.getByRole("heading", { name: "Endpoint comparisons" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Hide every endpoint comparison" })).toHaveAttribute("aria-expanded", "true");
+  // the Expert switch shows everything and is remembered
+  await page.getByRole("button", { name: "Hide every endpoint comparison" }).click();
+  await page.getByRole("group", { name: "Level of detail" }).getByRole("button", { name: "Expert" }).click();
+  await expect(page.getByRole("heading", { name: "Endpoint comparisons" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /every endpoint comparison/ })).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByRole("group", { name: "Level of detail" }).getByRole("button", { name: "Expert" })).toHaveAttribute("aria-pressed", "true");
+});
+
+test("rat sounds: off by default, one toggle for the whole app, engine loads only on demand", async ({ page }) => {
+  await fresh(page, "#lab/overview");
+  const engine: string[] = [];
+  page.on("request", (r) => { if (/engine/.test(r.url())) engine.push(r.url()); });
+  const rat = page.getByRole("button", { name: /^Rat sounds/ });
+  await expect(rat).toHaveAttribute("aria-pressed", "false");
+  await page.waitForTimeout(500);
+  expect(engine).toEqual([]);
+  await rat.click();
+  await expect(rat).toHaveAttribute("aria-pressed", "true");
+  await expect(rat).toHaveText(/Rat sounds on/);
+  await expect(page.getByRole("button", { name: /^Sound on/ })).toHaveAttribute("aria-pressed", "true");
+  await rat.click();
+  await expect(rat).toHaveAttribute("aria-pressed", "false");
+});
+
+test("rat voices run without errors: chirp on an organ, listen to the heart, ambience", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
+  await fresh(page, "#lab/animal");
+  await page.getByRole("tab", { name: "3D rat" }).click();
+  await page.getByRole("button", { name: /^Rat sounds/ }).click();
+  await expect(page.getByRole("button", { name: /^Rat sounds on/ })).toBeVisible();
+  await page.getByRole("button", { name: /^Heart/ }).first().click();
+  const listen = page.getByRole("button", { name: /Listen to the heart/ });
+  await expect(listen).toBeVisible({ timeout: 30_000 });
+  await listen.click();
+  await expect(page.getByRole("button", { name: /Listening at \d+ beats a minute/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Listen to the heart/ })).toBeVisible({ timeout: 8_000 });
+  await page.getByRole("tab", { name: "Behaviour" }).click();
+  await page.waitForTimeout(7000); // at least one sniffing bout
+  expect(await page.evaluate(() => typeof AudioContext)).toBe("function");
+  expect(errors.filter((e) => !/GL Driver Message|GPU stall|WebGL/.test(e))).toEqual([]);
+});

@@ -29,6 +29,15 @@ export function disableSound(): void {
 
 export function setSoundPlan(p: SoundPlan): void { engine?.setPlan(p); }
 export function uiTick(): void { engine?.tick(); }
+export function ratChirp(): void { engine?.chirp(); }
+export function ratSniff(strength = 1): void { engine?.sniff(strength); }
+export function ratPatter(steps: number): void { engine?.patter(steps); }
+/** Plays the heart at `bpm` for `seconds`, turning sound on first if needed (the click is the viewer's choice). */
+export async function listenHeart(bpm: number, seconds = 4): Promise<boolean> {
+  const ok = await enableSound();
+  if (ok) engine?.heart(bpm, seconds);
+  return ok;
+}
 
 if (typeof document !== "undefined") {
   document.addEventListener("visibilitychange", () => { if (document.hidden) engine?.suspend(); else engine?.resume(); });
