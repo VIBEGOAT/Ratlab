@@ -18,8 +18,8 @@ describe("command list", () => {
     expect(CHAPTERS.length).toBe(12);
     for (const s of SECTIONS) for (const [v] of s.views) expect(ids).toContain(`lab-${v}`);
     for (const c of COMPOUNDS) expect(ids).toContain(`compound-${c.key}`);
-    // the Overview plus the sixteen analysis views
-    expect(SECTIONS.flatMap((s) => s.views).length).toBe(17);
+    // the Overview plus the seventeen analysis views (sixteen, and the dose calculator)
+    expect(SECTIONS.flatMap((s) => s.views).length).toBe(18);
     expect(ids).toContain("lab-overview");
   });
 

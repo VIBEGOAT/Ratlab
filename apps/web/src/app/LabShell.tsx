@@ -20,6 +20,7 @@ const views = {
   twin: lazy(() => import("../tabs/TwinTab")),
   population: lazy(() => import("../tabs/PopulationTab")),
   uncertainty: lazy(() => import("../tabs/CredibilityTab")),
+  calculator: lazy(() => import("../tabs/CalculatorTab")),
   translation: lazy(() => import("../tabs/TranslationTab")),
   validation: lazy(() => import("../tabs/ValidationTab")),
   fidelity: lazy(() => import("../tabs/FidelityTab")),

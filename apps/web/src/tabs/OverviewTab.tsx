@@ -119,7 +119,10 @@ export default function OverviewTab() {
                     </li>
                   ))}
                 </ul>
-                <button type="button" onClick={() => goLab("trust", "fidelity")}>See the sources <Icon name="arrow" size={16} /></button>
+                <div className="trust-actions">
+                  <button type="button" onClick={() => goLab("trust", "calculator")}>Dose calculator <Icon name="arrow" size={16} /></button>
+                  <button type="button" onClick={() => goLab("trust", "fidelity")}>See the sources <Icon name="arrow" size={16} /></button>
+                </div>
               </section>
             </div>
           );

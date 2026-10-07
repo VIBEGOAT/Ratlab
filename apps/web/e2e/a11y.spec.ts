@@ -64,7 +64,7 @@ test("every Lab view, the palette and the honesty drawer have no axe violations"
   test.setTimeout(400_000);
   await fresh(page, "#lab/animal");
   await expect(page.getByText(/Loading/)).toHaveCount(0, { timeout: 120_000 });
-  for (const [section, views] of [["animal", ["3D rat", "Behaviour", "Clinical observations"]], ["data", ["PK/PD", "Clinical pathology", "Necropsy and histopathology", "Statistics and NOAEL", "Disease"]], ["population", ["Untreated twin", "Humane endpoints and forecast", "Uncertainty and credibility"]], ["trust", ["Human translation", "Validation", "Fidelity and parameters", "Pitch and references"]]] as const) {
+  for (const [section, views] of [["animal", ["3D rat", "Behaviour", "Clinical observations"]], ["data", ["PK/PD", "Clinical pathology", "Necropsy and histopathology", "Statistics and NOAEL", "Disease"]], ["population", ["Untreated twin", "Humane endpoints and forecast", "Uncertainty and credibility"]], ["trust", ["Dose calculator", "Human translation", "Validation", "Fidelity and parameters", "Pitch and references"]]] as const) {
     await page.goto(`/#lab/${section}`);
     for (const v of views) {
       await page.getByRole("tab", { name: v }).click();

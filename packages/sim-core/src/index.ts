@@ -22,6 +22,7 @@ export * from "./analysis";
 export * from "./montecarlo";
 export * from "./sensitivity";
 export * from "./translation";
+export * from "./doseConversion";
 export * from "./validation";
 export * from "./credibility";
 export * from "./virtualControl";

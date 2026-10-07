@@ -10,7 +10,7 @@ A web-based in-silico rat laboratory. It simulates a repeated-dose rat study (do
 ## Two ways in
 
 - **Story** (the front page). Twelve scroll chapters around one pinned 3D rat: meet the rat, choose a compound and dose, dose day, days compressed, the humane endpoint, the untreated twin, a thousand virtual rats, behaviour, toward humans, how far to trust it, and an editable animals-spared figure.
-- **Lab** (`#lab`). Opens on an Overview of the answers, then five sections that hold all sixteen analysis views: Design, Animal, Data, Population, Translate & Trust. A Simple/Expert switch folds expert-only tables away, and optional rat sounds (sniffing, footsteps, a chirp, the heartbeat) are synthesised and off by default.
+- **Lab** (`#lab`). Opens on an Overview of the answers, then five sections that hold all seventeen analysis views (sixteen, plus a dose calculator): Design, Animal, Data, Population, Translate & Trust. The **dose calculator** converts a dose between a laboratory animal (14 species) and a person by body surface area, with the FDA 2005 starting-dose guidance as its source. A Simple/Expert switch folds expert-only tables away, and optional rat sounds (sniffing, footsteps, a chirp, the heartbeat) are synthesised and off by default.
 
 Also: **presenter mode** (press `P`; 3- and 8-minute scripted tracks, speaker notes on a second screen, a "which organ fails first?" audience prediction), a **command palette** (`Ctrl/Cmd+K`), optional **sound** (off by default), light, dark and colour-blind-safe themes, and exports (CSV, JSON, a printable HTML report).
 
@@ -61,7 +61,7 @@ Measured on the production build (`vite preview`) with Lighthouse 12, desktop pr
 
 Mobile profile (simulated slow 4G and a 4x slower CPU): performance 84, the other three 100. Desktop performance varies by a few points from run to run (94 to 99 seen).
 
-- **Accessibility:** axe-core finds no violations (WCAG 2.2 AA and best practice) in the Story, all five Lab sections and sixteen views, the palette, the honesty drawer, presenter mode and the notes window, in light, dark and colour-blind palettes. Charts are keyboard-readable and have data tables. Reduced motion is respected.
+- **Accessibility:** axe-core finds no violations (WCAG 2.2 AA and best practice) in the Story, all five Lab sections and seventeen views, the palette, the honesty drawer, presenter mode and the notes window, in light, dark and colour-blind palettes. Charts are keyboard-readable and have data tables. Reduced motion is respected.
 - **Bundle:** the entry JavaScript is 111.7 kB gzipped; the 3D engine, the audio engine and each Lab view are separate chunks. Budgets are enforced by `npm run bundle`.
 - **Visual regression:** 18 screenshots (six pages at 1440x900, 1920x1080 and 390x844).
 
@@ -99,7 +99,7 @@ Mobile profile (simulated slow 4G and a 4x slower CPU): performance 84, the othe
 - Every reference carries VERIFIED or UNVERIFIED in `data/references.json`; the Story shows only verified ones. No invented citations.
 - The animals-spared number shows its assumptions, which you can edit; virtual controls start at 0%.
 - Behaviour is a modelled endpoint, not a claim about what an animal feels. The humane-endpoint moment is serious and unhurried.
-- Honest status: 117 of 125 constants and 8 of 32 references are still unverified, and no real animal data is loaded.
+- Honest status: 115 of 125 constants and 8 of 32 references are still unverified, and no real animal data is loaded.
 
 ## Using your own data
 

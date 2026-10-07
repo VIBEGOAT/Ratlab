@@ -79,16 +79,18 @@
       "unit": "kg/m2 (body weight / surface area factor)",
       "source": "fda-hed-2005",
       "confidence": "high",
-      "status": "UNVERIFIED",
-      "note": "Confirm in Table 1 of the guidance."
+      "status": "VERIFIED",
+      "verifiedOn": "2026-10-08",
+      "note": "Read in Table 1 and Table 3 of the guidance (July 2005 PDF): rat km 6, reference weight 0.150 kg, working range 0.080 to 0.270 kg."
     },
     "translation.km.human": {
       "value": 37,
       "unit": "kg/m2",
       "source": "fda-hed-2005",
       "confidence": "high",
-      "status": "UNVERIFIED",
-      "note": "Adult human, 60 kg."
+      "status": "VERIFIED",
+      "verifiedOn": "2026-10-08",
+      "note": "Read in Table 1 and Table 3 of the guidance (July 2005 PDF): adult human, 60 kg, km 37."
     },
     "rat.organVolume.kidney": {
       "value": 0.0073,

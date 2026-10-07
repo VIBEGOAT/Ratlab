@@ -42,6 +42,6 @@ Meaning of the labels:
 
 ## Data status
 
-- Constants unverified: 117 of 125 (see `data/needs-expert-check.md`).
+- Constants unverified: 115 of 125 (see `data/needs-expert-check.md`).
 - References unverified: 8 of 30.
 - All compounds are fictional archetypes.

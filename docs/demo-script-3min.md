@@ -38,7 +38,7 @@ Never say: that it is accurate, validated, predictive of human outcomes, or a re
 ## Likely questions
 
 - **"Is this validated?"** No. No subsystem has been validated against real animal data. The Trust chapter and the footer say so, and the Lab's Validation view will report "no data" until real control data is loaded.
-- **"Where do the numbers come from?"** From published physiology where the table could be read, otherwise placeholders marked UNVERIFIED. 117 of 125 constants are unverified today, and 8 of 32 references. Every one is listed in the Lab under Translate & Trust, Fidelity and parameters.
+- **"Where do the numbers come from?"** From published physiology where the table could be read, otherwise placeholders marked UNVERIFIED. 115 of 125 constants are unverified today, and 8 of 32 references. Every one is listed in the Lab under Translate & Trust, Fidelity and parameters.
 - **"Can it predict a real drug?"** Not yet. The compounds are invented archetypes. Real compounds would need measured ADME data and calibration.
 - **"What would it take to be useful?"** Real rat control and dose-response data for one organ, a held-out comparison, and an expert review. See `docs/validation-roadmap.md` and `docs/expert-review-checklist.md`.
 - **"Does it hurt animals?"** No animals are used. The humane-endpoint slide shows when a real animal would have had to be euthanised to avoid suffering.

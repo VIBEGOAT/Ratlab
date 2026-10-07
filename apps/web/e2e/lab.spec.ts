@@ -180,3 +180,77 @@ test("rat voices run without errors: chirp on an organ, listen to the heart, amb
   expect(await page.evaluate(() => typeof AudioContext)).toBe("function");
   expect(errors.filter((e) => !/GL Driver Message|GPU stall|WebGL/.test(e))).toEqual([]);
 });
+
+test("dose calculator: rat to human, human to animal, wrong inputs, out-of-range weight", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await fresh(page, "#lab/trust");
+  await page.getByRole("tab", { name: "Dose calculator" }).click();
+  await expect(page.getByRole("heading", { name: "Dose calculator" })).toBeVisible();
+  await expect(page.getByText("must not be used to dose people")).toBeVisible();
+
+  // 100 mg/kg in a rat -> 16.2 mg/kg human (100 x 6 / 37) -> 973 mg for 60 kg -> 1.62 mg/kg starting dose
+  await page.getByLabel("Rat dose").fill("100");
+  const hero = page.locator(".calc-hero");
+  await expect(hero).toContainText("16.2", { timeout: 5000 });
+  await expect(hero).toContainText("mg/kg");
+  await expect(hero).toContainText("973 mg for a 60 kg person");
+  await expect(page.locator(".calc-card.good")).toContainText("1.62");
+  await expect(page.locator(".calc-card.good")).toContainText("after dividing by 10");
+
+  // a different person weight and a total dose per animal
+  await page.getByLabel("Human body weight (kg)").fill("70");
+  await expect(hero).toContainText("1,135 mg for a 70 kg person");
+  await page.getByLabel("Dose unit").selectOption("mgTotal");
+  await page.getByLabel("Rat dose").fill("25");
+  await page.getByLabel("Animal body weight").fill("250");
+  await expect(page.locator(".calc-card").nth(1)).toContainText("100 mg/kg");
+
+  // volume from a concentration: 25 mg at 5 mg/mL = 5 mL
+  await page.getByLabel("Dosing solution concentration (mg/mL), optional").fill("5");
+  await expect(page.locator(".calc-card").nth(1)).toContainText("5 mL");
+
+  // the same dose in every species
+  const across = page.getByRole("list", { name: "Equivalent dose in each species" });
+  await expect(across.getByRole("listitem")).toHaveCount(14);
+  await expect(across.getByRole("listitem").filter({ hasText: "Mouse" })).toContainText("200 mg/kg");
+
+  // a weight outside the standard range gets the guidance's alternative formula
+  await page.getByLabel("Weight unit").selectOption("kg");
+  await page.getByLabel("Animal body weight").fill("0.5");
+  await expect(page.getByText(/heavier than the guidance's standard range/)).toBeVisible();
+  await expect(page.getByText(/weight-based formula/)).toBeVisible();
+
+  // wrong inputs are named, not turned into nonsense
+  await page.getByLabel("Animal body weight").fill("");
+  await expect(page.getByRole("status").filter({ hasText: "positive number" })).toBeVisible();
+  await page.getByLabel("Animal body weight").fill("0.25");
+  await page.getByLabel("Rat dose").fill("-3");
+  await expect(page.getByText("Enter a dose greater than zero.")).toBeVisible();
+
+  // human to animal
+  await page.getByRole("button", { name: "Human to animal" }).click();
+  await page.getByLabel("Animal species").selectOption("mouse");
+  await page.getByLabel("Human dose").fill("10");
+  await expect(page.locator(".calc-hero")).toContainText("123", { timeout: 5000 });
+  await expect(page.locator(".calc-hero")).toContainText("Mouse equivalent dose");
+
+  // the working and the verified source
+  await page.getByText("Show the working").click();
+  await expect(page.getByText(/Tables 1 and 3 and the default safety factor of 10 were read in the guidance itself \(VERIFIED\)/)).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("dose calculator can start from this study's NOAEL and is reachable from the Overview and the palette", async ({ page }) => {
+  await fresh(page, "#lab/overview");
+  await expect(page.getByRole("heading", { name: /No adverse effect up to/ })).toBeVisible({ timeout: 60_000 });
+  await page.getByRole("button", { name: /^Dose calculator/ }).click();
+  await expect(page.getByRole("tab", { name: "Dose calculator" })).toHaveAttribute("aria-selected", "true");
+  await page.getByRole("button", { name: /Use this study's rat NOAEL/ }).click();
+  await expect(page.getByLabel("Rat dose")).toHaveValue("2.4");
+  await expect(page.locator(".calc-hero")).toContainText("0.389");
+  await page.goto("/#lab/design");
+  await page.keyboard.press("Control+k");
+  await page.getByRole("combobox", { name: "Search commands" }).fill("calculator");
+  await expect(page.getByRole("dialog", { name: "Command palette" }).getByRole("option").first()).toContainText("Dose calculator");
+});

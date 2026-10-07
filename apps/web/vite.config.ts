@@ -21,8 +21,11 @@ function inlineCss(): Plugin {
           const name = href.replace(/^.*\/assets\//, "assets/");
           const asset = bundle[name];
           if (!asset || asset.type !== "asset" || typeof asset.source !== "string") return tag;
-          // the file stays in the build: lazily loaded chunks (the Lab) still list it as a dependency to preload
-          return `<style>${asset.source}</style>`;
+          // the file stays in the build, because lazily loaded chunks (the Lab) list it as a dependency to preload,
+          // but its content is already in the page, so it becomes a stub (no second download of the rules or the font)
+          const css = asset.source;
+          asset.source = "/* these styles are inlined in index.html */";
+          return `<style>${css}</style>`;
         });
       },
     },
