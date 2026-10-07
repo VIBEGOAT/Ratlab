@@ -5,6 +5,7 @@ import type { Plugin } from "vite";
 /**
  * Inlines the (small) stylesheet into index.html on build, so the first paint needs only the HTML.
  * A separate CSS file is a render-blocking round trip, which is the slowest step on a slow connection.
+ * The CSS file itself is kept, because lazy chunks reference it.
  */
 function inlineCss(): Plugin {
   return {
@@ -20,7 +21,7 @@ function inlineCss(): Plugin {
           const name = href.replace(/^.*\/assets\//, "assets/");
           const asset = bundle[name];
           if (!asset || asset.type !== "asset" || typeof asset.source !== "string") return tag;
-          delete bundle[name];
+          // the file stays in the build: lazily loaded chunks (the Lab) still list it as a dependency to preload
           return `<style>${asset.source}</style>`;
         });
       },
