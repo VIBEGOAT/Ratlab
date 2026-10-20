@@ -4,7 +4,7 @@ import { mkdirSync } from "node:fs";
 const SHOTS = "e2e/screenshots/phase-f";
 mkdirSync(SHOTS, { recursive: true });
 
-async function fresh(page: Page, hash = "") {
+async function fresh(page: Page, hash = "#story") {
   await page.goto("about:blank");
   await page.goto("/#story");
   await page.evaluate(() => { localStorage.clear(); localStorage.setItem("quality", "low"); localStorage.setItem("no3d", "1"); });

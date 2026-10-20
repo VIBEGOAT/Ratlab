@@ -25,3 +25,11 @@ The integrated calculator converts rat mg/kg to adult-human mg/kg using standard
 JSON exports contain the complete run settings, model version, both animal bundles, and organ responses at the selected day. CSV exports include hourly plasma and tissue concentrations, both doses, regimen, seed, sex, strain, and age. Exports always refer to the completed run, not changed-but-unrun inputs.
 
 Unit tests cover input validation, recovery dose scheduling, matched physiology, reproducibility, different exposure across dose arms, and honest missing-mechanism reporting. Browser tests exercise the opening route, dose changes, recovery, day scrubbing, organ selection, HED, exports, cancellation/retry, accessibility, and mobile width.
+
+## Learning interface
+
+The default experience has three steps: explore the rat, compare exposure, and translate the dose. Basic setup shows compound, dose, and duration. Recovery, route, sex, and reproducibility settings are available under More options. On narrow screens, Edit experiment expands the setup so the rat stays visible without a long form above it.
+
+The rat viewer uses the same completed `AnimalBundle` and selected day as the organ cards. The 3D scene supports surface/internal layers, direct organ selection, drag rotation, keyboard-accessible rotation/reset buttons, and optional illustrative motion. The organ map provides the same selection and results when WebGL is unavailable, a software renderer is detected, or a context is lost. Slow devices can opt into 3D explicitly. Reduced-motion settings stop ambient motion; the timeline advances only after Play. It stops when hidden, when changing steps, or when starting a run. 3D rendering pauses outside the viewport and while the document is hidden.
+
+Charts and the body-surface-area calculator appear in their own steps. Editing settings keeps the completed results clearly labeled until a new run finishes. Simulation algorithms and injury coverage are unchanged. The shared style budget is 14 KiB gzipped; the production HTML remains within its existing 60 KiB limit.

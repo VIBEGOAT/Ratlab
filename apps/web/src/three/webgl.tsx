@@ -53,10 +53,10 @@ export function useKickResize(dep: unknown): void {
   }, [dep]);
 }
 
-export class SceneBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { failed: boolean }> {
+export class SceneBoundary extends Component<{ children: ReactNode; fallback: ReactNode; onError?: () => void }, { failed: boolean }> {
   override state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }
-  override componentDidCatch(e: unknown) { console.error("3D scene failed", e); }
+  override componentDidCatch(e: unknown) { console.error("3D scene failed", e); this.props.onError?.(); }
   override render() { return this.state.failed ? this.props.fallback : this.props.children; }
 }
 

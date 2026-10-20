@@ -38,6 +38,25 @@ function MainApp() {
   const setCb = useStore((s) => s.setCbPalette);
   const run = useStore((s) => s.runStudy);
   const started = useRef(false);
+  const moreMenu = useRef<HTMLDetailsElement>(null);
+  const focused = mode === "toxicity" || mode === "learn";
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    if (moreMenu.current) moreMenu.current.open = false;
+  }, [mode]);
+  useEffect(() => {
+    const close = (e: PointerEvent) => { if (moreMenu.current && !moreMenu.current.contains(e.target as Node)) moreMenu.current.open = false; };
+    const escape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && moreMenu.current?.open) {
+        moreMenu.current.open = false;
+        moreMenu.current.querySelector("summary")?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", close);
+    document.addEventListener("keydown", escape);
+    return () => { document.removeEventListener("pointerdown", close); document.removeEventListener("keydown", escape); };
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -65,22 +84,25 @@ function MainApp() {
   const nextTheme = theme === "dark" ? "light" : theme === "light" ? "system" : "dark";
   return (
     <div className="app">
-      <a href="#main" className="sr-only">Skip to content</a>
-      <header className="topbar">
-        <div className="brand"><span className="brand-mark" aria-hidden="true" />VAST</div>
+      <a href="#main" className="sr-only skip-link">Skip to content</a>
+      <header className={`topbar${focused ? " topbar-focused" : ""}`}>
+        <button className="brand" onClick={() => setMode("toxicity")} aria-label="VAST home"><span className="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m5 6 7 12 7-12M8 6l4 7 4-7" stroke="var(--bg)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg></span>VAST<span className="brand-caption">A virtual learning lab.</span></button>
         <div className="segmented" role="group" aria-label="Mode">
           <button type="button" aria-pressed={mode === "toxicity"} onClick={() => setMode("toxicity")}>Toxicity</button>
           <button type="button" aria-pressed={mode === "learn"} onClick={() => setMode("learn")}>Learn</button>
-          <button type="button" aria-pressed={mode === "story"} onClick={() => setMode("story")}>Story</button>
-          <button type="button" aria-pressed={mode === "lab"} onClick={() => setMode("lab")}>Lab</button>
+          {!focused && <><button type="button" aria-pressed={mode === "story"} onClick={() => setMode("story")}>Story</button>
+          <button type="button" aria-pressed={mode === "lab"} onClick={() => setMode("lab")}>Lab</button></>}
         </div>
         <div className="right">
-          <button className="ghost palette-btn" onClick={openPalette} aria-keyshortcuts="Control+K Meta+K">Search <kbd>{/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K"}</kbd></button>
+          {focused ? <details className="app-more" ref={moreMenu}><summary aria-label="More options">More <span aria-hidden="true">⌄</span></summary><div className="app-more-menu">
+            <p>Go further</p><button onClick={() => setMode("story")}>Story<small>The idea behind VAST</small></button><button onClick={() => setMode("lab")}>Lab<small>Advanced tools & full study data</small></button>
+            <p>Preferences</p><button onClick={() => { openPalette(); if (moreMenu.current) moreMenu.current.open = false; }}>Search<small>Find a tool or page</small></button><button onClick={() => setCb(!cb)} aria-pressed={cb}>CB palette {cb ? "on" : "off"}<small>Alternative injury colors</small></button>
+          </div></details> : <button className="ghost palette-btn" onClick={openPalette} aria-keyshortcuts="Control+K Meta+K">Search <kbd>{/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K"}</kbd></button>}
           {(mode === "story" || mode === "lab") && <SoundToggle className="ghost hide-narrow" />}
           {(mode === "story" || mode === "lab") && <button className="ghost hide-narrow" onClick={() => usePresenter.getState().start()} title="Presenter mode (P)">Present</button>}
           {(mode === "story" || mode === "lab") && <ExportMenu />}
-          <button className="ghost hide-narrow" onClick={() => setCb(!cb)} aria-pressed={cb} title="Colour-blind-safe damage colours">{cb ? "CB palette on" : "CB palette"}</button>
-          <button className="ghost" onClick={() => setTheme(nextTheme)} title={`Switch to ${nextTheme}`}>Theme: {theme === "system" ? "Auto" : theme === "dark" ? "Dark" : "Light"}</button>
+          {!focused && <button className="ghost hide-narrow" onClick={() => setCb(!cb)} aria-pressed={cb} title="Colour-blind-safe damage colours">{cb ? "CB palette on" : "CB palette"}</button>}
+          <button className={`ghost${focused ? " app-theme" : ""}`} onClick={() => setTheme(nextTheme)} title={`Switch to ${nextTheme}`} aria-label={`Theme: ${theme === "system" ? "Auto" : theme === "dark" ? "Dark" : "Light"}`}>{focused ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" /></svg> : `Theme: ${theme === "system" ? "Auto" : theme === "dark" ? "Dark" : "Light"}`}</button>
         </div>
       </header>
       {mode === "toxicity" ? <Suspense fallback={<div className="empty">Loading the toxicity workbench…</div>}><ToxicityPage /></Suspense> : mode === "learn" ? <Suspense fallback={<div className="empty">Loading the practical…</div>}><LearnPage /></Suspense> : mode === "story" ? <StoryPage /> : <Suspense fallback={<div className="empty" style={{ margin: 24 }}>Loading the Lab…</div>}><LabShell /></Suspense>}

@@ -1,25 +1,40 @@
-import { type Organ, type AnimalBundle } from "@eliminate/sim-core";
+import { useId } from "react";
+import { ORGANS, type Organ, type AnimalBundle } from "@eliminate/sim-core";
 import { gradeVar } from "../design/damage";
+import { ORGAN_LABEL } from "../lib/setup";
 import { organResponse, type Experiment } from "./experiment";
 
-/** Schematic side view, deliberately labeled rather than presented as anatomical evidence. */
-export function OrganMap({ experiment, animal, day, selected }: { experiment: Experiment; animal: AnimalBundle; day: number; selected: Organ }) {
-  const color = (organ: Organ) => { const r = organResponse(experiment, animal, organ, day); return r.grade === null ? "var(--muted)" : gradeVar(r.grade); };
-  const style = (organ: Organ) => ({ fill: color(organ), opacity: selected === organ ? 0.95 : 0.45, stroke: selected === organ ? "var(--ink)" : color(organ), strokeWidth: selected === organ ? 2 : 1 });
-  return <svg viewBox="0 0 640 350" className="tox-rat" role="img" aria-label={`Schematic rat organ map at day ${day}; select an organ card for its response.`}>
-    <defs><pattern id="tox-grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="var(--line)" strokeWidth="0.5" /></pattern></defs>
-    <rect width="640" height="350" fill="url(#tox-grid)" />
-    <path d="M150 228C90 236 40 250 8 286" stroke="var(--muted)" strokeWidth="6" fill="none" strokeLinecap="round" />
-    <path d="M150 228C140 170 205 118 300 116C360 115 410 128 450 150C470 130 492 124 504 134C512 142 508 156 498 164C530 176 560 194 586 214C600 224 596 236 582 238C560 242 520 244 486 248C470 262 448 270 430 270L436 292C437 300 426 302 422 296L410 270C360 276 300 276 250 270L246 296C245 304 233 304 232 296L228 266C190 260 158 250 150 228Z" fill="var(--surface)" stroke="var(--line-strong)" strokeWidth="2" />
-    <circle cx="532" cy="190" r="4" fill="var(--ink)" />
-    <path d="M470 166C464 149 485 145 496 155C514 161 522 176 510 183C494 186 480 178 470 166Z" style={style("brain")} />
-    <path d="M414 194C399 174 381 188 388 205L408 228L429 207C440 187 424 179 414 194Z" style={style("heart")} />
-    <path d="M335 196C342 174 384 184 387 211C381 237 357 241 330 226Z" style={style("liver")} />
-    <path d="M292 170C273 160 267 185 278 197C289 207 304 194 294 186C286 180 303 181 292 170Z" style={style("kidney")} />
-    <path d="M310 184C329 174 335 199 324 211C313 221 298 208 308 200C316 194 299 195 310 184Z" style={style("kidney")} />
-    <path d="M228 204C215 185 264 193 268 210S222 220 235 232S289 233 290 249L263 251C252 238 214 246 209 225Z" style={style("gut")} />
-    <path d="M226 246L240 283M409 246L426 283" stroke={color("marrow")} strokeWidth={selected === "marrow" ? 9 : 6} opacity={selected === "marrow" ? 1 : 0.5} fill="none" strokeLinecap="round" />
-    <text x="24" y="35" fill="var(--muted)" fontSize="11" fontFamily="monospace">VAST / ORGAN RESPONSE</text>
-    <text x="24" y="325" fill="var(--muted)" fontSize="11">Schematic · not anatomical scale</text>
-  </svg>;
+const PINS: Record<Organ, [number, number]> = { brain: [79, 29], heart: [65, 42], liver: [55, 54], kidney: [46, 32], gut: [36, 56], marrow: [67, 77] };
+
+/** The lightweight viewer shares the simulated state and selection with the 3D viewer. */
+export function OrganMap({ experiment, animal, day, selected, onSelect }: {
+  experiment: Experiment; animal: AnimalBundle; day: number; selected: Organ; onSelect: (organ: Organ) => void;
+}) {
+  const id = useId().replace(/:/g, "");
+  const color = (organ: Organ) => { const r = organResponse(experiment, animal, organ, day); return r.grade === null ? "var(--map-idle)" : gradeVar(r.grade); };
+  const style = (organ: Organ) => ({ fill: color(organ), opacity: selected === organ ? 1 : 0.6, stroke: "var(--surface-solid)", strokeWidth: 2 });
+  return <div className="organ-map">
+    <svg viewBox="0 0 640 350" className="tox-rat" role="img" aria-label={`Illustrative rat organ map at day ${day}. Organ buttons below select the same results as the 3D view.`}>
+      <defs>
+        <linearGradient id={`${id}-body`} x1="0" x2="0.3" y2="1"><stop stopColor="var(--map-body-light)" /><stop offset="1" stopColor="var(--map-body)" /></linearGradient>
+        <radialGradient id={`${id}-shadow`}><stop stopColor="var(--map-shadow)" stopOpacity=".3" /><stop offset="1" stopColor="var(--map-shadow)" stopOpacity="0" /></radialGradient>
+      </defs>
+      <ellipse cx="345" cy="291" rx="260" ry="24" fill={`url(#${id}-shadow)`} />
+      <path d="M168 236C105 254 68 240 31 265C7 281 30 302 64 287" stroke="var(--map-pink)" strokeWidth="9" fill="none" strokeLinecap="round" />
+      <path d="M169 237C133 199 170 126 256 110C332 96 407 120 449 145C472 134 494 135 512 153C527 171 547 186 580 204C600 215 596 229 578 233C550 240 517 241 487 244L460 262L470 283L443 286L423 257C365 278 297 273 254 260L240 284L212 283L219 253C193 249 179 243 169 237Z" fill={`url(#${id}-body)`} stroke="var(--map-outline)" strokeWidth="1.3" />
+      <path d="M462 153C438 126 453 105 473 114C496 123 495 145 485 159" fill="var(--map-pink)" stroke="var(--map-outline)" />
+      <path d="M466 143C454 126 464 119 475 127C486 134 483 144 479 149" fill="var(--map-pink-deep)" opacity=".45" />
+      <ellipse cx="527" cy="184" rx="4" ry="5" fill="var(--map-eye)" /><circle cx="528" cy="182" r="1.2" fill="#fff" />
+      <ellipse cx="588" cy="214" rx="5" ry="4" fill="var(--map-pink-deep)" />
+      <path d="M566 219L609 209M567 225L612 226M563 228L600 242" fill="none" stroke="var(--map-outline)" strokeLinecap="round" opacity=".6" />
+      <path d="M480 160C473 149 488 143 500 151C514 156 524 172 515 179C503 183 486 173 480 160Z" style={style("brain")} />
+      <path d="M417 192C406 179 391 187 397 200L411 219L429 201C438 185 425 180 417 192Z" style={style("heart")} />
+      <path d="M341 196C348 178 386 185 390 209C382 232 355 236 333 222Z" style={style("liver")} />
+      <path d="M292 159C273 149 267 174 278 186C289 196 304 183 294 175C286 169 303 170 292 159Z" style={style("kidney")} />
+      <path d="M318 174C337 164 343 189 332 201C321 211 306 198 316 190C324 184 307 185 318 174Z" style={style("kidney")} />
+      <path d="M244 201C229 184 272 189 279 205S239 216 249 228S296 230 298 244L277 247C263 233 225 243 224 222Z" style={style("gut")} />
+      <path d="M230 247L224 273M433 251L451 275" stroke={color("marrow")} strokeWidth="8" strokeLinecap="round" />
+    </svg>
+    <div className="organ-map-pins" role="group" aria-label="Select an organ on the rat">{ORGANS.map((o) => <button key={o} aria-label={`Explore ${ORGAN_LABEL[o]}`} aria-pressed={selected === o} onClick={() => onSelect(o)} style={{ left: `${PINS[o][0]}%`, top: `${PINS[o][1]}%`, "--pin-color": color(o) } as React.CSSProperties}><i /><span>{ORGAN_LABEL[o]}</span></button>)}</div>
+  </div>;
 }

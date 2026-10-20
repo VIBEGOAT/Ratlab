@@ -1,0 +1,44 @@
+/* Quiet navigation and shared surfaces across the learning lab. */
+.topbar { min-height: 64px; padding: 12px max(24px, calc((100vw - 1280px) / 2)); gap: 24px; }
+button.brand { padding: 0; background: transparent; border: 0; border-radius: 0; color: var(--ink); font-size: 17px; letter-spacing: -.04em; }
+.brand-mark { display: grid; place-items: center; width: 27px; height: 27px; border-radius: 9px; }
+.brand-mark svg { width: 23px; height: 23px; }
+.brand-caption { border-left: 1px solid var(--line-strong); padding-left: 12px; margin-left: 3px; font-size: 11px; color: var(--muted); font-weight: 400; letter-spacing: normal; }
+.topbar .segmented { background: transparent; border: 0; gap: 3px; }
+.topbar .segmented button { font-size: 12px; font-weight: 500; padding: 7px 13px; }
+.topbar .segmented button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); box-shadow: none; }
+.topbar .right { gap: 8px; }
+.app-theme { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; }
+.app-more { position: relative; }
+.app-more > summary { cursor: pointer; font-size: 12px; color: var(--muted); padding: 6px 8px; list-style: none; border-radius: 8px; }
+.app-more > summary::-webkit-details-marker { display: none; }
+.app-more > summary > span { margin-left: 6px; }
+.app-more-menu { position: absolute; right: 0; top: calc(100% + 15px); min-width: 240px; padding: 8px; background: var(--surface-solid); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 10px 40px #00000019; display: grid; gap: 3px; }
+.app-more-menu > p { color: var(--muted); font-size: 10px; padding: 9px 10px 3px; }
+.app-more-menu > button { text-align: left; border: 0; border-radius: 10px; background: transparent; padding: 10px; font-size: 13px; }
+.app-more-menu > button:hover { background: var(--surface-2); }
+.app-more-menu small { display: block; color: var(--muted); font-size: 11px; margin-top: 3px; font-weight: 400; }
+.footer { padding: 16px 24px; background: var(--bg); font-size: 10px; }
+.panel { box-shadow: var(--shadow); }
+.lab-nav button, .subnav button { font-size: 12px; }
+.learn-hero h1 { letter-spacing: -.055em; }
+.learn-hero h1 span { color: var(--muted); }
+.learn-objectives { border-top: 1px solid var(--line); }
+.learn-objectives > summary { font-size: 14px; font-weight: 550; cursor: pointer; }
+.learn-objectives ol { padding-top: 18px; font-size: 13px; color: var(--muted); }
+.learn-notice { background: var(--surface); border-color: var(--line); font-size: 12px; }
+.learn-notice > summary { cursor: pointer; font-weight: 500; }
+.learn-notice > p { margin-top: 12px; color: var(--muted); }
+.learn-experiments button { border-color: var(--line); background: var(--surface); }
+.learn-number { font: 500 18px var(--f-body); }
+.learn-experiments button b { font-size: 13px; font-weight: 550; }
+.learn-toolbar { font-size: 12px; }
+.learn-toolbar p { font-size: 11px; margin-top: 5px; }
+.learn-actions button { font-size: 11px; }
+.learn-tags span { border: 0; background: var(--surface-2); padding: 6px 10px; font-size: 11px; }
+.learn-page .panel h2 { font-size: 23px; }
+.learn-page .panel p { font-size: 13px; }
+@media (max-width: 1100px) { .brand-caption { display: none; } .topbar { padding: 12px 24px; gap: 16px; } }
+@media (max-width: 760px) { .topbar { padding: 10px 16px; gap: 8px; min-height: 60px; } .topbar-focused { flex-wrap: nowrap; } .topbar-focused .segmented button { padding: 6px 9px; font-size: 11px; } .topbar-focused .right { flex-wrap: nowrap; gap: 2px; } .topbar-focused .right button { padding: 0; } .brand { gap: 6px; } .brand-mark { width: 24px; height: 24px; } button.brand { font-size: 15px; } .app-more > summary { padding: 6px; font-size: 11px; } .app-more > summary > span { margin-left: 2px; } .app-more-menu { right: -25px; } .app-more-menu > button { padding: 12px !important; } .footer { padding: 14px 16px; font-size: 10px; } }
+@media (min-width: 761px) and (max-width: 1100px) { .topbar:not(.topbar-focused) .hide-narrow { display: none !important; } .topbar:not(.topbar-focused) .right button, .topbar:not(.topbar-focused) .right summary { font-size: 11px; padding: 6px 8px; } }
+@media (max-width: 760px) { .rat-camera-controls button, .rat-view-switch button { min-height: 34px; } .tox-timeline { grid-template-columns: 40px minmax(0, 1fr); } .tox-play { width: 40px; height: 40px; } }

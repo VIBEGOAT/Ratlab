@@ -11,7 +11,7 @@ const SIZES = [
   { name: "390x844", width: 390, height: 844 },
 ] as const;
 
-async function fresh(page: Page, hash = "", theme?: "dark" | "light") {
+async function fresh(page: Page, hash = "#story", theme?: "dark" | "light") {
   await page.goto("about:blank");
   await page.goto("/#story");
   await page.evaluate((t) => { localStorage.clear(); localStorage.setItem("no3d", "1"); if (t) localStorage.setItem("theme", t); }, theme);

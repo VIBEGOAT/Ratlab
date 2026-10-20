@@ -1,4 +1,4 @@
-# ELIMINATE-Lab
+# VAST — Virtual Animal Studies for Toxicology
 
 **Every animal we spare starts with a simulation we can trust.**
 
@@ -9,12 +9,12 @@ A web-based in-silico rat laboratory. It simulates a repeated-dose rat study (do
 
 ## Start with toxicity
 
-The opening **VAST Toxicity** workbench connects dose and duration to simulated organ responses, pharmacokinetic curves, and human-equivalent dose conversion. Compare a selected daily dose with half that dose, inspect organ changes by day, and add a recovery period. The compound profiles are fictional; missing organ mechanisms are labeled **Not modeled**. See [workbench scope and methods](docs/toxicity-workbench.md).
+The opening **VAST Toxicity** workbench offers three learning steps: explore an interactive virtual rat, compare exposure curves, and translate the dose. Compare a selected daily dose with half that dose, inspect organ changes by day, and add a recovery period. The compound profiles are fictional; missing organ mechanisms are labeled **Not modeled**. See [workbench scope and methods](docs/toxicity-workbench.md).
 
-- **Toxicity** (`#toxicity` or the root page): focused experiment dashboard.
+- **Toxicity** (`#toxicity` or the root page): interactive 3D rat, organ map, and a playable study timeline.
 - **Learn** (`#learn`): a guided dose/exposure practical with a student notebook.
-- **Story** (`#story`): the original twelve-chapter introduction around a virtual rat.
-- **Lab** (`#lab`): the full exploratory simulator, study design, animal, data, population, and translation tools.
+- **Story** (More → Story, `#story`): the original twelve-chapter introduction around a virtual rat.
+- **Lab** (More → Lab, `#lab`): the full exploratory simulator, study design, animal, data, population, and translation tools.
 
 Also: **presenter mode** (press `P`; 3- and 8-minute scripted tracks, speaker notes on a second screen, a "which organ fails first?" audience prediction), a **command palette** (`Ctrl/Cmd+K`), optional **sound** (off by default), light, dark and colour-blind-safe themes, and exports (CSV, JSON, a printable HTML report).
 
@@ -37,7 +37,7 @@ npm run ci           # everything below, in order
 |---|---|
 | `npm run lint` | ESLint with TypeScript, React hooks and jsx-a11y rules |
 | `npm run typecheck` | Strict TypeScript, both packages |
-| `npm test` | 266 unit tests (199 simulation, 67 interface) unit tests (simulation core and web app) |
+| `npm test` | 310 unit tests (215 simulation core, 95 web app) |
 | `npm run bundle` | Builds, then enforces bundle-size budgets and writes `docs/bundle-report.md` |
 | `npm run test:e2e` | Playwright: behaviour, axe accessibility scans, visual regression. Takes 20+ minutes in full; run one Playwright command at a time |
 | `npm run gen:prewarm` | Rebuilds the pre-baked default study (a unit test fails if it goes stale) |

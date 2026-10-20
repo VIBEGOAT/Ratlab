@@ -6,7 +6,7 @@ import AxeBuilder from "@axe-core/playwright";
  * in light, dark and the colour-blind palette. Automated checks catch about a third of problems; the keyboard and
  * screen-reader behaviour is covered by the other specs.
  */
-async function fresh(page: Page, hash = "") {
+async function fresh(page: Page, hash = "#story") {
   await page.goto("about:blank");
   await page.goto("/#story");
   await page.evaluate(() => { localStorage.clear(); localStorage.setItem("no3d", "1"); });

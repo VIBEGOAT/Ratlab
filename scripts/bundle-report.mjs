@@ -8,7 +8,7 @@ const dir = "apps/web/dist/assets";
 const BUDGET = {
   entry: 170 * 1024,   // the JavaScript every visitor downloads first, gzipped
   lazy: 260 * 1024,    // any single lazily loaded chunk, gzipped
-  css: 12 * 1024,      // all CSS, gzipped
+  css: 14 * 1024,      // all CSS, gzipped; includes the interactive rat and guided learning interface
   worker: 120 * 1024,  // the simulation worker, gzipped
 };
 
