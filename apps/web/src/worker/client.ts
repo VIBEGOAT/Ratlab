@@ -4,7 +4,7 @@ import type { Request, ResultOf, Response } from "./protocol";
  * Worker RPC with lanes. Each lane is its own worker, so a long forecast never blocks a study re-run,
  * and a lane can be cancelled by terminating its worker (the only reliable way to stop a busy worker).
  */
-export type Lane = "study" | "aux" | "pop";
+export type Lane = "study" | "aux" | "pop" | "toxicity";
 
 type Pending = { lane: Lane; resolve: (v: unknown) => void; reject: (e: Error) => void; onProgress?: (done: number, total: number) => void };
 

@@ -4,6 +4,8 @@ import "@fontsource-variable/geist";
 import "@fontsource-variable/geist-mono";
 import { App } from "./App";
 import "./styles.css";
+import "./learn/learn.css";
+import "./toxicity/toxicity.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

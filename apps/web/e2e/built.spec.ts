@@ -13,9 +13,9 @@ test("built site: Story loads, Lab opens, every section renders, no failed reque
   const errors: string[] = [], failed: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("response", (r) => { if (r.status() >= 400) failed.push(`${r.status()} ${r.url()}`); });
-  await page.goto(url!);
+  await page.goto(`${url}#story`);
   await page.evaluate(() => { localStorage.clear(); localStorage.setItem("no3d", "1"); });
-  await page.goto(url!);
+  await page.goto(`${url}#story`);
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Every animal we spare");
   await page.getByRole("button", { name: "Lab", exact: true }).click();
   await expect(page.getByRole("heading", { name: /No adverse effect|Adverse effects/ })).toBeVisible({ timeout: 120_000 });

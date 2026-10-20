@@ -6,7 +6,7 @@ mkdirSync(SHOTS, { recursive: true });
 
 async function fresh(page: Page, hash = "") {
   await page.goto("about:blank");
-  await page.goto("/");
+  await page.goto("/#story");
   await page.evaluate(() => { localStorage.clear(); localStorage.setItem("quality", "low"); localStorage.setItem("no3d", "1"); });
   await page.goto("about:blank");
   await page.goto(`/${hash}`);

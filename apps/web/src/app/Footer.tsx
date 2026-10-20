@@ -7,10 +7,13 @@ import { useStore } from "../store";
 /** Always-visible disclaimer plus an honest status chip that opens the verification panel. */
 export function Footer() {
   const [open, setOpen] = useState(false);
+  const mode = useStore((s) => s.mode);
   const goLab = useStore((s) => s.goLab);
   const nConst = listUnverifiedConstants().length;
   const totalConst = Object.keys(CONSTANTS).length;
   const nRef = listUnverifiedReferences().length;
+  if (mode === "toxicity") return <footer className="footer"><span>Simulated organ responses · Fictional compounds · Not validated against animal data.</span><span>No human safety inference.</span></footer>;
+  if (mode === "learn") return <footer className="footer"><span>Teaching simulation · Fictional compound and parameters.</span><span>Learning outcomes have not yet been evaluated.</span></footer>;
   return (
     <>
       <footer className="footer" role="contentinfo">
@@ -27,7 +30,7 @@ export function Footer() {
               <h2 id="honesty-title">What this prototype is</h2>
               <button className="ghost" onClick={() => setOpen(false)} autoFocus aria-label="Close">Close</button>
             </div>
-            <p style={{ color: "var(--ink-2)" }}>A research and education tool. It reduces and refines animal use by screening, by choosing doses and by showing humane endpoints in advance. It does not replace animal studies, and it has not been validated against real animal data.</p>
+            <p style={{ color: "var(--ink-2)" }}>A research and education tool. It is designed to support teaching and exploration of simulated studies; reductions in actual animal use have not been demonstrated. It does not replace animal studies, and it has not been validated against real animal data.</p>
             <div className="stats">
               <div className="stat warn"><span>Parameters awaiting verification</span><b>{nConst} / {totalConst}</b></div>
               <div className="stat warn"><span>References awaiting verification</span><b>{nRef} / {REFERENCES.length}</b></div>

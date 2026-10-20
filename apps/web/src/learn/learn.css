@@ -1,0 +1,47 @@
+.learn-page { width: min(1240px, 100%); margin: 0 auto; padding: 48px 28px 72px; display: flex; flex-direction: column; gap: 24px; flex: 1; }
+.learn-hero { display: grid; grid-template-columns: 1.4fr 1fr; gap: 40px; align-items: center; padding: 12px 0 16px; }
+.learn-hero h1 { font-size: clamp(38px, 5vw, 66px); margin: 16px 0; }
+.learn-hero h1 span { color: var(--accent); }
+.learn-intro { max-width: 56ch; color: var(--ink-2); font-size: 17px; }
+.learn-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.learn-tags span { border: 1px solid var(--line-strong); border-radius: 30px; padding: 5px 10px; font-size: 12px; color: var(--ink-2); }
+.learn-objectives { border-top: 3px solid var(--accent); padding: 24px; }
+.learn-objectives h2 { font-size: 23px; }
+.learn-objectives ol { margin: 0; padding-left: 22px; display: grid; gap: 14px; }
+.learn-notice { padding: 16px 20px; background: var(--accent-soft); border: 1px solid var(--line-strong); border-radius: 12px; color: var(--ink-2); font-size: 14px; }
+.learn-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+.learn-toolbar > div:first-child { flex: 1; min-width: 200px; }
+.learn-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.learn-reset { width: 100%; padding: 16px; border: 1px solid var(--warn); border-radius: 12px; display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.learn-experiments { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.learn-experiments button { display: flex; align-items: center; gap: 14px; border-radius: 12px; padding: 18px; text-align: left; }
+.learn-experiments button[aria-current="step"] { background: var(--accent-soft); border-color: var(--accent); }
+.learn-experiments small { display: block; color: var(--muted); font-size: 11px; margin-top: 5px; }
+.learn-number { color: var(--accent); font: 500 22px var(--f-mono); }
+.learn-workspace { scroll-margin-top: 110px; display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.3fr); gap: 20px; }
+.learn-workspace .panel { padding: 24px; }
+.learn-page h2 { font-size: 24px; }
+.learn-regimens { display: grid; gap: 5px; margin: 0; }
+.learn-regimens dt { font-size: 12px; color: var(--muted); }
+.learn-regimens dd { margin: 0 0 8px; font-family: var(--f-mono); font-size: 13px; }
+.learn-page fieldset { min-width: 0; border: 1px solid var(--line-strong); border-radius: 10px; padding: 16px; margin: 4px 0; }
+.learn-page legend { padding: 0 6px; font-weight: 600; }
+.learn-page fieldset label { display: flex; align-items: baseline; gap: 10px; padding: 8px 0; cursor: pointer; }
+.learn-page input[type="radio"] { accent-color: var(--accent); flex-shrink: 0; }
+.learn-feedback { color: var(--ink-2); border-left: 3px solid var(--accent); padding: 8px 12px; background: var(--accent-soft); }
+.learn-empty { flex: 1; min-height: 300px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 14px; background: repeating-linear-gradient(0deg, transparent, transparent 39px, var(--grid) 40px); border-radius: 12px; padding: 24px; }
+.learn-empty > svg { color: var(--accent); }
+.learn-table { overflow-x: auto; }
+.learn-table th { position: static; text-transform: none; letter-spacing: 0; font: inherit; font-size: 12px; }
+.learn-table caption { text-align: left; color: var(--muted); margin-bottom: 10px; }
+.learn-table td { font-family: var(--f-mono); }
+.learn-reflect, .learn-assessment { padding: 28px; }
+.learn-reflect textarea { margin-top: 10px; resize: vertical; }
+.learn-page .field { font-size: 15px; color: var(--ink-2); }
+.learn-assessment > button, .learn-reflect > button { align-self: flex-start; }
+.learn-resources { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.learn-resources summary { cursor: pointer; font-weight: 600; }
+.learn-resources details[open] p { margin-top: 16px; }
+.learn-resources button { margin-top: 16px; }
+@media (max-width: 800px) { .learn-hero, .learn-workspace, .learn-resources { grid-template-columns: minmax(0, 1fr); } .learn-page { padding: 24px 16px 48px; } .learn-experiments { grid-template-columns: minmax(0, 1fr); } .learn-experiments button { padding: 12px 16px; } .learn-experiments small { margin-top: 0; } .learn-workspace .panel, .learn-reflect, .learn-assessment { padding: 18px; } }
+@media print { .topbar, .footer, .learn-actions, .learn-page button { display: none; } .learn-page { width: 100%; padding: 0; } .learn-page .panel { break-inside: avoid; } }

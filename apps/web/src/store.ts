@@ -12,7 +12,7 @@ async function cacheGet<T>(key: string): Promise<T | null> {
 }
 
 export type Theme = "system" | "light" | "dark";
-export type Mode = "story" | "lab";
+export type Mode = "story" | "lab" | "learn" | "toxicity";
 export type LabSection = "overview" | "design" | "animal" | "data" | "population" | "trust";
 export type Detail = "simple" | "expert";
 type Status = "idle" | "running" | "done" | "error";
@@ -74,13 +74,13 @@ const ls = {
   set(k: string, v: string): void { try { localStorage.setItem(k, v); } catch { /* storage may be blocked */ } },
 };
 const savedTheme = ((): Theme => { const t = ls.get("theme"); return t === "light" || t === "dark" ? t : "system"; })();
-const savedMode = ((): Mode => { const h = typeof location !== "undefined" ? location.hash : ""; if (h.startsWith("#lab")) return "lab"; return ls.get("mode") === "lab" ? "lab" : "story"; })();
+const savedMode = ((): Mode => { const h = typeof location !== "undefined" ? location.hash : ""; if (h.startsWith("#learn")) return "learn"; if (h.startsWith("#lab")) return "lab"; if (h.startsWith("#story")) return "story"; return "toxicity"; })();
 const cacheKey = (s: Setup) => `${SIM_VERSION}|${JSON.stringify(s)}`;
 const msg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
 export const useStore = create<State>((set, get) => ({
   mode: savedMode,
-  setMode: (m) => { ls.set("mode", m); if (typeof history !== "undefined") history.replaceState(null, "", m === "lab" ? `#lab/${get().labSection}` : "#"); set({ mode: m }); },
+  setMode: (m) => { ls.set("mode", m); if (typeof history !== "undefined") history.replaceState(null, "", m === "lab" ? `#lab/${get().labSection}` : m === "learn" ? "#learn" : m === "story" ? "#story" : "#toxicity"); set({ mode: m }); },
   labSection: "overview",
   labView: "",
   detail: ls.get("detail") === "expert" ? "expert" : "simple",

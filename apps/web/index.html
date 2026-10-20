@@ -5,24 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>ELIMINATE-Lab</title>
-    <meta name="description" content="A virtual laboratory rat that shows what a compound would do before any animal is dosed. A research and education prototype that supports replacing, reducing and refining animal studies." />
+    <title>VAST — Virtual Toxicology Workbench</title>
+    <meta name="description" content="Explore simulated organ injury, dose-response, pharmacokinetic curves, and human-equivalent dose conversion. VAST is a virtual toxicology workbench for research and education using fictional compound profiles." />
   </head>
   <body>
     <div id="root">
-      <!-- Static first paint of the hero, using the same classes as the app so it looks identical. React replaces it on mount. -->
-      <div class="app" aria-hidden="true">
-        <header class="topbar" style="visibility:hidden;height:53px"></header>
-        <main class="story"><div class="story-grid"><div class="story-text">
-          <section class="chapter-sec hero-sec">
-            <div class="eyebrow">Replace · Reduce · Refine</div>
-            <h1>Every animal we spare starts with a simulation <span class="accent">we can trust.</span></h1>
-            <p class="lede">A virtual laboratory rat that shows what a compound would do, before any animal is dosed.</p>
-            <div class="cta" style="visibility:hidden"><button class="primary">Begin</button><button>Open the Lab</button></div>
-            <div style="margin-top:36px;visibility:hidden"><div class="big-number">0</div><div class="big-caption">animals a year one lab could avoid using, on example assumptions. Hover or focus to see them.</div></div>
-          </section>
-        </div></div></main>
-      </div>
+      <main style="font-family:system-ui,sans-serif;padding:48px 32px" aria-busy="true">
+        <p>VAST / Virtual toxicology workbench</p>
+        <h1>Explore the dose. Understand the response.</h1>
+        <p>Preparing the simulation workspace…</p>
+      </main>
     </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

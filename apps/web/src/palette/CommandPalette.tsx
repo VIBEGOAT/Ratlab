@@ -52,6 +52,8 @@ export function CommandPalette() {
   const commands = useMemo(() => {
     const st = useStore.getState;
     const actions: PaletteActions = {
+      goToxicity: () => { if (usePresenter.getState().active) usePresenter.getState().stop(); st().setMode("toxicity"); window.scrollTo({ top: 0 }); },
+      goLearn: () => { if (usePresenter.getState().active) usePresenter.getState().stop(); st().setMode("learn"); window.scrollTo({ top: 0 }); },
       goStory: (chapter) => {
         const wasLab = st().mode !== "story";
         if (usePresenter.getState().active) usePresenter.getState().stop();

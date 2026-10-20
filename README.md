@@ -7,12 +7,22 @@ A web-based in-silico rat laboratory. It simulates a repeated-dose rat study (do
 > **Research and education tool. Not validated for regulatory or safety decisions.**
 > It does not replace animal studies. Compounds are fictional archetypes. Most parameters are unverified placeholders (see `data/needs-expert-check.md`). Nothing has been validated against real animal data.
 
-## Two ways in
+## Start with toxicity
 
-- **Story** (the front page). Twelve scroll chapters around one pinned 3D rat: meet the rat, choose a compound and dose, dose day, days compressed, the humane endpoint, the untreated twin, a thousand virtual rats, behaviour, toward humans, how far to trust it, and an editable animals-spared figure.
-- **Lab** (`#lab`). Opens on an Overview of the answers, then five sections that hold all seventeen analysis views (sixteen, plus a dose calculator): Design, Animal, Data, Population, Translate & Trust. The **dose calculator** converts a dose between a laboratory animal (14 species) and a person by body surface area, with the FDA 2005 starting-dose guidance as its source. A Simple/Expert switch folds expert-only tables away, and optional rat sounds (sniffing, footsteps, a chirp, the heartbeat) are synthesised and off by default.
+The opening **VAST Toxicity** workbench connects dose and duration to simulated organ responses, pharmacokinetic curves, and human-equivalent dose conversion. Compare a selected daily dose with half that dose, inspect organ changes by day, and add a recovery period. The compound profiles are fictional; missing organ mechanisms are labeled **Not modeled**. See [workbench scope and methods](docs/toxicity-workbench.md).
+
+- **Toxicity** (`#toxicity` or the root page): focused experiment dashboard.
+- **Learn** (`#learn`): a guided dose/exposure practical with a student notebook.
+- **Story** (`#story`): the original twelve-chapter introduction around a virtual rat.
+- **Lab** (`#lab`): the full exploratory simulator, study design, animal, data, population, and translation tools.
 
 Also: **presenter mode** (press `P`; 3- and 8-minute scripted tracks, speaker notes on a second screen, a "which organ fails first?" audience prediction), a **command palette** (`Ctrl/Cmd+K`), optional **sound** (off by default), light, dark and colour-blind-safe themes, and exports (CSV, JSON, a printable HTML report).
+
+## VAST classroom
+
+Choose **Learn** in the top navigation, or open `#learn`, for a guided college practical on dose, clearance, and repeated dosing. Students predict outcomes, compare concentration curves, record reflections, and complete a formative knowledge check. Includes locally saved notebooks, CSV exports, a printable worksheet, and instructor guidance.
+
+The practical uses an explicitly fictional one-compartment teaching model, separate from the exploratory rat PBPK simulator. No account or WebGL is required. See [the practical guide](docs/teaching-practical.md) for scope, equations, storage behavior, and verification. Classroom learning outcomes have not yet been evaluated.
 
 ## Run it
 

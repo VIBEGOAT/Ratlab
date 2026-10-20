@@ -4,7 +4,7 @@ import { CHAPTERS, SECTIONS } from "../lib/nav";
 import { COMPOUNDS } from "../lib/setup";
 
 const actions = (over: Partial<PaletteActions> = {}): PaletteActions => ({
-  goStory: vi.fn(), goLab: vi.fn(), setCompound: vi.fn(), setDisease: vi.fn(), startPresenter: vi.fn(), openNotes: vi.fn(),
+  goToxicity: vi.fn(), goLearn: vi.fn(), goStory: vi.fn(), goLab: vi.fn(), setCompound: vi.fn(), setDisease: vi.fn(), startPresenter: vi.fn(), openNotes: vi.fn(),
   setTheme: vi.fn(), toggleCb: vi.fn(), cbOn: false, setQuality: vi.fn(), toggleSound: vi.fn(), soundOn: false, hasData: true,
   exportCsv: vi.fn(), exportJson: vi.fn(), exportHtml: vi.fn(), rerun: vi.fn(), detail: "simple", toggleDetail: vi.fn(), ...over,
 });
@@ -26,6 +26,10 @@ describe("command list", () => {
   it("runs the right action", () => {
     const a = actions();
     const cmds = buildCommands(a);
+    cmds.find((c) => c.id === "toxicity")!.run();
+    expect(a.goToxicity).toHaveBeenCalledOnce();
+    cmds.find((c) => c.id === "learn")!.run();
+    expect(a.goLearn).toHaveBeenCalledOnce();
     cmds.find((c) => c.id === "story-7")!.run();
     expect(a.goStory).toHaveBeenCalledWith(7);
     cmds.find((c) => c.id === "lab-validation")!.run();
@@ -76,7 +80,7 @@ describe("matching", () => {
   });
 
   it("returns everything, in order, for an empty query, and respects the limit", () => {
-    expect(filterCommands("", cmds)[0]!.id).toBe("story-0");
+    expect(filterCommands("", cmds)[0]!.id).toBe("toxicity");
     expect(filterCommands("", cmds, 5).length).toBe(5);
   });
 

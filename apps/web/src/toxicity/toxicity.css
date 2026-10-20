@@ -1,0 +1,84 @@
+.tox-page { max-width: 1480px; width: 100%; margin: 0 auto; padding: 40px 32px 64px; flex: 1; }
+.tox-header { display: flex; align-items: center; justify-content: space-between; gap: 32px; margin-bottom: 32px; }
+.tox-header h1 { font-size: clamp(34px, 4vw, 54px); line-height: 1.08; margin: 12px 0 16px; }
+.tox-header h1 span { color: var(--accent); }
+.tox-header p:not(.eyebrow) { color: var(--ink-2); max-width: 60ch; }
+.tox-header-note { display: grid; grid-template-columns: 10px auto; gap: 6px 12px; padding: 20px 24px; border-left: 1px solid var(--line-strong); flex-shrink: 0; }
+.tox-header-note > span:last-child { grid-column: 2; color: var(--muted); font-size: 12px; }
+.tox-live-dot { width: 7px; height: 7px; margin-top: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent-soft); }
+.tox-layout { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 24px; align-items: start; }
+.tox-design { position: sticky; top: 78px; padding: 24px 20px; border-top: 3px solid var(--accent); max-height: calc(100vh - 110px); overflow-y: auto; }
+.tox-design h2 { font-size: 22px; margin-top: 10px; }
+.tox-design fieldset { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 17px; }
+.tox-design .field { color: var(--ink-2); font-size: 12px; gap: 7px; }
+.tox-design select, .tox-design input { font-size: 13px; padding: 10px; }
+.tox-design details { border-top: 1px solid var(--line); padding-top: 12px; }
+.tox-design details .field { margin: 12px 0; }
+.tox-page summary { cursor: pointer; font-size: 13px; font-weight: 600; }
+.tox-presets { display: flex; gap: 5px; margin-top: -9px; }
+.tox-presets button { flex: 1; font-size: 10px; padding: 7px 5px; border-radius: 6px; }
+.tox-field-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.tox-run { width: 100%; padding: 12px; border-radius: 9px; margin-top: 4px; }
+.tox-comparison-key { margin-top: 8px; border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 8px; }
+.tox-comparison-key > span { font: 10px var(--f-mono); letter-spacing: .12em; color: var(--muted); }
+.tox-comparison-key p { font-size: 11px; display: flex; justify-content: space-between; gap: 8px; }
+.tox-comparison-key small { font-size: 11px; color: var(--muted); }
+.tox-results { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.tox-results .panel { padding: 24px; }
+.tox-results h2 { font-size: 23px; }
+.tox-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.tox-section-heading h2 { margin-top: 9px; }
+.tox-pill { display: inline-flex; border: 1px solid var(--line-strong); color: var(--ink-2); border-radius: 6px; padding: 6px 9px; font: 10px var(--f-mono); }
+.tox-timeline { display: grid; grid-template-columns: auto minmax(80px, 1fr) auto; align-items: center; gap: 14px; padding: 13px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-top: 8px; font-size: 12px; }
+.tox-timeline strong { font: 600 20px var(--f-mono); color: var(--accent); }
+.tox-timeline > span { color: var(--muted); font-size: 11px; }
+.tox-organ-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(260px, 1fr); align-items: center; gap: 16px; }
+.tox-map-wrap { min-width: 0; }
+.tox-rat { display: block; width: 100%; height: auto; }
+.tox-map-caption { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 0 10px 16px; }
+.tox-map-caption b { font-size: 13px; }
+.tox-map-caption span { font-size: 10px; color: var(--muted); text-align: center; }
+.tox-organ-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.tox-organ-card { padding: 11px; text-align: left; border-radius: 10px; display: flex; flex-direction: column; gap: 5px; background: var(--surface-2); min-width: 0; }
+.tox-organ-card > span { color: var(--ink-2); font-size: 12px; }
+.tox-organ-card b { color: var(--ink); font-size: 13px; text-transform: capitalize; }
+.tox-organ-card small { color: var(--muted); font-size: 10px; line-height: 1.4; }
+.tox-organ-card i { display: block; height: 3px; background: var(--grid); width: 100%; margin-top: 5px; border-radius: 3px; overflow: hidden; }
+.tox-organ-card em { display: block; height: 100%; background: var(--organ-color); }
+.tox-detail { padding: 16px; border: 1px solid var(--line); border-radius: 10px; display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; background: var(--surface-2); }
+.tox-detail h3 { margin: 7px 0; font-size: 18px; }
+.tox-detail p { font-size: 12px; color: var(--ink-2); }
+.tox-detail > div:last-child { display: flex; flex-direction: column; justify-content: center; gap: 7px; border-left: 1px solid var(--line); padding-left: 18px; }
+.tox-detail > div:last-child b { font-size: 22px; }
+.tox-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.tox-metrics > div { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 8px; }
+.tox-metrics span { font-size: 11px; color: var(--muted); }
+.tox-metrics strong { font: 600 25px var(--f-display); }
+.tox-metrics small { font: 12px var(--f-body); color: var(--muted); }
+.tox-metrics p { font-size: 11px; color: var(--ink-2); }
+.tox-chart-controls { display: flex; gap: 10px; }
+.tox-chart-controls .field { font-size: 11px; }
+.tox-chart-controls select { font-size: 12px; padding: 6px 9px; }
+.tox-note, .tox-pending { padding: 12px 14px; background: var(--accent-soft); border-left: 3px solid var(--accent); font-size: 12px; border-radius: 5px; }
+.tox-pending { border-color: var(--warn); }
+.tox-hed { background: linear-gradient(110deg, var(--accent-soft), var(--surface) 70%); }
+.tox-hed-fields { display: grid; grid-template-columns: 1fr 1fr auto; gap: 14px; align-items: end; }
+.tox-hed-fields button { border-radius: 9px; min-height: 38px; }
+.tox-hed-answer { display: flex; flex-wrap: wrap; gap: 24px 60px; padding: 20px 0 8px; }
+.tox-hed-answer > div { display: flex; flex-direction: column; gap: 6px; }
+.tox-hed-answer span { color: var(--muted); font-size: 12px; }
+.tox-hed-answer strong { color: var(--accent); font: 600 34px var(--f-display); }
+.tox-hed-answer small { font: 15px var(--f-body); }
+.tox-equation { font: 12px var(--f-mono); padding: 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; }
+.tox-hed details p, .tox-methods p { margin-top: 14px; }
+.tox-export { display: flex; flex-direction: row; justify-content: space-between; gap: 16px; align-items: center; }
+.tox-export p { color: var(--muted); font-size: 12px; margin-top: 10px; }
+.tox-export > div:last-child { display: flex; flex-wrap: wrap; gap: 8px; flex-shrink: 0; }
+.tox-methods { font-size: 13px; color: var(--ink-2); }
+.tox-loading { min-height: 500px; justify-content: center; }
+.tox-loading-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 24px; }
+.tox-loading-grid div { border: 1px dashed var(--line-strong); border-radius: 10px; padding: 20px 12px; font-size: 14px; }
+.tox-loading-grid span { display: block; color: var(--muted); font-size: 11px; margin-top: 8px; }
+@media (max-width: 1100px) { .tox-organ-grid { grid-template-columns: minmax(0, 1fr); } .tox-map-wrap { max-width: 480px; margin: auto; } .tox-organ-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } .tox-hed-fields { grid-template-columns: 1fr 1fr; } .tox-export { flex-direction: column; align-items: flex-start; } }
+@media (max-width: 800px) { .tox-page { padding: 24px 16px 48px; } .tox-layout { grid-template-columns: minmax(0, 1fr); } .tox-design { position: static; max-height: none; } .tox-header-note { display: none; } .tox-design fieldset { grid-template-columns: 1fr 1fr; gap: 16px; } .tox-design fieldset > p, .tox-design fieldset > details, .tox-field-pair { grid-column: 1 / -1; } .tox-presets { grid-column: 2; margin-top: 0; align-items: center; } .tox-results .panel { padding: 18px; } .tox-section-heading h2 { font-size: 22px; } }
+@media (max-width: 480px) { .tox-design fieldset { grid-template-columns: 1fr; } .tox-presets { grid-column: 1; } .tox-organ-cards { grid-template-columns: 1fr 1fr; } .tox-metrics { grid-template-columns: 1fr; } .tox-metrics > div { gap: 5px; } .tox-timeline { grid-template-columns: auto 1fr; } .tox-timeline > span { grid-column: 1 / -1; } .tox-detail { grid-template-columns: 1fr; gap: 12px; } .tox-detail > div:last-child { border-left: 0; border-top: 1px solid var(--line); padding: 12px 0 0; } .tox-chart-controls { width: 100%; } .tox-chart-controls .field { flex: 1; min-width: 0; } .tox-hed-fields { grid-template-columns: 1fr; } .tox-loading-grid { grid-template-columns: 1fr 1fr; } }

@@ -13,7 +13,7 @@ const SIZES = [
 
 async function fresh(page: Page, hash = "", theme?: "dark" | "light") {
   await page.goto("about:blank");
-  await page.goto("/");
+  await page.goto("/#story");
   await page.evaluate((t) => { localStorage.clear(); localStorage.setItem("no3d", "1"); if (t) localStorage.setItem("theme", t); }, theme);
   await page.goto("about:blank");
   await page.goto(`/${hash}`);

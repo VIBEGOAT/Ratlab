@@ -8,7 +8,7 @@ import AxeBuilder from "@axe-core/playwright";
  */
 async function fresh(page: Page, hash = "") {
   await page.goto("about:blank");
-  await page.goto("/");
+  await page.goto("/#story");
   await page.evaluate(() => { localStorage.clear(); localStorage.setItem("no3d", "1"); });
   await page.goto("about:blank");
   await page.goto(`/${hash}`);
