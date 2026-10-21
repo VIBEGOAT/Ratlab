@@ -40,10 +40,10 @@ function MainApp() {
   const run = useStore((s) => s.runStudy);
   const started = useRef(false);
   const moreMenu = useRef<HTMLDetailsElement>(null);
-  const focused = mode === "toxicity" || mode === "learn";
+  const focused = mode === "toxicity" || mode === "learn" || mode === "story";
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    if (mode !== "story") window.scrollTo(0, 0);
     if (moreMenu.current) moreMenu.current.open = false;
   }, [mode]);
   useEffect(() => {
@@ -64,8 +64,8 @@ function MainApp() {
     if (theme === "system") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", theme);
     if (cb) root.setAttribute("data-palette", "cb"); else root.removeAttribute("data-palette");
   }, [theme, cb]);
-  // pre-warm the default study as soon as the app opens, so the story never waits on a spinner
-  useEffect(() => { if ((mode === "story" || mode === "lab") && !started.current) { started.current = true; void run(); } }, [run, mode]);
+  // Story's illustrative models are synchronous; only the advanced Lab needs a worker study.
+  useEffect(() => { if (mode === "lab" && !started.current) { started.current = true; void run(); } }, [run, mode]);
   useEffect(() => {
     const read = () => {
       const h = location.hash;
@@ -84,14 +84,14 @@ function MainApp() {
 
   const nextTheme = theme === "dark" ? "light" : theme === "light" ? "system" : "dark";
   return (
-    <div className="app">
+    <div className={`app${mode === 'story' ? ' app-story' : ''}`}>
       <a href="#main" className="sr-only skip-link">Skip to content</a>
       <header className={`topbar${focused ? " topbar-focused" : ""}`}>
         <button className="brand" onClick={() => setMode("toxicity")} aria-label="VAST home"><span className="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m5 6 7 12 7-12M8 6l4 7 4-7" stroke="var(--bg)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg></span>VAST<span className="brand-caption">A virtual learning lab.</span></button>
         <div className="segmented" role="group" aria-label="Mode">
           <button type="button" aria-pressed={mode === "toxicity"} onClick={() => setMode("toxicity")}>Toxicity</button>
           <button type="button" aria-pressed={mode === "learn"} onClick={() => setMode("learn")}>Learn</button>
-          <button type="button" aria-pressed={mode === "story"} onClick={() => setMode("story")}>Story</button>
+          <button type="button" aria-pressed={mode === "story"} onClick={() => { setMode("story"); window.dispatchEvent(new HashChangeEvent('hashchange')); }}>Story</button>
           {!focused && <button type="button" aria-pressed={mode === "lab"} onClick={() => setMode("lab")}>Lab</button>}
         </div>
         <div className="right">
@@ -99,9 +99,9 @@ function MainApp() {
             <p>Go further</p><button onClick={() => setMode("lab")}>Lab<small>Advanced tools & full study data</small></button>
             <p>Preferences</p><button onClick={() => { openPalette(); if (moreMenu.current) moreMenu.current.open = false; }}>Search<small>Find a tool or page</small></button><button onClick={() => setCb(!cb)} aria-pressed={cb}>CB palette {cb ? "on" : "off"}<small>Alternative injury colors</small></button>
           </div></details> : <button className="ghost palette-btn" onClick={openPalette} aria-keyshortcuts="Control+K Meta+K">Search <kbd>{/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K"}</kbd></button>}
-          {(mode === "story" || mode === "lab") && <SoundToggle className="ghost hide-narrow" />}
-          {(mode === "story" || mode === "lab") && <button className="ghost hide-narrow" onClick={() => usePresenter.getState().start()} title="Presenter mode (P)">Present</button>}
-          {(mode === "story" || mode === "lab") && <ExportMenu />}
+          {mode === "lab" && <SoundToggle className="ghost hide-narrow" />}
+          {mode === "lab" && <button className="ghost hide-narrow" onClick={() => usePresenter.getState().start()} title="Presenter mode (P)">Present</button>}
+          {mode === "lab" && <ExportMenu />}
           {!focused && <button className="ghost hide-narrow" onClick={() => setCb(!cb)} aria-pressed={cb} title="Colour-blind-safe damage colours">{cb ? "CB palette on" : "CB palette"}</button>}
           <button className={`ghost${focused ? " app-theme" : ""}`} onClick={() => setTheme(nextTheme)} title={`Switch to ${nextTheme}`} aria-label={`Theme: ${theme === "system" ? "Auto" : theme === "dark" ? "Dark" : "Light"}`}>{focused ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" /></svg> : `Theme: ${theme === "system" ? "Auto" : theme === "dark" ? "Dark" : "Light"}`}</button>
         </div>
@@ -110,7 +110,7 @@ function MainApp() {
       <Footer />
       <Presenter />
       <CommandPalette />
-      <MouseCursor />
+      {mode !== "story" && <MouseCursor />}
     </div>
   );
 }

@@ -16,7 +16,7 @@ describe("demo tracks", () => {
     for (const t of Object.values(TRACKS)) {
       for (const s of t.slides) {
         expect(s.chapter).toBeGreaterThanOrEqual(0);
-        expect(s.chapter).toBeLessThanOrEqual(11);
+        expect(s.chapter).toBeLessThanOrEqual(5);
         for (const p of [s.from, s.to]) { expect(p).toBeGreaterThanOrEqual(0); expect(p).toBeLessThanOrEqual(1); }
         expect(s.to).toBeGreaterThanOrEqual(s.from);
         expect(s.notes.length).toBeGreaterThan(60);
@@ -26,14 +26,10 @@ describe("demo tracks", () => {
       expect(new Set(t.slides.map((s) => s.id)).size).toBe(t.slides.length);
     }
   });
-  it("asks before the damage chapter, reveals after it, and never skips the humane endpoint", () => {
+  it("visits the six connected teaching stations in order", () => {
     for (const t of Object.values(TRACKS)) {
       const ids = t.slides.map((s) => s.id);
-      expect(ids.indexOf("ask")).toBeLessThan(ids.indexOf("damage"));
-      expect(ids.indexOf("reveal")).toBeGreaterThan(ids.indexOf("damage"));
-      expect(ids).toContain("moment");
-      expect(t.slides.find((s) => s.id === "ask")!.kind).toBe("ask");
-      expect(t.slides.find((s) => s.id === "reveal")!.kind).toBe("reveal");
+      expect(ids).toEqual(['compound', 'dose', 'distribution', 'organs', 'response', 'human']);
     }
   });
   it("states the caveats out loud in the notes", () => {

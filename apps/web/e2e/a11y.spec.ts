@@ -25,7 +25,7 @@ test("Story has no axe violations (light, dark, colour-blind)", async ({ page })
   test.setTimeout(240_000);
   await fresh(page);
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await expect(page.getByText(/virtual rats ready/).first()).toBeAttached({ timeout: 120_000 });
+  await expect(page.locator(".journey-scene")).toBeVisible();
   await scan(page, "story light");
   await page.evaluate(() => document.documentElement.setAttribute("data-theme", "dark"));
   await scan(page, "story dark");
@@ -36,12 +36,9 @@ test("Story has no axe violations (light, dark, colour-blind)", async ({ page })
 test("Story chapters with live data have no axe violations", async ({ page }) => {
   test.setTimeout(240_000);
   await fresh(page);
-  await expect(page.getByText(/virtual rats ready/).first()).toBeAttached({ timeout: 120_000 });
-  for (const n of [3, 4, 6, 7, 9, 10]) {
-    await page.evaluate((n) => {
-      const el = document.querySelector<HTMLElement>(`[data-chapter='${n}']`)!;
-      window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY + el.offsetHeight * 0.3 - innerHeight / 2, behavior: "instant" as ScrollBehavior });
-    }, n);
+  await expect(page.locator(".journey-scene")).toBeVisible();
+  for (const n of [0, 1, 2, 3, 4, 5]) {
+    await page.getByRole("navigation", { name: "Story chapters" }).getByRole("button").nth(n).click();
     await page.waitForTimeout(700);
     await scan(page, `story chapter ${n}`);
   }
@@ -84,7 +81,7 @@ test("every Lab view, the palette and the honesty drawer have no axe violations"
 test("presenter mode and the notes window have no axe violations", async ({ page, context }) => {
   test.setTimeout(240_000);
   await fresh(page);
-  await expect(page.getByText(/virtual rats ready/).first()).toBeAttached({ timeout: 120_000 });
+  await expect(page.locator(".journey-scene")).toBeVisible();
   await page.keyboard.press("p");
   for (let i = 0; i < 4; i++) await page.keyboard.press("ArrowRight");
   await page.waitForTimeout(800);
@@ -94,7 +91,7 @@ test("presenter mode and the notes window have no axe violations", async ({ page
   await scan(page, "presenter reveal slide");
   const notes = await context.newPage();
   await notes.goto("/#notes");
-  await expect(notes.getByRole("heading", { name: /The answer|Speaker notes/ })).toBeVisible();
+  await expect(notes.getByRole("heading", { name: /Make the human connection|Speaker notes/ })).toBeVisible();
   await scan(notes, "notes window");
 });
 

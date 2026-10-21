@@ -52,7 +52,7 @@ test("navigation and lightweight lesson load work", async ({ page }) => {
   await page.goto("/#learn");
   await expect(page.getByRole("button", { name: "Learn", exact: true })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Story", exact: true }).click();
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Every animal we spare");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Meet the compound");
   await page.getByRole("button", { name: "Learn", exact: true }).click();
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Different exposure");
   await page.setViewportSize({ width: 1440, height: 900 });
