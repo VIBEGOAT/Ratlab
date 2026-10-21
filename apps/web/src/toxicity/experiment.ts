@@ -25,7 +25,7 @@ export function organResponse(e: Experiment, b: AnimalBundle, organ: Organ, day:
   const damage = modeled ? b.daily.damage[organ][d] ?? 0 : null;
   const grade = damage === null ? null : gradeFromDamage(damage);
   const first = modeled ? b.daily.damage[organ].findIndex((v) => gradeFromDamage(v) >= 2) : -1;
-  return { modeled, damage, grade, severity: grade === null ? "Not modeled" : grade === 0 ? "No modeled injury" : GRADE_SEVERITY[grade], firstMildDay: first < 0 ? null : first };
+  return { modeled, damage, grade, severity: grade === null ? "Exposure only" : grade === 0 ? "No modeled injury" : GRADE_SEVERITY[grade], firstMildDay: first < 0 ? null : first };
 }
 export function responseRows(e: Experiment, b: AnimalBundle, day: number) {
   return ORGANS.map((organ) => ({ organ, ...organResponse(e, b, organ, day) }));

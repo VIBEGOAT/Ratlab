@@ -51,8 +51,7 @@ test("complete the practical, retain work, export it, and clear a shared device"
 test("navigation and lightweight lesson load work", async ({ page }) => {
   await page.goto("/#learn");
   await expect(page.getByRole("button", { name: "Learn", exact: true })).toHaveAttribute("aria-pressed", "true");
-  await page.getByLabel("More options", { exact: true }).click();
-  await page.getByRole("button", { name: /^Story/ }).click();
+  await page.getByRole("button", { name: "Story", exact: true }).click();
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Every animal we spare");
   await page.getByRole("button", { name: "Learn", exact: true }).click();
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Different exposure");

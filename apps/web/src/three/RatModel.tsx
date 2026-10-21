@@ -168,18 +168,20 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
   const marrowGeo = useMemo(() => MARROW_SITES.map((m) => taperedTube([m.a, m.b], m.r, m.r * 0.85, 8, 8)), []);
   const uniforms = useMemo(makeBodyUniforms, []);
   const furColor = useMemo(() => new THREE.Color("#efe8dd"), []);
-  const shells = quality === "high" ? 12 : 0;
-  const furMats = useMemo(() => Array.from({ length: shells + 1 }, (_, i) => makeFurMaterial(uniforms, furColor, i === 0 ? 0 : i / shells, 0.045)), [uniforms, furColor, shells]);
+  // A few close shells read as short laboratory-rat fur without the moiré shimmer of a deep shell stack.
+  const shells = quality === "high" ? 7 : 0;
+  const furMats = useMemo(() => Array.from({ length: shells + 1 }, (_, i) => makeFurMaterial(uniforms, furColor, i === 0 ? 0 : i / shells, 0.028)), [uniforms, furColor, shells]);
   const whiskers = useMemo(() => new Float32Array([1, -1].flatMap((z) => [-0.08, 0, 0.08].flatMap((dy) => [feat.nose[0] - 0.08, feat.nose[1] - 0.01, 0.05 * z, feat.nose[0] + 0.35, feat.nose[1] + dy * 2.5, 0.42 * z]))), [feat]);
   const xray = useMemo(() => makeXrayMaterial(uniforms, new THREE.Color("#7fe6d6")), [uniforms]);
   const skinMat = useMemo(() => new THREE.MeshStandardMaterial({ color: "#e8a9a2", roughness: 0.55 }), []);
-  const eyeMat = useMemo(() => new THREE.MeshPhysicalMaterial({ color: "#5a0d18", roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.03 }), []);
+  const eyeMat = useMemo(() => new THREE.MeshPhysicalMaterial({ color: "#4a0713", roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.02 }), []);
+  const noseMat = useMemo(() => new THREE.MeshPhysicalMaterial({ color: "#b96870", roughness: 0.32, clearcoat: 0.25 }), []);
 
   useEffect(() => () => { tail.dispose(); }, [tail]);
   useEffect(() => () => { gut.dispose(); }, [gut]);
   useEffect(() => () => { marrowGeo.forEach((g) => g.dispose()); }, [marrowGeo]);
   useEffect(() => () => { furMats.forEach((m) => m.dispose()); }, [furMats]);
-  useEffect(() => () => { xray.dispose(); skinMat.dispose(); eyeMat.dispose(); }, [xray, skinMat, eyeMat]);
+  useEffect(() => () => { xray.dispose(); skinMat.dispose(); eyeMat.dispose(); noseMat.dispose(); }, [xray, skinMat, eyeMat, noseMat]);
 
   // state-driven appearance
   const skin = useMemo(() => new THREE.Color("#e8a9a2").lerp(new THREE.Color("#d9c23f"), v.jaundice * 0.85), [v.jaundice]);
@@ -240,20 +242,33 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
       {/* eyes: albino lab rats have ruby eyes; squint with grimace and lethargy; cataract and red tears as overlays */}
       {[feat.eyeL, feat.eyeR].map((p, i) => (
         <group key={i} position={p}>
-          <mesh geometry={SPHERE} scale={[0.062, 0.062 * squint, 0.062]} material={eyeMat} />
+          <mesh geometry={SPHERE} scale={[0.068, 0.068 * squint, 0.068]} material={eyeMat} />
+          <mesh geometry={SPHERE} position={[0.018, 0.02, i === 0 ? 0.052 : -0.052]} scale={0.014}><meshBasicMaterial color="#fff6ec" /></mesh>
           {v.cataract > 0.05 && <mesh geometry={SPHERE} scale={[0.066, 0.066 * squint, 0.066]}><meshStandardMaterial color="#dfe9f2" transparent opacity={0.85 * v.cataract} roughness={0.2} /></mesh>}
         </group>
       ))}
       {v.tears > 0.08 && [feat.tearL, feat.tearR].map((p, i) => (
         <mesh key={i} geometry={SPHERE} position={p} scale={[0.07, 0.035 + 0.04 * v.tears, 0.02]}><meshStandardMaterial color="#9e1c22" roughness={0.3} transparent opacity={Math.min(1, 0.45 + v.tears)} /></mesh>
       ))}
-      <mesh geometry={SPHERE} position={feat.nose} scale={0.05}><meshStandardMaterial color={skin} roughness={0.35} /></mesh>
+      {/* muzzle details keep the exterior readable at close range */}
+      <mesh geometry={SPHERE} position={[feat.nose[0] - 0.16, feat.nose[1] - 0.015, 0.105]} scale={[0.2, 0.13, 0.12]}><meshStandardMaterial color={fur} roughness={0.92} /></mesh>
+      <mesh geometry={SPHERE} position={[feat.nose[0] - 0.16, feat.nose[1] - 0.015, -0.105]} scale={[0.2, 0.13, 0.12]}><meshStandardMaterial color={fur} roughness={0.92} /></mesh>
+      <mesh geometry={SPHERE} position={feat.nose} scale={[0.07, 0.055, 0.065]} material={noseMat} />
+      <mesh geometry={SPHERE} position={[feat.nose[0] + 0.05, feat.nose[1] + 0.008, 0.035]} scale={0.012}><meshBasicMaterial color="#4c2630" /></mesh>
+      <mesh geometry={SPHERE} position={[feat.nose[0] + 0.05, feat.nose[1] + 0.008, -0.035]} scale={0.012}><meshBasicMaterial color="#4c2630" /></mesh>
       <lineSegments position={[0, 0, 0]}>
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" count={12} itemSize={3} array={whiskers} />
         </bufferGeometry>
         <lineBasicMaterial color="#cfc6b6" transparent opacity={0.7} />
       </lineSegments>
+
+      {/* separated toes give the procedural silhouette a grounded, anatomical finish */}
+      {LEGS.flatMap((leg, legIndex) => [-1, 0, 1].map((toe) => (
+        <mesh key={`toe-${legIndex}-${toe}`} geometry={SPHERE} position={[leg.paw.c[0] + leg.paw.r[0] * 0.7, 0.042, leg.paw.c[2] + toe * leg.paw.r[2] * 0.55]} scale={[0.085, 0.028, 0.022]}>
+          <meshStandardMaterial color={skin} roughness={0.6} />
+        </mesh>
+      )))}
 
       {/* tumour on the flank */}
       {layers.tumor && v.tumorRadius > 0 && (

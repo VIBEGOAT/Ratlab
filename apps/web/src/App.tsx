@@ -9,6 +9,7 @@ import { NotesWindow } from "./presenter/NotesWindow";
 import { isNotesWindow } from "./presenter/channel";
 import { SoundToggle } from "./audio/SoundToggle";
 import { CommandPalette, openPalette } from "./palette/CommandPalette";
+import { MouseCursor } from "./components/MouseCursor";
 
 const ToxicityPage = lazy(() => import("./toxicity/ToxicityPage").then((m) => ({ default: m.ToxicityPage })));
 const LearnPage = lazy(() => import("./learn/LearnPage").then((m) => ({ default: m.LearnPage })));
@@ -90,12 +91,12 @@ function MainApp() {
         <div className="segmented" role="group" aria-label="Mode">
           <button type="button" aria-pressed={mode === "toxicity"} onClick={() => setMode("toxicity")}>Toxicity</button>
           <button type="button" aria-pressed={mode === "learn"} onClick={() => setMode("learn")}>Learn</button>
-          {!focused && <><button type="button" aria-pressed={mode === "story"} onClick={() => setMode("story")}>Story</button>
-          <button type="button" aria-pressed={mode === "lab"} onClick={() => setMode("lab")}>Lab</button></>}
+          <button type="button" aria-pressed={mode === "story"} onClick={() => setMode("story")}>Story</button>
+          {!focused && <button type="button" aria-pressed={mode === "lab"} onClick={() => setMode("lab")}>Lab</button>}
         </div>
         <div className="right">
           {focused ? <details className="app-more" ref={moreMenu}><summary aria-label="More options">More <span aria-hidden="true">⌄</span></summary><div className="app-more-menu">
-            <p>Go further</p><button onClick={() => setMode("story")}>Story<small>The idea behind VAST</small></button><button onClick={() => setMode("lab")}>Lab<small>Advanced tools & full study data</small></button>
+            <p>Go further</p><button onClick={() => setMode("lab")}>Lab<small>Advanced tools & full study data</small></button>
             <p>Preferences</p><button onClick={() => { openPalette(); if (moreMenu.current) moreMenu.current.open = false; }}>Search<small>Find a tool or page</small></button><button onClick={() => setCb(!cb)} aria-pressed={cb}>CB palette {cb ? "on" : "off"}<small>Alternative injury colors</small></button>
           </div></details> : <button className="ghost palette-btn" onClick={openPalette} aria-keyshortcuts="Control+K Meta+K">Search <kbd>{/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K"}</kbd></button>}
           {(mode === "story" || mode === "lab") && <SoundToggle className="ghost hide-narrow" />}
@@ -109,6 +110,7 @@ function MainApp() {
       <Footer />
       <Presenter />
       <CommandPalette />
+      <MouseCursor />
     </div>
   );
 }

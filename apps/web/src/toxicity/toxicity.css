@@ -32,6 +32,7 @@
 .tox-steps button[aria-pressed="true"] { color: var(--ink); background: var(--surface-solid); box-shadow: 0 2px 8px #00000009; }
 .tox-steps svg { display: none; }
 .tox-step-number { color: var(--muted); font-size: 10px; }
+.tox-steps button[aria-pressed="true"] .tox-step-number { color: var(--ink-2); }
 .tox-run-context { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 0 5px; font-size: 11px; color: var(--muted); }
 .tox-run-context span + span { border-left: 1px solid var(--line-strong); padding-left: 16px; }
 .tox-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }

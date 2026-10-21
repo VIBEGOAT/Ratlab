@@ -21,7 +21,7 @@ describe("toxicity experiment design and coverage", () => {
     expect(kidney.modeled).toBe(false);
     expect(kidney.damage).toBeNull();
     expect(kidney.grade).toBeNull();
-    expect(kidney.severity).toBe("Not modeled");
+    expect(kidney.severity).toBe("Exposure only");
     expect(organResponse(e, b, "liver", 0).modeled).toBe(true);
     expect(organResponse(e, b, "liver", 500)).toEqual(organResponse(e, b, "liver", 7));
   });

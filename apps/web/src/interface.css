@@ -13,7 +13,10 @@ button.brand { padding: 0; background: transparent; border: 0; border-radius: 0;
 .app-more > summary { cursor: pointer; font-size: 12px; color: var(--muted); padding: 6px 8px; list-style: none; border-radius: 8px; }
 .app-more > summary::-webkit-details-marker { display: none; }
 .app-more > summary > span { margin-left: 6px; }
+.app-more[open] > summary > span { display: inline-block; transform: rotate(180deg); }
 .app-more-menu { position: absolute; right: 0; top: calc(100% + 15px); min-width: 240px; padding: 8px; background: var(--surface-solid); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 10px 40px #00000019; display: grid; gap: 3px; }
+.app-more[open] .app-more-menu { animation: menu-arrive .28s var(--ease) both; transform-origin: top right; }
+@keyframes menu-arrive { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
 .app-more-menu > p { color: var(--muted); font-size: 10px; padding: 9px 10px 3px; }
 .app-more-menu > button { text-align: left; border: 0; border-radius: 10px; background: transparent; padding: 10px; font-size: 13px; }
 .app-more-menu > button:hover { background: var(--surface-2); }

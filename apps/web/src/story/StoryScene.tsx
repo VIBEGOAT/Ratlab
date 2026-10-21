@@ -203,7 +203,7 @@ export function StoryScene(p: StorySceneProps) {
   const bundle = p.chapter === 5 && p.moment ? momentBundle : p.treated;
   const day = p.chapter === 5 && p.moment ? p.moment.day : p.chapter === 4 ? p.day : p.chapter >= 3 ? 0 : 0;
   const v = useMemo(() => (bundle ? ratVisualState(bundle, day) : null), [bundle, day]);
-  const layers: Layers = { ...DEFAULT_LAYERS, xray: p.chapter >= 3 && p.chapter <= 5, labels: p.chapter === 1 || p.chapter === 4, vessels: p.chapter >= 1 };
+  const layers: Layers = { ...DEFAULT_LAYERS, xray: p.chapter >= 3 && p.chapter <= 5, labels: p.chapter === 1 || p.chapter === 4, vessels: p.chapter >= 1, tumor: p.chapter >= 4 && p.chapter <= 6 };
   const split = p.chapter === 6 && p.treated && p.untreated;
   const tempo = p.chapter === 5 ? 0.25 : 1;
   return (
@@ -232,7 +232,7 @@ export function StoryScene(p: StorySceneProps) {
       <ContactShadows position={[-0.4, 0.002, 0]} opacity={0.6} scale={16} blur={2.6} far={2.5} resolution={p.quality === "high" ? 1024 : 256} />
       {p.quality === "high" && !split && (
         <EffectComposer multisampling={4}>
-          <Bloom intensity={0.8} luminanceThreshold={0.5} luminanceSmoothing={0.3} mipmapBlur />
+          <Bloom intensity={0.42} luminanceThreshold={0.72} luminanceSmoothing={0.35} mipmapBlur />
           <Vignette eskil={false} offset={0.25} darkness={0.5} />
         </EffectComposer>
       )}

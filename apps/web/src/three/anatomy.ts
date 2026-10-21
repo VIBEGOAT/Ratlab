@@ -36,8 +36,8 @@ export function smin(a: number, b: number, k: number): number {
 /** Body parts. Kept as data so tests and the mesher share one definition. */
 const TORSO = { c: [-0.35, 0.92, 0] as Vec3, r: [1.25, 0.6, 0.62] as Vec3 };
 const CHEST = { c: [0.85, 0.93, 0] as Vec3, r: [0.82, 0.5, 0.5] as Vec3 };
-export const HEAD = { c: [1.95, 1.0, 0] as Vec3, r: [0.56, 0.42, 0.38] as Vec3 };
-const SNOUT = { a: [2.2, 0.96, 0] as Vec3, b: [3.0, 0.86, 0] as Vec3, ra: 0.3, rb: 0.09 };
+export const HEAD = { c: [1.92, 1.02, 0] as Vec3, r: [0.64, 0.46, 0.42] as Vec3 };
+const SNOUT = { a: [2.2, 0.96, 0] as Vec3, b: [3.0, 0.86, 0] as Vec3, ra: 0.32, rb: 0.095 };
 export const LEGS: Array<{ upper: [Vec3, Vec3, number, number]; paw: { c: Vec3; r: Vec3 } }> = ([1, -1] as const).flatMap((s) => [
   // front legs: shoulder to wrist, with a small forward paw
   { upper: [[1.05, 0.7, 0.3 * s], [1.22, 0.1, 0.36 * s], 0.13, 0.065] as [Vec3, Vec3, number, number], paw: { c: [1.32, 0.045, 0.37 * s] as Vec3, r: [0.15, 0.045, 0.08] as Vec3 } },

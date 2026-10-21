@@ -72,11 +72,12 @@ a { color: var(--accent); }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* ---------- controls */
-button { font: 550 13.5px var(--f-body); cursor: pointer; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); padding: 8px 15px; transition: border-color 0.2s var(--ease), transform 0.2s var(--ease); }
+button { font: 550 13.5px var(--f-body); cursor: pointer; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); padding: 8px 15px; transition: color .22s var(--ease), background .22s var(--ease), border-color .22s var(--ease), box-shadow .22s var(--ease), transform .22s var(--ease); }
 button:hover:not(:disabled) { border-color: var(--accent); }
 button:active:not(:disabled) { transform: scale(0.97); }
 button:disabled { opacity: 0.45; cursor: default; }
 button.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+button.primary { transition-property: border-color, box-shadow, transform; }
 button.ghost { background: transparent; border-color: transparent; color: var(--muted); }
 button.ghost:hover { color: var(--ink); }
 button[aria-pressed="true"] { border-color: var(--accent); color: var(--ink); background: var(--accent-soft); }
@@ -85,6 +86,35 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .segmented { display: inline-flex; padding: 3px; gap: 2px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); }
 .segmented button { border: 0; padding: 6px 14px; background: transparent; color: var(--muted); }
 .segmented button[aria-pressed="true"] { background: var(--surface-solid); color: var(--ink); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25); }
+
+/* Fluid menus stay inside the page, so they can animate and remain consistent across browsers. */
+.fluid-select { position: relative; isolation: isolate; }
+.fluid-select:has(.fluid-select-menu[data-open]) { z-index: 25; }
+.fluid-select-label { font-size: 12px; color: var(--ink-2); }
+.fluid-select-trigger { width: 100%; min-height: 42px; padding: 10px 11px 10px 12px; border: 1px solid transparent; border-radius: 10px; background: var(--surface-2); display: flex; align-items: center; justify-content: space-between; gap: 10px; text-align: left; font-size: 13px; font-weight: 500; }
+.fluid-select-trigger:hover:not(:disabled), .fluid-select-trigger[aria-expanded="true"] { border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); background: var(--surface-solid); box-shadow: 0 8px 24px #0000000b; }
+.fluid-select-trigger svg { width: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; transition: transform .32s var(--ease); }
+.fluid-select-trigger[aria-expanded="true"] svg { transform: rotate(180deg); }
+.fluid-select-menu { position: absolute; left: 0; right: 0; top: calc(100% + 7px); display: grid; padding: 6px; border: 1px solid var(--line); border-radius: 13px; background: color-mix(in srgb, var(--surface-solid) 96%, transparent); box-shadow: 0 18px 45px #0000001c; backdrop-filter: blur(18px); opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(-7px) scale(.98); transform-origin: top; transition: opacity .22s var(--ease), transform .32s var(--ease), visibility 0s linear .32s; }
+.fluid-select-menu[data-open] { opacity: 1; visibility: visible; pointer-events: auto; transform: none; transition-delay: 0s; }
+.fluid-select-menu button { width: 100%; padding: 9px 10px; border: 0; border-radius: 8px; background: transparent; display: flex; align-items: center; justify-content: space-between; text-align: left; font-size: 12px; font-weight: 450; }
+.fluid-select-menu button:hover, .fluid-select-menu button[aria-checked="true"] { background: var(--accent-soft); color: var(--ink); transform: none; }
+.fluid-select-menu button svg { width: 15px; fill: none; stroke: var(--accent); stroke-width: 1.8; opacity: 0; }
+.fluid-select-menu button[aria-checked="true"] svg { opacity: 1; }
+
+/* Desktop-only lab-mouse pointer. The native pointer remains on touch and reduced-motion devices. */
+.mouse-cursor-on, .mouse-cursor-on * { cursor: none !important; }
+.mouse-cursor { position: fixed; left: 0; top: 0; z-index: 9999; width: 17px; height: 10px; border-radius: 60% 44% 48% 56%; background: #f4eee7; border: 1px solid rgba(70,55,52,.34); box-shadow: 0 2px 8px rgba(0,0,0,.2), inset -3px -2px 5px rgba(190,145,136,.25); pointer-events: none; opacity: 0; will-change: transform; transition: opacity .16s, width .14s var(--ease), height .14s var(--ease); }
+.mouse-cursor[data-visible] { opacity: .96; }
+.mouse-cursor[data-pressed] { width: 15px; height: 9px; }
+.mouse-ear { position: absolute; top: -3px; width: 5px; height: 5px; border-radius: 50%; background: #e6aaa6; border: 1px solid rgba(70,55,52,.25); }
+.mouse-ear.one { left: 3px; }.mouse-ear.two { left: 7px; top: -2px; }
+.mouse-eye { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #45151d; left: 12px; top: 2px; }
+.mouse-tail { position: absolute; width: 12px; height: 8px; left: -10px; top: 4px; border-top: 1.5px solid #d79691; border-radius: 60% 0 0 0; transform: rotate(-14deg); }
+
+details > :not(summary) { animation: detail-in .3s var(--ease) both; }
+details > summary { transition: color .22s var(--ease), background .22s var(--ease); }
+@keyframes detail-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 
 /* ---------- tables */
 table { border-collapse: collapse; width: 100%; font-size: 13px; }

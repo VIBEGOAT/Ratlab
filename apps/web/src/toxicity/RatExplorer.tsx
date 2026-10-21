@@ -13,7 +13,7 @@ export function RatExplorer({ experiment, animal, day, selected, onSelect }: {
   experiment: Experiment; animal: AnimalBundle; day: number; selected: Organ; onSelect: (organ: Organ) => void;
 }) {
   const [view, setView] = useState<"3d" | "map">(() => webglAvailable() && !softwareGraphics() ? "3d" : "map");
-  const [inside, setInside] = useState(true);
+  const [inside, setInside] = useState(false);
   const [motion, setMotion] = useState(true);
   const [angle, setAngle] = useState(0.2);
   const [focus, setFocus] = useState(false);
@@ -51,7 +51,7 @@ export function RatExplorer({ experiment, animal, day, selected, onSelect }: {
         <RatViewport animal={animal} day={day} selected={selected} inside={inside} animate={motion && !reduce} active={active}
           angle={angle} focus={focus} resetKey={resetKey} palette={cb ? "cb" : "standard"} onSelect={onSelect} onReady={onReady} onFailure={onFailure} />
       </Suspense></SceneBoundary> : fallback}
-      <div className="rat-stage-foot"><span>{view === "3d" ? ready ? touch ? "Tap an organ · use arrows to rotate" : "Drag to rotate · tap an organ inside" : "Loading the 3D model" : "Tap a highlighted organ to explore"}</span><span>Illustrative anatomy</span></div>
+      <div className="rat-stage-foot"><span>{view === "3d" ? ready ? inside ? touch ? "Tap an organ · use arrows to rotate" : "Drag to rotate · select an organ" : touch ? "Use arrows to meet the virtual rat" : "Drag to rotate · choose Inside to explore" : "Loading the 3D model" : "Tap a highlighted organ to explore"}</span><span>Illustrative anatomy</span></div>
     </div>
     {failed && <p className="small muted" role="status">3D is unavailable on this device. The interactive organ map shows the same results.</p>}
     {view === "3d" && <div className="rat-controls">

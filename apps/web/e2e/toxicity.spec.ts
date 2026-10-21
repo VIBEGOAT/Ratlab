@@ -2,6 +2,11 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { readFile } from "node:fs/promises";
 
+async function choose(page: import("@playwright/test").Page, label: string, option: string) {
+  await page.getByLabel(label, { exact: true }).click();
+  await page.getByRole("menuitemradio", { name: option, exact: true }).click();
+}
+
 test("toxicity-first workflow compares doses, recovery, organ coverage, and HED", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
@@ -10,15 +15,15 @@ test("toxicity-first workflow compares doses, recovery, organ coverage, and HED"
   await expect(page.getByRole("button", { name: "Run experiment", exact: true })).toBeEnabled();
   const cards = page.getByRole("group", { name: "Organ responses" });
   await expect(cards.getByRole("button")).toHaveCount(6);
-  await expect(cards.getByRole("button", { name: /Kidneys/ })).toContainText("Not modeled");
+  await expect(cards.getByRole("button", { name: /Kidneys/ })).toContainText("Exposure only");
   await page.getByRole("button", { name: /Translate the dose/ }).click();
   await expect(page.getByTestId("hed-value")).toHaveText("24.32 mg/kg");
   await page.getByRole("button", { name: /Explore the rat/ }).click();
   await page.getByLabel("Daily dose (mg/kg)", { exact: true }).fill("300");
   await expect(page.getByText(/Ready for a new experiment/)).toBeVisible();
-  await page.getByLabel("Dosing duration").selectOption("7");
+  await choose(page, "Dosing duration", "7 days");
   await page.locator(".tox-advanced > summary").click();
-  await page.getByLabel("Recovery after dosing").selectOption("7");
+  await choose(page, "Recovery after dosing", "7 days without dosing");
   await page.getByRole("button", { name: "Run experiment", exact: true }).click();
   await expect(page.getByRole("button", { name: "Run experiment", exact: true })).toBeEnabled();
   await expect(page.getByText(/Ready for a new experiment/)).toHaveCount(0);
@@ -34,8 +39,8 @@ test("toxicity-first workflow compares doses, recovery, organ coverage, and HED"
   await cards.getByRole("button", { name: /Kidneys/ }).click();
   await page.getByRole("button", { name: /Compare exposure/ }).click();
   await expect(page.getByText(/No injury mechanism is parameterized for kidneys/)).toBeVisible();
-  await page.getByLabel("Concentration", { exact: true }).selectOption("plasma");
-  await page.getByLabel("Time window").selectOption("first");
+  await choose(page, "Concentration", "Blood plasma");
+  await choose(page, "Time window", "First 24 hours");
   await page.getByRole("button", { name: /Translate the dose/ }).click();
   await page.getByLabel("Rat dose (mg/kg)", { exact: true }).fill("37");
   await expect(page.getByTestId("hed-value")).toHaveText("6 mg/kg");
@@ -69,17 +74,17 @@ test("toxicity-first workflow compares doses, recovery, organ coverage, and HED"
 test("profiles update coverage and cancel leaves a usable workbench", async ({ page }) => {
   await page.goto("/#toxicity");
   await expect(page.getByRole("button", { name: "Run experiment", exact: true })).toBeEnabled();
-  await page.getByLabel("Compound profile").selectOption("myelotoxin");
+  await choose(page, "Compound profile", "Marrow & gut injury");
   await page.getByRole("button", { name: "Run experiment", exact: true }).click();
   await expect(page.getByRole("button", { name: "Run experiment", exact: true })).toBeEnabled();
   const cards = page.getByRole("group", { name: "Organ responses" });
-  await expect(cards.getByRole("button", { name: /Liver/ })).toContainText("Not modeled");
-  await expect(cards.getByRole("button", { name: /Bone marrow/ })).not.toContainText("Not modeled");
-  await page.getByLabel("Dosing duration").selectOption("90");
+  await expect(cards.getByRole("button", { name: /Liver/ })).toContainText("Exposure only");
+  await expect(cards.getByRole("button", { name: /Bone marrow/ })).not.toContainText("Exposure only");
+  await choose(page, "Dosing duration", "90 days");
   await page.getByRole("button", { name: "Run experiment", exact: true }).click();
   await page.getByRole("button", { name: "Cancel run", exact: true }).click();
   await expect(page.getByRole("button", { name: "Run experiment", exact: true })).toBeEnabled();
-  await page.getByLabel("Dosing duration").selectOption("7");
+  await choose(page, "Dosing duration", "7 days");
   await page.getByRole("button", { name: "Run experiment", exact: true }).click();
   await expect(page.getByRole("button", { name: "Run experiment", exact: true })).toBeEnabled();
   await expect(page.getByRole("slider", { name: /Inspect day/ })).toHaveAttribute("max", "7");
@@ -91,7 +96,7 @@ test("the interactive rat, timeline, simple navigation, and mobile learning flow
   await page.addInitScript(() => localStorage.setItem("no3d", "1"));
   await page.goto("/");
   await expect(page.getByRole("group", { name: "Organ responses" })).toBeVisible();
-  await expect(page.getByLabel("Recovery after dosing")).not.toBeVisible();
+  await expect(page.getByLabel("Recovery after dosing", { exact: true })).not.toBeVisible();
   await page.getByRole("button", { name: "Explore Kidneys", exact: true }).click();
   await expect(page.getByRole("group", { name: "Organ responses" }).getByRole("button", { name: /Kidneys/ })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Explore Liver", exact: true }).click();
@@ -141,7 +146,7 @@ test("3D rat loads, rotates, changes layers, and recovers to the organ map", asy
   await page.addInitScript(() => { localStorage.setItem("force3d", "1"); });
   await page.goto("/");
   await expect(page.getByTestId("rat-stage")).toHaveAttribute("data-view", "3d");
-  await expect(page.getByText("Drag to rotate · tap an organ inside", { exact: true })).toBeVisible();
+  await expect(page.getByText("Drag to rotate · choose Inside to explore", { exact: true })).toBeVisible();
   await expect(page.locator(".rat-stage canvas")).toBeVisible();
   await page.getByRole("button", { name: "Surface", exact: true }).click();
   await expect(page.getByRole("button", { name: "Surface", exact: true })).toHaveAttribute("aria-pressed", "true");
@@ -170,7 +175,7 @@ test("a touch device can scroll across the 3D rat and edit the compact experimen
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(e.message));
     await page.goto("/");
-    await expect(page.getByText("Tap an organ · use arrows to rotate", { exact: true })).toBeAttached();
+    await expect(page.getByText("Use arrows to meet the virtual rat", { exact: true })).toBeAttached();
     await expect(page.getByRole("button", { name: /Edit experiment/ })).toBeVisible();
     await expect(page.getByLabel("Daily dose (mg/kg)", { exact: true })).not.toBeVisible();
     const canvas = page.locator(".rat-stage canvas");
