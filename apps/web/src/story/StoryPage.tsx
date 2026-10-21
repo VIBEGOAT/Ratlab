@@ -20,6 +20,7 @@ import type { Quality } from "../three/RatModel";
 
 const ArenaScene = lazy(() => import("../three/ArenaScene").then((m) => ({ default: m.ArenaScene })));
 const StoryScene = lazy(() => import("./StoryScene").then((m) => ({ default: m.StoryScene })));
+const CinematicHero = lazy(() => import("./CinematicHero"));
 
 /** Conservative example assumptions. Shown on hover and editable in the Pitch view. */
 export const SPARED_ASSUMPTIONS = { studiesPerYear: 20, treatedGroups: 3, animalsPerGroup: 20, screenedOutShare: 0.2, virtualControlShare: 0 };
@@ -366,8 +367,8 @@ export function StoryPage() {
         <div className="story-stage" ref={stageRef} aria-hidden={pos.chapter === 5 ? true : undefined}>
           {gl ? (
             <Suspense fallback={<div className="poster"><RatPoster /></div>}>
-              <StoryScene posRef={posRef as React.MutableRefObject<StoryPos>} chapter={pos.chapter} treated={t} untreated={u} day={damageDay} moment={moment} exposure={exposure} plasmaRef={plasmaRef}
-                reduceMotion={reduce} palette={cb ? "cb" : "standard"} quality={quality} onDecline={() => { declined.current = true; setAutoQ("low"); }} onIncline={() => { if (!declined.current) setAutoQ("high"); }} background={bg} paused={paused} splitRef={splitRef} twinDay={twinDay} />
+              {pos.chapter === 0 && t ? <SceneBoundary fallback={<div className="poster"><RatPoster /></div>}><CinematicHero animal={t} reduced={reduce} quality={quality} /></SceneBoundary> : <StoryScene posRef={posRef as React.MutableRefObject<StoryPos>} chapter={pos.chapter} treated={t} untreated={u} day={damageDay} moment={moment} exposure={exposure} plasmaRef={plasmaRef}
+                reduceMotion={reduce} palette={cb ? "cb" : "standard"} quality={quality} onDecline={() => { declined.current = true; setAutoQ("low"); }} onIncline={() => { if (!declined.current) setAutoQ("high"); }} background={bg} paused={paused} splitRef={splitRef} twinDay={twinDay} />}
             </Suspense>
           ) : <div className="poster"><RatPoster /></div>}
           {glOk && software && (
