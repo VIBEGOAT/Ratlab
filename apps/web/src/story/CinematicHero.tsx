@@ -7,13 +7,18 @@ import type { AnimalBundle } from "@eliminate/sim-core";
 import { DEFAULT_LAYERS, RatModel, type Quality } from "../three/RatModel";
 import { ratVisualState } from "../three/ratState";
 import { gutPath, type Vec3 } from "../three/anatomy";
-import { heroCycle } from "./heroCycle";
+import { HERO_STARTS, heroCycle, organShot } from "./heroCycle";
 import { useBodyGeometry } from "../three/bodyGeometry";
 import "./cinematic.css";
 
 const TITLES = ["Life in motion", "Beneath the surface", "A network of signals"];
 const DESCRIPTIONS = ["A running rat in a sunlit meadow", "Beating heart · breathing lungs · digestive motion", "Illustrative neural pathways · signals travel outward"];
 const COLORS = ["#67e8f9", "#ff83c8", "#a6ff72", "#ffd36c", "#b29aff"];
+const ORGAN_TOUR = [
+  { name: "Heart", center: [1.02, .82, .04] as Vec3, function: "Pumps blood through the body", unit: "beats/min" },
+  { name: "Stomach", center: [.2, .8, -.22] as Vec3, function: "Mixes food and moves it toward the intestine", unit: "cycles/min" },
+  { name: "Lungs", center: [.98, .98, 0] as Vec3, function: "Exchange oxygen and carbon dioxide", unit: "breaths/min" },
+];
 type Clock = React.MutableRefObject<number>;
 
 /** Brain-to-spine-to-periphery paths: illustrative, not a complete nerve atlas. */
@@ -31,6 +36,18 @@ function neuralPaths() {
     paths.push([brain, [2.13, 1.1, side * .16], [2.5, .98, side * .18], [2.92, .88, side * .06]]);
   }
   paths.push([brain, [.8, 1.24, 0], [-1.35, 1, 0], [-2.1, .62, .05], [-2.9, .42, -.12], [-4.4, .24, 0]]);
+  // Fine peripheral arborisation shares a proximal trunk, then fans into skin and muscle.
+  const trunks = [...paths];
+  for (const [i, trunk] of trunks.entries()) {
+    if (i === trunks.length - 1) continue;
+    const end = trunk[trunk.length - 1]!;
+    for (let branch = 0; branch < 4; branch++) {
+      const angle = (branch / 4) * Math.PI * 2 + i * .7;
+      const side = end[2] >= 0 ? 1 : -1;
+      const tip: Vec3 = [end[0] + Math.cos(angle) * .12, Math.max(.055, end[1] + Math.sin(angle) * .085), end[2] + side * .035];
+      paths.push([...trunk.slice(0, -1), end, [(end[0] + tip[0]) / 2, (end[1] + tip[1]) / 2 + .025, end[2] + side * .015], tip]);
+    }
+  }
   return paths.map((points) => new THREE.CatmullRomCurve3(points.map((p) => new THREE.Vector3(...p))));
 }
 
@@ -38,7 +55,7 @@ function Signals({ clock, opacity }: { clock: Clock; opacity: Clock }) {
   const group = useRef<THREE.Group>(null);
   const pulses = useRef<THREE.InstancedMesh>(null);
   const curves = useMemo(neuralPaths, []);
-  const geometry = useMemo(() => curves.map((curve) => new THREE.TubeGeometry(curve, 40, .009, 5, false)), [curves]);
+  const geometry = useMemo(() => curves.map((curve, i) => new THREE.TubeGeometry(curve, 32, i < 43 ? .006 : .0025, 4, false)), [curves]);
   const dummy = useMemo(() => new THREE.Object3D(), []);
   useEffect(() => () => geometry.forEach((g) => g.dispose()), [geometry]);
   useFrame(() => {
@@ -49,8 +66,8 @@ function Signals({ clock, opacity }: { clock: Clock; opacity: Clock }) {
     });
     curves.forEach((curve, i) => {
       for (let j = 0; j < 3; j++) {
-        dummy.position.copy(curve.getPointAt((clock.current * .38 + j / 3) % 1));
-        dummy.scale.setScalar(.024 + .008 * Math.sin(clock.current * 4 + i));
+        dummy.position.copy(curve.getPointAt((clock.current * .72 + j / 3) % 1));
+        dummy.scale.setScalar(i < 43 ? .017 : .008);
         dummy.updateMatrix();
         pulses.current!.setMatrixAt(i * 3 + j, dummy.matrix);
         pulses.current!.setColorAt(i * 3 + j, new THREE.Color(COLORS[i % COLORS.length]!).multiplyScalar(2));
@@ -91,7 +108,7 @@ function Meadow({ clock, natural, quality }: { clock: Clock; natural: Clock; qua
     grass.current.visible = natural.current > .005;
     material.current.opacity = natural.current;
     blades.forEach((b, i) => {
-      const x = ((b.x - clock.current * 1.7 + 1300) % 26) - 13;
+      const x = ((b.x - clock.current * 4.8 + 13000) % 26) - 13;
       const lane = Math.abs(b.z) < .8 ? .22 : 1;
       dummy.position.set(x, b.h * lane * .5 - .035, b.z);
       dummy.rotation.set(.12 * Math.sin(clock.current * 2 + b.x), b.a, .15 * Math.sin(clock.current * 1.8 + b.z));
@@ -109,7 +126,7 @@ function Meadow({ clock, natural, quality }: { clock: Clock; natural: Clock; qua
 const FLOOR_FRAGMENT = `
 uniform float natural; uniform float time; varying vec2 p;
 void main(){
- vec2 q=p+vec2(time*1.7,0.);
+ vec2 q=p+vec2(time*4.8,0.);
  vec2 cell=abs(fract(q)-.5); vec2 aa=fwidth(q);
  float line=1.-min(smoothstep(.012,.012+aa.x,cell.x),smoothstep(.012,.012+aa.y,cell.y));
  float noise=.5+.25*sin(q.x*2.1+sin(q.y*1.3))+.25*cos(q.y*2.7+sin(q.x));
@@ -120,10 +137,11 @@ void main(){
  gl_FragColor=vec4(mix(lab,meadow,natural),1.);
 }`;
 
-function Scene({ animal, clock, playing, reduced, quality, onStage, onReady }: {
-  animal: AnimalBundle; clock: Clock; playing: boolean; reduced: boolean; quality: Quality; onStage: (stage: number) => void; onReady: () => void;
+function Scene({ animal, clock, playing, reduced, quality, onStage, onShot, onReady }: {
+  animal: AnimalBundle; clock: Clock; playing: boolean; reduced: boolean; quality: Quality; onStage: (stage: number) => void; onShot: (shot: number) => void; onReady: () => void;
 }) {
   const natural = useRef(1), nerves = useRef(0), organs = useRef(0), sweep = useRef(99);
+  const cinematicFocus = useRef<string | null>(null);
   const rat = useRef<THREE.Group>(null), scan = useRef<THREE.Mesh>(null), gutPulse = useRef<THREE.Mesh>(null);
   const ground = useRef<THREE.ShaderMaterial>(null);
   const body = useBodyGeometry();
@@ -131,6 +149,9 @@ function Scene({ animal, clock, playing, reduced, quality, onStage, onReady }: {
   const floorUniforms = useMemo(() => ({ natural: { value: 1 }, time: { value: 0 } }), []);
   const gutCurve = useMemo(() => new THREE.CatmullRomCurve3(gutPath().map((p) => new THREE.Vector3(...p))), []);
   const previous = useRef(-1);
+  const previousShot = useRef(-1);
+  const lookAt = useMemo(() => new THREE.Vector3(), []);
+  const focusPoint = useMemo(() => new THREE.Vector3(), []);
   const resumed = useRef(true);
   useEffect(() => { resumed.current = true; }, [playing]);
   useEffect(() => { if (body) onReady(); }, [body, onReady]);
@@ -145,11 +166,24 @@ function Scene({ animal, clock, playing, reduced, quality, onStage, onReady }: {
     scene.background = bg;
     if (scene.fog instanceof THREE.Fog) scene.fog.color.copy(bg);
     if (ground.current) { ground.current.uniforms.natural!.value = state.natural; ground.current.uniforms.time!.value = clock.current; }
-    const angle = reduced ? .35 : .35 + clock.current * .14;
+    const shot = state.stage === 1 ? organShot(state.localTime) : { index: -1, zoom: 0 };
+    cinematicFocus.current = shot.zoom > .15 ? ["heart", "gut", "lungs"][shot.index]! : null;
+    if (previousShot.current !== shot.index) { previousShot.current = shot.index; onShot(shot.index); }
+    const angle = reduced ? .35 : .35 + clock.current * .22;
     const distance = Math.max(11, 12 / Math.max(.55, size.width / size.height));
     camera.position.set(-.65 + Math.sin(angle) * distance, 2.6 + Math.sin(clock.current * .17) * .3, Math.cos(angle) * distance);
-    camera.lookAt(-.65, .65, 0);
-    if (rat.current) { rat.current.position.y = reduced ? 0 : .045 + Math.abs(Math.sin(clock.current * 7)) * .055; rat.current.rotation.z = reduced ? 0 : Math.sin(clock.current * 7) * .012; }
+    lookAt.set(-.65, .65, 0);
+    if (shot.index >= 0 && !reduced) {
+      const target = ORGAN_TOUR[shot.index]!;
+      focusPoint.set(...target.center);
+      const closeDistance = Math.max(1.25, 1.4 / (size.width / size.height));
+      const side = shot.index === 1 ? -1 : 1;
+      const closePosition = new THREE.Vector3(focusPoint.x + .45 + Math.sin(state.localTime * 1.1) * .12, focusPoint.y + .42, focusPoint.z + closeDistance * side);
+      camera.position.lerp(closePosition, shot.zoom);
+      lookAt.lerp(focusPoint, shot.zoom);
+    }
+    camera.lookAt(lookAt);
+    if (rat.current) { const movement = 1 - shot.zoom; rat.current.position.y = reduced ? 0 : (.035 + Math.abs(Math.sin(clock.current * 16)) * .07) * movement; rat.current.rotation.z = reduced ? 0 : Math.sin(clock.current * 16) * .02 * movement; }
     if (scan.current) {
       scan.current.visible = state.progress > 0;
       scan.current.position.set(state.stage === 0 ? 3.2 - state.progress * 8.3 : -.4, state.stage === 2 ? .08 : .85, 0);
@@ -167,7 +201,7 @@ function Scene({ animal, clock, playing, reduced, quality, onStage, onReady }: {
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -.04, 0]}><planeGeometry args={[100, 100]} /><shaderMaterial ref={ground} uniforms={floorUniforms} vertexShader="varying vec2 p; void main(){p=position.xy; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}" fragmentShader={FLOOR_FRAGMENT} /></mesh>
     <Meadow clock={clock} natural={natural} quality={quality} />
     <group ref={rat} visible={!!body}>
-      <RatModel v={visual} layers={{ ...DEFAULT_LAYERS, xray: false, labels: false, tumor: false }} quality={quality} walk={reduced ? 0 : 2.4} tempo={1.8} animate={playing && !reduced} sweepRef={sweep} organOpacity={organs} />
+      <RatModel v={visual} layers={{ ...DEFAULT_LAYERS, xray: false, labels: false, tumor: false }} quality={quality} walk={reduced ? 0 : 3.2} gaitSpeed={3.4} animate={playing && !reduced} sweepRef={sweep} organOpacity={organs} cinematicFocus={cinematicFocus} />
       <Signals clock={clock} opacity={nerves} />
       <mesh ref={gutPulse}><sphereGeometry args={[.055, 12, 8]} /><meshBasicMaterial color="#ffc875" toneMapped={false} /></mesh>
     </group>
@@ -180,6 +214,9 @@ export default function CinematicHero({ animal, reduced, quality }: { animal: An
   const clock = useRef(0);
   const [playing, setPlaying] = useState(true);
   const [stage, setStage] = useState(0);
+  const [shot, setShot] = useState(-1);
+  const visual = useMemo(() => ratVisualState(animal, 0), [animal]);
+  const rates = [Math.round(visual.heartRateBpm), 12, Math.round(visual.respirationBpm)];
   const [ready, setReady] = useState(false);
   const [visible, setVisible] = useState(true);
   useEffect(() => {
@@ -189,16 +226,16 @@ export default function CinematicHero({ animal, reduced, quality }: { animal: An
   }, []);
   return <div className="cinematic-hero" data-testid="cinematic-hero" data-stage={stage}>
     <Canvas frameloop={playing && visible && !reduced ? "always" : "demand"} camera={{ position: [3, 3, 10], fov: 40, near: .05, far: 110 }} dpr={[1, quality === "high" ? 1.5 : 1]} gl={{ antialias: true, powerPreference: "high-performance" }} style={{ touchAction: "pan-y" }}>
-      <Scene animal={animal} clock={clock} playing={playing && visible} reduced={reduced} quality={quality} onStage={setStage} onReady={() => setReady(true)} />
+      <Scene animal={animal} clock={clock} playing={playing && visible} reduced={reduced} quality={quality} onStage={setStage} onShot={setShot} onReady={() => setReady(true)} />
       {quality === "high" && <EffectComposer multisampling={0}><Bloom intensity={.4} luminanceThreshold={.85} luminanceSmoothing={.25} mipmapBlur /></EffectComposer>}
     </Canvas>
     <div className="cinematic-top"><span>VAST / LIVING SYSTEMS</span><span>0{stage + 1} — 03</span></div>
     {!ready && <div className="cinematic-loading" role="status">Growing a little world…</div>}
-    <div className="cinematic-caption"><p>{TITLES[stage]}</p><span>{DESCRIPTIONS[stage]}</span></div>
+    <div className="cinematic-caption" data-organ={shot >= 0 ? ORGAN_TOUR[shot]!.name : undefined}><p>{shot >= 0 ? ORGAN_TOUR[shot]!.name : TITLES[stage]}</p><span>{shot >= 0 ? ORGAN_TOUR[shot]!.function : DESCRIPTIONS[stage]}</span>{shot >= 0 && <div className="cinematic-rate"><strong>{rates[shot]}</strong> {ORGAN_TOUR[shot]!.unit}<small>{shot === 1 ? "Illustrative animation rate" : "Simulated baseline · animation stylized"}</small></div>}</div>
     <div className="cinematic-controls" role="group" aria-label="Cinematic rat views">
-      {["Meadow", "Organs", "Nerves"].map((label, i) => <button key={label} aria-pressed={stage === i} onClick={() => { clock.current = i * 11; setStage(i); }}>{label}</button>)}
+      {["Meadow", "Organs", "Nerves"].map((label, i) => <button key={label} aria-pressed={stage === i} onClick={() => { clock.current = HERO_STARTS[i]!; setStage(i); }}>{label}</button>)}
       {!reduced && <button onClick={() => setPlaying(!playing)} aria-label={playing ? "Pause cinematic scene" : "Play cinematic scene"}>{playing ? "Pause" : "Play"}</button>}
     </div>
-    <small className="cinematic-note">Illustrative anatomy · motion slowed for learning</small>
+    <small className="cinematic-note">Illustrative anatomy · simulated physiology</small>
   </div>;
 }

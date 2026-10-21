@@ -42,8 +42,10 @@ export interface RatModelProps {
   labelMode?: "grade" | "names";
   /** animation speed, 1 normal, 0 still */
   tempo?: number;
+  gaitSpeed?: number;
   /** Cinematic hero only: fade organ anatomy while revealing neural paths. */
   organOpacity?: React.MutableRefObject<number>;
+  cinematicFocus?: React.MutableRefObject<string | null>;
 }
 
 // ---------- geometry built once and shared by every rat on the page
@@ -102,7 +104,7 @@ function OrganPart({ organ, shapes, damage, grade, selected, hovered, setHovered
     }
   });
   return (
-    <group ref={meshRef ?? undefined} position={meshRef ? shapes[0]!.center : undefined}>
+    <group name={organ} ref={meshRef ?? undefined} position={meshRef ? shapes[0]!.center : undefined}>
       {shapes.map((s, i) => (
         <mesh key={i} geometry={quality === "high" ? SPHERE : SPHERE_LO} position={meshRef ? [s.center[0] - shapes[0]!.center[0], s.center[1] - shapes[0]!.center[1], s.center[2] - shapes[0]!.center[2]] : s.center} scale={s.radii} rotation={s.rot ?? [0, 0, 0]}
           onClick={(e) => { e.stopPropagation(); onSelect?.(organ); }}
@@ -149,7 +151,7 @@ function Vessels() {
   return <group>{geo.map(({ v, g }) => <mesh key={v.id} geometry={g}><meshStandardMaterial color={v.kind === "artery" ? "#c8323c" : v.kind === "portal" ? "#8a4fb0" : "#4a6fc8"} roughness={0.5} emissive={v.kind === "artery" ? "#4a0c10" : "#101a40"} /></mesh>)}</group>;
 }
 
-export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale = 1, animate = true, quality = "high", exposure = {}, palette = "standard", sweep, sweepRef, labelMode = "grade", tempo = 1, organOpacity }: RatModelProps) {
+export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale = 1, animate = true, quality = "high", exposure = {}, palette = "standard", sweep, sweepRef, labelMode = "grade", tempo = 1, gaitSpeed = 1, organOpacity, cinematicFocus }: RatModelProps) {
   const anatomyRef = useRef<THREE.Group>(null);
   const digestionRef = useRef<THREE.Group>(null);
   const lungsRef = useRef<THREE.Group>(null);
@@ -205,14 +207,21 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
       anatomyRef.current.traverse((object) => {
         if (object instanceof THREE.Mesh && object.material instanceof THREE.MeshStandardMaterial) {
           object.material.transparent = true;
-          object.material.opacity = organOpacity.current;
-          object.material.depthWrite = organOpacity.current > 0.95;
+          let parent: THREE.Object3D | null = object;
+          let focused = !cinematicFocus?.current;
+          while (parent && parent !== anatomyRef.current) {
+            if (parent.name === cinematicFocus?.current) focused = true;
+            parent = parent.parent;
+          }
+          const alpha = organOpacity.current * (focused ? 1 : .06);
+          object.material.opacity += (alpha - object.material.opacity) * (1 - Math.exp(-Math.min(dt, .1) * 16));
+          object.material.depthWrite = alpha > 0.95;
         }
       });
-      if (digestionRef.current) digestionRef.current.scale.set(1, 1 + Math.sin(t * 3) * 0.035, 1 + Math.cos(t * 3) * 0.025);
+      if (digestionRef.current) digestionRef.current.scale.set(1, 1 + Math.sin(t * Math.PI * .4) * 0.045, 1 + Math.cos(t * Math.PI * .4) * 0.035);
       if (lungsRef.current) lungsRef.current.scale.set(1, 1 + Math.sin(t * 4) * .065, 1 + Math.sin(t * 4) * .065);
     }
-    uniforms.uTime.value = t;
+    uniforms.uTime.value = t * gaitSpeed;
     uniforms.uSweep.value = sweepRef ? sweepRef.current : sweep !== undefined ? sweep : layers.xray ? -99 : 99;
     uniforms.uBreath.value = (v.respirationBpm / 60) * 0.45 * (1 - 0.4 * v.lethargy);
     uniforms.uHunch.value = v.hunch;
@@ -297,7 +306,7 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
         {layers.skeleton && <Skeleton quality={quality} />}
         {layers.vessels && <Vessels />}
         {layers.brain && <OrganPart {...common("brain")} shapes={ORGAN_SHAPES.brain} label="Brain" />}
-        {layers.lungs && <group ref={lungsRef} position={[.98, .98, 0]}>{ORGAN_SHAPES.lungs.map((s, i) => <mesh key={i} geometry={SPHERE} position={[s.center[0] - .98, s.center[1] - .98, s.center[2]]} scale={s.radii}><meshStandardMaterial color="#efb0b6" roughness={0.6} transparent opacity={0.6} depthWrite={false} /></mesh>)}</group>}
+        {layers.lungs && <group name="lungs" ref={lungsRef} position={[.98, .98, 0]}>{ORGAN_SHAPES.lungs.map((s, i) => <mesh key={i} geometry={SPHERE} position={[s.center[0] - .98, s.center[1] - .98, s.center[2]]} scale={s.radii}><meshStandardMaterial color="#efb0b6" roughness={0.6} transparent opacity={0.6} depthWrite={false} /></mesh>)}</group>}
         {layers.heart && <OrganPart {...common("heart")} shapes={ORGAN_SHAPES.heart} label="Heart" meshRef={heartRef} />}
         {layers.liver && <OrganPart {...common("liver")} shapes={ORGAN_SHAPES.liver} label="Liver" />}
         {layers.kidneys && <OrganPart {...common("kidney")} shapes={ORGAN_SHAPES.kidney} label="Kidneys" />}

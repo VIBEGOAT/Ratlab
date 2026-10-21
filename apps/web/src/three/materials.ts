@@ -86,6 +86,11 @@ export function makeFurMaterial(u: BodyUniforms, furColor: THREE.Color, shell: n
           if (strand < uShell * (1.0 - 0.25 * uRuffle)) discard;
         }
         diffuseColor.rgb = mix(diffuseColor.rgb, uSkinColor, vSkinW);
+        // Fine directional variation breaks up the plastic-looking smooth coat.
+        float coat = ratHash(floor(vObj * vec3(90.0, 340.0, 340.0)));
+        float flank = smoothstep(0.3, 1.4, vObj.y);
+        diffuseColor.rgb *= mix(0.86 + 0.19 * coat, 1.0, vSkinW);
+        diffuseColor.rgb *= mix(0.94, 1.035, flank);
         diffuseColor.rgb *= mix(0.62, 1.05, uShell > 0.0 ? uShell : 0.15);`);
     // rim light for a soft, subsurface-like edge
     sh.fragmentShader = sh.fragmentShader.replace("#include <emissivemap_fragment>", `#include <emissivemap_fragment>

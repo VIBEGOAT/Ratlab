@@ -54,6 +54,11 @@ export function ratSdf(p: Vec3, wasting = 0): number {
   d = smin(d, sdEllipsoid(p, CHEST.c, [CHEST.r[0], CHEST.r[1] * thin, CHEST.r[2] * thin]), 0.35);
   d = smin(d, sdEllipsoid(p, HEAD.c, HEAD.r), 0.3);
   d = smin(d, sdRoundCone(p, SNOUT.a, SNOUT.b, SNOUT.ra, SNOUT.rb), 0.18);
+  // Rounded hindquarters and shoulder musculature soften the straight tubular silhouette.
+  for (const side of [-1, 1]) {
+    d = smin(d, sdEllipsoid(p, [-.95, .68, side * .35], [.42, .48, .32]), .18);
+    d = smin(d, sdEllipsoid(p, [1.02, .75, side * .28], [.25, .34, .24]), .14);
+  }
   for (const l of LEGS) {
     d = smin(d, sdRoundCone(p, l.upper[0], l.upper[1], l.upper[2], l.upper[3]), 0.16);
     d = smin(d, sdEllipsoid(p, l.paw.c, l.paw.r), 0.07);
