@@ -1,3 +1,5 @@
+> Restoration update: The story now uses the original 3D anatomical rat with fur, organ and neural views, driven by an external scroll clock. Typecheck, lint, production build and Chromium smoke checks passed. Lighthouse results below describe the earlier SVG version, not the restored 3D scene.
+
 # Story rebuild and verification
 
 ## Root cause (reproduced before editing)
@@ -109,7 +111,7 @@ Lighthouse used the production Vite preview, default simulated mobile throttling
 
 The Linux Story screenshot baselines are in `apps/web/e2e/visual.spec.ts-snapshots/`. The earlier Windows baselines for the replaced Story remain historical; regenerate those on Windows before using that platform's visual gate. The unrelated Lab visual baselines were not regenerated.
 
-The default scene is an illustrated SVG rig, not a photorealistic 3D model. This is deliberate: every pose and path point can be reproduced directly from scroll without a WebGL clock or asynchronous model loading. The existing 3D Lab model remains available in the workbench.
+The default scene now restores the original 3D Lab rat. Scroll determines its animation clock, camera and anatomical views; a hidden SVG path provides journey coordinates. Layer controls allow direct inspection of the whole rat, organs and nerves.
 
 ## Reproduce
 

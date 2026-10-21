@@ -46,6 +46,8 @@ export interface RatModelProps {
   /** Cinematic hero only: fade organ anatomy while revealing neural paths. */
   organOpacity?: React.MutableRefObject<number>;
   cinematicFocus?: React.MutableRefObject<string | null>;
+  /** Optional external pose clock. Story supplies scroll time; Lab keeps its existing live clock. */
+  animationTime?: React.MutableRefObject<number>;
 }
 
 // ---------- geometry built once and shared by every rat on the page
@@ -83,7 +85,8 @@ function organColour(organ: Organ, damage: number): THREE.Color {
   return new THREE.Color(a).lerp(new THREE.Color(b), Math.min(1, damage * 1.1));
 }
 
-function OrganPart({ organ, shapes, damage, grade, selected, hovered, setHovered, onSelect, showLabel, label, exposure, palette, quality, meshRef, labelMode = "grade" }: {
+function OrganPart({ organ, shapes, damage, grade, selected, hovered, setHovered, onSelect, showLabel, label, exposure, palette, quality, meshRef, labelMode = "grade", animationTime }: {
+  animationTime?: React.MutableRefObject<number>;
   labelMode?: "grade" | "names";
   organ: Organ; shapes: OrganShape[]; damage: number; grade: number; selected: boolean; hovered: boolean; setHovered: (o: Organ | null) => void;
   onSelect?: (o: Organ) => void; showLabel: boolean; label: string; exposure: number; palette: "standard" | "cb"; quality: Quality; meshRef?: React.MutableRefObject<THREE.Group | null>;
@@ -92,7 +95,7 @@ function OrganPart({ organ, shapes, damage, grade, selected, hovered, setHovered
   const color = useMemo(() => organColour(organ, damage), [organ, damage]);
   const gradeColor = useMemo(() => new THREE.Color(GRADE_HEX[palette][Math.min(5, grade)]!), [grade, palette]);
   useFrame(({ clock }) => {
-    const t = clock.elapsedTime;
+    const t = animationTime?.current ?? clock.elapsedTime;
     for (const m of mats.current) {
       if (!m) continue;
       if (selected || hovered) { m.emissive.set("#39d3bb"); m.emissiveIntensity = selected ? 0.55 : 0.3; continue; }
@@ -151,7 +154,7 @@ function Vessels() {
   return <group>{geo.map(({ v, g }) => <mesh key={v.id} geometry={g}><meshStandardMaterial color={v.kind === "artery" ? "#c8323c" : v.kind === "portal" ? "#8a4fb0" : "#4a6fc8"} roughness={0.5} emissive={v.kind === "artery" ? "#4a0c10" : "#101a40"} /></mesh>)}</group>;
 }
 
-export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale = 1, animate = true, quality = "high", exposure = {}, palette = "standard", sweep, sweepRef, labelMode = "grade", tempo = 1, gaitSpeed = 1, organOpacity, cinematicFocus }: RatModelProps) {
+export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale = 1, animate = true, quality = "high", exposure = {}, palette = "standard", sweep, sweepRef, labelMode = "grade", tempo = 1, gaitSpeed = 1, organOpacity, cinematicFocus, animationTime }: RatModelProps) {
   const anatomyRef = useRef<THREE.Group>(null);
   const digestionRef = useRef<THREE.Group>(null);
   const lungsRef = useRef<THREE.Group>(null);
@@ -200,7 +203,8 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
   }, [skin, fur, furMats, skinMat, uniforms]);
 
   useFrame((_, dt) => {
-    if (animate) clockT.current += Math.min(dt, 0.1) * tempo;
+    if (animationTime) clockT.current = animationTime.current;
+    else if (animate) clockT.current += Math.min(dt, 0.1) * tempo;
     const t = clockT.current;
     if (organOpacity && anatomyRef.current) {
       anatomyRef.current.visible = organOpacity.current > 0.005;
@@ -214,7 +218,7 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
             parent = parent.parent;
           }
           const alpha = organOpacity.current * (focused ? 1 : .06);
-          object.material.opacity += (alpha - object.material.opacity) * (1 - Math.exp(-Math.min(dt, .1) * 16));
+          object.material.opacity = animationTime ? alpha : object.material.opacity + (alpha - object.material.opacity) * (1 - Math.exp(-Math.min(dt, .1) * 16));
           object.material.depthWrite = alpha > 0.95;
         }
       });
@@ -229,11 +233,11 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
     uniforms.uTremor.value = v.tremor + 3 * v.convulsion;
     uniforms.uRuffle.value = v.piloerection;
     uniforms.uWalk.value = typeof walk === "number" ? walk : walk.current;
-    if (root.current && animate) {
+    if (root.current && (animate || animationTime)) {
       root.current.rotation.y = Math.sin(t * 1.2) * 0.08 * v.ataxia;
       root.current.rotation.x = Math.sin(t * 1.7) * 0.05 * v.ataxia + v.convulsion * 0.06 * Math.sin(t * 38);
     }
-    if (heartRef.current && animate) {
+    if (heartRef.current && (animate || animationTime)) {
       const f = (v.heartRateBpm / 360) * 1.25;
       const beat = Math.pow(Math.max(0, Math.sin(2 * Math.PI * f * t)), 2);
       const s = 1 + 0.12 * beat;
@@ -245,7 +249,7 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
   const earBack = 0.55 * v.grimace;
   const organThin = 1 - 0.3 * v.wasting;
   const og = (o: Organ) => v.organs[o];
-  const common = (o: Organ) => ({ organ: o, damage: og(o).damage, grade: og(o).grade, selected: selected === o, hovered: hovered === o, setHovered, onSelect, showLabel: layers.labels && (labelMode === "names" || layers.xray || selected === o), labelMode, exposure: exposure[o] ?? 0, palette, quality });
+  const common = (o: Organ) => ({ organ: o, damage: og(o).damage, grade: og(o).grade, selected: selected === o, hovered: hovered === o, setHovered, onSelect, showLabel: layers.labels && (labelMode === "names" || layers.xray || selected === o), labelMode, exposure: exposure[o] ?? 0, palette, quality, animationTime });
 
   return (
     <group ref={root} scale={v.size * scale}>
