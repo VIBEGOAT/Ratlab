@@ -2,7 +2,7 @@
    Modal dialog: Escape closes it from the keyboard, the backdrop click is a pointer shortcut, and focus moves to Close on open. */
 import { useState } from "react";
 import { CONSTANTS, DISCLAIMER, REFERENCES, SIM_VERSION, listUnverifiedConstants, listUnverifiedReferences } from "@eliminate/sim-core";
-import { useStore } from "../store";
+import { storageAvailable, useStore } from "../store";
 
 /** Always-visible disclaimer plus an honest status chip that opens the verification panel. */
 export function Footer() {
@@ -12,12 +12,14 @@ export function Footer() {
   const nConst = listUnverifiedConstants().length;
   const totalConst = Object.keys(CONSTANTS).length;
   const nRef = listUnverifiedReferences().length;
-  if (mode === "toxicity") return <footer className="footer"><span>Simulated organ responses · Fictional compounds · Not validated against animal data.</span><span>No human safety inference.</span></footer>;
-  if (mode === "learn") return <footer className="footer"><span>Teaching simulation · Fictional compound and parameters.</span><span>Learning outcomes have not yet been evaluated.</span></footer>;
+  const storageNote = !storageAvailable ? <span role="status">Settings will reset when you leave this browser.</span> : null;
+  if (mode === "toxicity") return <footer className="footer"><span>Simulated organ responses · Fictional compounds · Not validated against animal data.</span>{storageNote ?? <span>No human safety inference.</span>}</footer>;
+  if (mode === "learn") return <footer className="footer"><span>Teaching simulation · Fictional compound and parameters.</span>{storageNote ?? <span>Learning outcomes have not yet been evaluated.</span>}</footer>;
   return (
     <>
       <footer className="footer" role="contentinfo">
         <span><b style={{ color: "var(--ink-2)", fontWeight: 600 }}>{DISCLAIMER}</b></span>
+        {storageNote}
         <button type="button" className="status-chip" onClick={() => setOpen(true)} aria-haspopup="dialog" aria-label={`Prototype. ${nConst} of ${totalConst} parameters awaiting expert verification. Open details.`}>
           <span className="dot" aria-hidden="true" /><span className="long">Prototype · {nConst} of {totalConst} parameters awaiting expert verification</span><span className="short" aria-hidden="true">Prototype · {nConst}/{totalConst} unverified</span>
         </button>

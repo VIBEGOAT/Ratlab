@@ -73,6 +73,15 @@ const ls = {
   get(k: string): string | null { try { return localStorage.getItem(k); } catch { return null; } },
   set(k: string, v: string): void { try { localStorage.setItem(k, v); } catch { /* storage may be blocked */ } },
 };
+/** Whether this browser permits the small local preferences and notebook cache. */
+export const storageAvailable = (() => {
+  try {
+    const key = "vast-storage-check";
+    localStorage.setItem(key, "1");
+    localStorage.removeItem(key);
+    return true;
+  } catch { return false; }
+})();
 const savedTheme = ((): Theme => { const t = ls.get("theme"); return t === "light" || t === "dark" ? t : "system"; })();
 const savedMode = ((): Mode => { const h = typeof location !== "undefined" ? location.hash : ""; if (h.startsWith("#learn")) return "learn"; if (h.startsWith("#lab")) return "lab"; if (h.startsWith("#story")) return "story"; return "toxicity"; })();
 const cacheKey = (s: Setup) => `${SIM_VERSION}|${JSON.stringify(s)}`;
