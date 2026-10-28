@@ -64,8 +64,23 @@ function MainApp() {
     if (theme === "system") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", theme);
     if (cb) root.setAttribute("data-palette", "cb"); else root.removeAttribute("data-palette");
   }, [theme, cb]);
-  // pre-warm the default study as soon as the app opens, so the story never waits on a spinner
-  useEffect(() => { if ((mode === "story" || mode === "lab") && !started.current) { started.current = true; void run(); } }, [run, mode]);
+  // Let the first shell paint before fetching/parsing the baked study. The idle timeout keeps
+  // the study responsive on browsers without requestIdleCallback or under continuous activity.
+  useEffect(() => {
+    if ((mode !== "story" && mode !== "lab") || started.current) return;
+    let timeout = 0;
+    let idle = 0;
+    let live = true;
+    const start = () => { if (live && !started.current) { started.current = true; void run(); } };
+    const ric = (window as { requestIdleCallback?: (cb: () => void, options?: { timeout: number }) => number }).requestIdleCallback;
+    if (ric) idle = ric(start, { timeout: 1200 });
+    else timeout = window.setTimeout(start, 0);
+    return () => {
+      live = false;
+      window.clearTimeout(timeout);
+      if (idle) (window as { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback?.(idle);
+    };
+  }, [run, mode]);
   useEffect(() => {
     const read = () => {
       const h = location.hash;
