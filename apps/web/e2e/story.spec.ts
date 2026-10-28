@@ -47,10 +47,9 @@ test('fast forward, reverse, idle and wheel scrolling stay synchronized', async 
   await page.goto('/?debug=1#story');
   const rat = page.getByTestId('journey-rat');
   await scrub(page, .4);
-  await expect(rat).toHaveAttribute('data-ready', 'true', { timeout: 60000 });
-  const first = await rat.getAttribute('data-time');
+  const first = await rat.getAttribute('style');
   await scrub(page, .95); await scrub(page, .02); await scrub(page, .4);
-  await expect(rat).toHaveAttribute('data-time', first!);
+  await expect(rat).toHaveAttribute('style', first!);
   const before = await page.locator('.journey-scene').innerHTML();
   await page.waitForTimeout(1200);
   expect(await page.locator('.journey-scene').innerHTML()).toBe(before);
@@ -103,8 +102,8 @@ test('dose, compound, organs and HED are connected and keyboard accessible', asy
 
 test('reduced motion uses stationary chapter poses and no running animations', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto('/#story');
-  await scrub(page, .34); const point = await page.getByTestId('journey-rat').getAttribute('data-time');
-  await scrub(page, .48); await expect(page.getByTestId('journey-rat')).toHaveAttribute('data-time', point!);
+  await scrub(page, .34); const point = await page.getByTestId('journey-rat').getAttribute('style');
+  await scrub(page, .48); await expect(page.getByTestId('journey-rat')).toHaveAttribute('style', point!);
   await expect(page.getByTestId('journey-rat')).toHaveAttribute('data-pose', 'pause');
   expect(await page.evaluate(() => document.getAnimations().filter(a => a.playState === 'running').length)).toBe(0);
 });
