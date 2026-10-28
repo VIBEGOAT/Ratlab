@@ -1,2 +1,3 @@
 User-agent: *
 Allow: /
+Sitemap: https://eliminate-lab.vercel.app/sitemap.xml
