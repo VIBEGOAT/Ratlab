@@ -1,7 +1,7 @@
 /**
  * Pre-bakes the default study so the very first visit opens instantly instead of waiting for the simulation.
- * Output: apps/web/src/prewarm/default.json, keyed by SIM_VERSION and the default setup, so the app only
- * uses it when both match. A unit test fails if this file goes stale. Run: npm run gen:prewarm
+ * Output: apps/web/src/prewarm/default.json and population.json, keyed by SIM_VERSION and the default setup,
+ * so the app only uses them when both match. A unit test fails if these files go stale. Run: npm run gen:prewarm
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import {
@@ -26,16 +26,20 @@ const N = 1000;
 const treated = simulatePopulation(baseT, { n: N, dtH: 0.5, idPrefix: "pop" });
 const untreated = simulatePopulation(baseU, { n: N, dtH: 0.5, idPrefix: "pop" });
 
-const out = {
+const shared = {
   simVersion: SIM_VERSION,
   setupKey: JSON.stringify(setup),
+};
+const out = {
+  ...shared,
   payload: { study, rows, histo, noael },
   focusId,
   twin,
-  population: { n: N, doseMgPerKg: top.doseMgPerKg, treated, untreated },
 };
 mkdirSync("apps/web/src/prewarm", { recursive: true });
 // typed arrays (Float64Array and friends) must become plain arrays, or JSON writes them as {"0": …} objects
 const text = JSON.stringify(out, (_k, v: unknown) => (ArrayBuffer.isView(v) && !(v instanceof DataView) ? Array.from(v as unknown as ArrayLike<number>) : v));
 writeFileSync("apps/web/src/prewarm/default.json", text);
-console.log(`wrote apps/web/src/prewarm/default.json, ${(text.length / 1e6).toFixed(2)} MB, sim ${SIM_VERSION}`);
+const population = JSON.stringify({ ...shared, population: { n: N, doseMgPerKg: top.doseMgPerKg, treated, untreated } }, (_k, v: unknown) => (ArrayBuffer.isView(v) && !(v instanceof DataView) ? Array.from(v as unknown as ArrayLike<number>) : v));
+writeFileSync("apps/web/src/prewarm/population.json", population);
+console.log(`wrote default.json ${(text.length / 1e6).toFixed(2)} MB and population.json ${(population.length / 1e6).toFixed(2)} MB, sim ${SIM_VERSION}`);

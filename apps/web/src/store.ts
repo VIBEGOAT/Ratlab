@@ -4,7 +4,7 @@ import { call, cancelLane, CancelledError } from "./worker/client";
 import type { StudyPayload, ValidationPayload } from "./worker/protocol";
 import { buildDesign, defaultFocusId, defaultSetup, designProblems, sameSetup, type Setup } from "./lib/setup";
 import { cacheGet as idbGet, cacheSet } from "./lib/cache";
-import { fetchPrewarm, memo, prewarmApplies } from "./lib/prewarm";
+import { fetchPopulationPrewarm, fetchPrewarm, memo, prewarmApplies } from "./lib/prewarm";
 
 /** Pre-baked values first (instant), then IndexedDB. */
 async function cacheGet<T>(key: string): Promise<T | null> {
@@ -122,7 +122,6 @@ export const useStore = create<State>((set, get) => ({
           payload = pre.payload;
           memo.set(key, pre.payload);
           memo.set(`${key}|twin|${pre.focusId}`, pre.twin);
-          memo.set(`${key}|population|${pre.population.n}`, { treated: pre.population.treated, untreated: pre.population.untreated });
         }
       }
       if (!payload) {
@@ -187,6 +186,15 @@ export const useStore = create<State>((set, get) => ({
     cancelLane("pop");
     const cached = await cacheGet<{ treated: RatOutcome[]; untreated: RatOutcome[] }>(key);
     if (cached) { set({ population: { status: "done", done: n * 2, total: n * 2, ...cached, doseMgPerKg: top.doseMgPerKg } }); return; }
+    if (sameSetup(get().ranSetup ?? get().setup, defaultSetup())) {
+      const pre = await fetchPopulationPrewarm();
+      if (pre && prewarmApplies(pre, SIM_VERSION, JSON.stringify(get().ranSetup ?? get().setup)) && pre.population.n === n) {
+        const cachedPopulation = { treated: pre.population.treated, untreated: pre.population.untreated };
+        memo.set(key, cachedPopulation);
+        set({ population: { status: "done", done: n * 2, total: n * 2, ...cachedPopulation, doseMgPerKg: top.doseMgPerKg } });
+        return;
+      }
+    }
     const total = n * 2, CHUNK = 100;
     set({ population: { status: "running", done: 0, total, treated: [], untreated: [], doseMgPerKg: top.doseMgPerKg } });
     try {

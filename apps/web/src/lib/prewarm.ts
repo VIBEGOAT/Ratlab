@@ -2,6 +2,7 @@ import type { RatOutcome, TwinBundle } from "@eliminate/sim-core";
 import type { StudyPayload } from "../worker/protocol";
 // imported as a URL, so the built file name carries a content hash and a changed file is never served from an old cache
 import prewarmUrl from "../prewarm/default.json?url";
+import populationUrl from "../prewarm/population.json?url";
 
 /**
  * The default study, pre-baked at build time (scripts/gen-prewarm.ts) so a first-ever visit opens instantly.
@@ -13,6 +14,11 @@ export interface PrewarmFile {
   payload: StudyPayload;
   focusId: string;
   twin: TwinBundle;
+}
+
+export interface PopulationPrewarmFile {
+  simVersion: string;
+  setupKey: string;
   population: { n: number; doseMgPerKg: number; treated: RatOutcome[]; untreated: RatOutcome[] };
 }
 
@@ -31,11 +37,28 @@ export function fetchPrewarm(): Promise<PrewarmFile | null> {
         const res = await fetch(prewarmUrl);
         if (!res.ok) return null;
         const j = (await res.json()) as PrewarmFile;
-        return j && j.payload && j.twin && j.population ? j : null;
+        return j && j.payload && j.twin ? j : null;
       } catch { return null; }
     })();
   }
   return pending;
+}
+
+let populationPending: Promise<PopulationPrewarmFile | null> | null = null;
+
+/** Loads the larger forecast population only when the population chapter/view is opened. */
+export function fetchPopulationPrewarm(): Promise<PopulationPrewarmFile | null> {
+  if (!populationPending) {
+    populationPending = (async () => {
+      try {
+        const res = await fetch(populationUrl);
+        if (!res.ok) return null;
+        const j = (await res.json()) as PopulationPrewarmFile;
+        return j && j.population ? j : null;
+      } catch { return null; }
+    })();
+  }
+  return populationPending;
 }
 
 /** Values the store can serve without touching IndexedDB or the worker. */

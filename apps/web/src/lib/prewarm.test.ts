@@ -2,9 +2,10 @@ import { describe, it, expect } from "vitest";
 import { readFileSync, existsSync } from "node:fs";
 import { SIM_VERSION } from "@eliminate/sim-core";
 import { defaultSetup, defaultFocusId } from "./setup";
-import { prewarmApplies, type PrewarmFile } from "./prewarm";
+import { prewarmApplies, type PopulationPrewarmFile, type PrewarmFile } from "./prewarm";
 
 const path = new URL("../prewarm/default.json", import.meta.url);
+const populationPath = new URL("../prewarm/population.json", import.meta.url);
 
 describe("pre-baked default study", () => {
   it("applies only when the version and the whole setup match", () => {
@@ -22,9 +23,12 @@ describe("pre-baked default study", () => {
     expect(f.setupKey).toBe(JSON.stringify(defaultSetup()));
     expect(f.focusId).toBe(defaultFocusId(f.payload.study));
     expect(f.payload.study.animals.length).toBeGreaterThan(50);
-    expect(f.population.treated.length).toBe(f.population.n);
-    expect(f.population.untreated.length).toBe(f.population.n);
     expect(f.twin.treated.days).toBe(f.payload.study.design.durationDays);
+    const population = JSON.parse(readFileSync(populationPath, "utf8")) as PopulationPrewarmFile;
+    expect(population.simVersion).toBe(SIM_VERSION);
+    expect(population.setupKey).toBe(JSON.stringify(defaultSetup()));
+    expect(population.population.treated.length).toBe(population.population.n);
+    expect(population.population.untreated.length).toBe(population.population.n);
   });
 });
 
