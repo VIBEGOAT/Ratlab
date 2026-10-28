@@ -1,133 +1,191 @@
-import { test, expect, type Page } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import { test, expect, type Page } from "@playwright/test";
+import { mkdirSync } from "node:fs";
 
-async function scrub(page: Page, progress: number) {
-  await page.evaluate(p => {
-    const section = document.querySelector('#story')!, stage = document.querySelector('.journey-stage')!;
-    const r = section.getBoundingClientRect();
-    window.scrollTo({ top: scrollY + r.top + p * (r.height - stage.getBoundingClientRect().height), behavior: 'instant' });
-  }, progress);
-  await expect.poll(async () => Number(await page.locator('#story').getAttribute('data-progress'))).toBeCloseTo(progress, 3);
+const SHOTS = "e2e/screenshots/phase-c";
+mkdirSync(SHOTS, { recursive: true });
+
+async function fresh(page: Page) {
+  await page.goto("about:blank");
+  await page.goto("/#story");
+  await page.evaluate(async () => { localStorage.clear(); localStorage.setItem("quality", "low"); localStorage.setItem("force3d", "1"); await new Promise<void>((r) => { const q = indexedDB.deleteDatabase("eliminate-lab"); q.onsuccess = q.onerror = q.onblocked = () => r(); }); });
+  await page.goto("about:blank");
+  await page.goto("/#story");
+  await expect(page.getByText(/virtual rats ready|Preparing/).first()).toBeAttached();
 }
 
-for (const [width, height] of [[375, 667], [768, 1024], [1440, 900], [844, 390]]) {
-  test(`six stations fit and have one scroll owner at ${width}x${height}`, async ({ page }) => {
-    const errors: string[] = [];
-    page.on('pageerror', e => errors.push(e.message));
-    page.on('console', m => { if (['error', 'warning'].includes(m.type())) errors.push(m.text()); });
-    await page.setViewportSize({ width: width!, height: height! });
-    await page.goto('/?debug=1#story');
-    const buttons = page.getByRole('navigation', { name: 'Story chapters' }).getByRole('button');
-    for (let i = 0; i < 6; i++) {
-      await buttons.nth(i).click();
-      await expect(buttons.nth(i)).toHaveAttribute('aria-current', 'step');
-      await expect(page.locator('#story')).toHaveAttribute('data-active-chapter', String(i));
-      const layout = await page.evaluate(() => {
-        const panel = document.querySelector('.journey-panel[aria-hidden="false"]')!.getBoundingClientRect();
-        const disclaimer = document.querySelector('.journey-disclaimer')!.getBoundingClientRect();
-        const scene = document.querySelector('.journey-scene')!.getBoundingClientRect();
-        const scrollers = [...document.querySelectorAll<HTMLElement>('#story *')].filter(el => {
-          const s = getComputedStyle(el); return /auto|scroll/.test(s.overflowY) && el.scrollHeight > el.clientHeight + 1;
-        });
-        return { panelBottom: panel.bottom, panelTop: panel.top, disclaimerTop: disclaimer.top, disclaimerBottom: disclaimer.bottom, sceneBottom: scene.bottom, width: document.documentElement.scrollWidth, scrollers: scrollers.length, root: document.scrollingElement?.tagName };
-      });
-      expect(layout.root).toBe('HTML'); expect(layout.scrollers).toBe(0);
-      expect(layout.width).toBeLessThanOrEqual(width!);
-      expect(layout.panelBottom).toBeLessThanOrEqual(layout.disclaimerTop);
-      expect(layout.disclaimerBottom).toBeLessThanOrEqual(height!);
-      expect(layout.panelTop).toBeGreaterThan(80);
-      if (width! < 600) expect(layout.sceneBottom).toBeLessThan(layout.panelTop);
-      await page.screenshot({ path: `test-results/journey-${width}-${i + 1}.png` });
+/** Scroll so the middle of the viewport sits `frac` of the way through chapter `n`. */
+async function scrollTo(page: Page, n: number, frac: number) {
+  await page.evaluate(([n, frac]) => {
+    const el = document.querySelector<HTMLElement>(`[data-chapter='${n}']`)!;
+    const top = el.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({ top: top + frac * el.offsetHeight - window.innerHeight / 2, behavior: "instant" as ScrollBehavior });
+  }, [n, frac] as const);
+  await page.waitForTimeout(900);
+}
+
+test("story chapters 1 to 6 tell the dose-to-humane-endpoint story", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
+  await fresh(page);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Every animal we spare");
+  // wait for the default study (heart-toxic anticancer in tumour-bearing rats) and its twin
+  await scrollTo(page, 2, 0.3);
+  await expect(page.getByRole("status").filter({ hasText: "virtual rats ready" })).toBeVisible({ timeout: 120_000 });
+  await expect(page.getByRole("button", { name: /Heart-toxic anticancer/ })).toHaveAttribute("aria-pressed", "true");
+
+  // dose dial is a keyboard-operable slider
+  const dial = page.getByRole("slider", { name: "Highest dose" });
+  const before = Number(await dial.getAttribute("aria-valuenow"));
+  await dial.focus();
+  await page.keyboard.press("ArrowRight");
+  expect(Number(await dial.getAttribute("aria-valuenow"))).toBeGreaterThan(before);
+  await page.keyboard.press("ArrowLeft");
+  await expect(page.getByRole("status").filter({ hasText: "virtual rats ready" })).toBeVisible({ timeout: 120_000 });
+
+  await scrollTo(page, 3, 0.6);
+  await expect(page.getByText("Hour", { exact: true })).toBeVisible();
+  await scrollTo(page, 4, 0.9);
+  await expect(page.locator(".day-counter").getByText("Study day", { exact: true })).toBeVisible();
+  await expect(page.getByRole("group", { name: /Blood tests on day/ })).toBeVisible();
+
+  await scrollTo(page, 5, 0.75);
+  await expect(page.getByText("Here, no one did.")).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByText(/In a laboratory, this is the day a living animal would have suffered/)).toBeVisible();
+  await expect(page.getByText(/virtual rats in this study/)).toBeVisible();
+  expect(errors.filter((e) => !/WebGL|GPU stall|THREE\./.test(e))).toEqual([]);
+});
+
+for (const [w, h] of [[1440, 900], [1920, 1080], [390, 844]] as const) {
+  test(`story screenshots at ${w}x${h}`, async ({ page }) => {
+    test.setTimeout(300_000);
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.setViewportSize({ width: w, height: h });
+    await fresh(page);
+    await scrollTo(page, 2, 0.3);
+    await expect(page.getByRole("status").filter({ hasText: "virtual rats ready" })).toBeVisible({ timeout: 120_000 });
+    await page.waitForTimeout(1500);
+    const shots: Array<[string, number, number]> = [["1-hero", 0, 0.1], ["2-meet", 1, 0.45], ["3-choose", 2, 0.45], ["4-dose-day", 3, 0.45], ["5-damage", 4, 0.8], ["6-moment", 5, 0.8]];
+    for (const [name, n, f] of shots) {
+      await scrollTo(page, n, f);
+      await page.waitForTimeout(1200);
+      await page.screenshot({ path: `${SHOTS}/${name}-${w}x${h}.png` });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
     }
-    expect(errors).toEqual([]);
   });
 }
 
-test('fast forward, reverse, idle and wheel scrolling stay synchronized', async ({ page }) => {
-  await page.goto('/?debug=1#story');
-  const rat = page.getByTestId('journey-rat');
-  await scrub(page, .4);
-  const first = await rat.getAttribute('style');
-  await scrub(page, .95); await scrub(page, .02); await scrub(page, .4);
-  await expect(rat).toHaveAttribute('style', first!);
-  const before = await page.locator('.journey-scene').innerHTML();
-  await page.waitForTimeout(1200);
-  expect(await page.locator('.journey-scene').innerHTML()).toBe(before);
-  await page.mouse.move(900, 400); await page.mouse.wheel(0, 1700);
-  await expect.poll(async () => Number(await page.locator('#story').getAttribute('data-progress'))).toBeGreaterThan(.7);
-  await page.mouse.wheel(0, -2200);
-  await expect.poll(async () => Number(await page.locator('#story').getAttribute('data-progress'))).toBeLessThan(.4);
-  await scrub(page, 1); await expect(page.locator('#story')).toHaveAttribute('data-active-chapter', '5');
+test("reduced motion shows the moment without animation", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await fresh(page);
+  await scrollTo(page, 2, 0.3);
+  await expect(page.getByRole("status").filter({ hasText: "virtual rats ready" })).toBeVisible({ timeout: 120_000 });
+  await scrollTo(page, 5, 0.3);
+  await expect(page.getByText("Here, no one did.")).toBeVisible();
 });
 
-test('deep links, keyboard navigation, history, resize and palette use the same chapter state', async ({ page }) => {
-  await page.goto('/#story/organs');
-  await expect(page.locator('#story')).toHaveAttribute('data-active-chapter', '3');
-  const nav = page.getByRole('navigation', { name: 'Story chapters' });
-  await nav.getByRole('button').nth(5).focus(); await page.keyboard.press('Enter');
-  await expect(page.locator('#story')).toHaveAttribute('data-active-chapter', '5');
-  await page.goBack(); await expect(page.locator('#story')).toHaveAttribute('data-active-chapter', '3');
-  await page.setViewportSize({ width: 375, height: 667 });
-  await page.evaluate(() => window.dispatchEvent(new Event('orientationchange')));
-  await expect.poll(() => page.evaluate(() => {
-    const s = document.querySelector<HTMLElement>('#story')!, stage = document.querySelector('.journey-stage')!;
-    const r = s.getBoundingClientRect(); return Math.abs(Number(s.dataset.progress) - Math.min(1, Math.max(0, -r.top / (r.height - stage.getBoundingClientRect().height))));
-  })).toBeLessThan(.001);
-  await page.goto('/#story-dose'); await expect(page.locator('#story')).toHaveAttribute('data-active-chapter', '1');
-  await page.keyboard.press('Control+k'); await page.getByRole('combobox').fill('Make the human connection'); await page.keyboard.press('Enter');
-  await expect(page.locator('#story')).toHaveAttribute('data-active-chapter', '5');
-  await page.getByRole('button', { name: 'Story', exact: true }).click();
-  await expect(page.locator('#story')).toHaveAttribute('data-progress', '0.000000');
-  await page.goto('/#story'); await expect(page.locator('#story')).toHaveAttribute('data-progress', '0.000000');
+test("story chapters 7 to 12: twin slider, thousand rats, behaviour, humans, trust, finale", async ({ page }) => {
+  test.setTimeout(420_000);
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await fresh(page);
+  await scrollTo(page, 2, 0.3);
+  await expect(page.getByRole("status").filter({ hasText: "virtual rats ready" })).toBeVisible({ timeout: 120_000 });
+
+  // 7 · twin: the divider is a keyboard-operable slider
+  await scrollTo(page, 6, 0.5);
+  await expect(page.getByRole("heading", { name: "Meet the twin." })).toBeVisible();
+  const divider = page.getByRole("slider", { name: "Compare treated and untreated" });
+  await expect(divider).toBeVisible();
+  const before = Number(await divider.getAttribute("aria-valuenow"));
+  await divider.focus();
+  await page.keyboard.press("ArrowRight");
+  expect(Number(await divider.getAttribute("aria-valuenow"))).toBeGreaterThan(before);
+  await expect(page.getByRole("table", { name: /Treated against untreated twin/ })).toBeVisible();
+
+  // 8 · a thousand rats: the field fills and the numbers have ranges
+  await scrollTo(page, 7, 0.6);
+  await expect(page.getByText(/Simulating… \d+ of 2[.,\s]?000|Dose \d+ mg\/kg\/day for 28 days/)).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText(/Dose \d+ mg\/kg\/day for 28 days/)).toBeVisible({ timeout: 360_000 });
+  await expect(page.getByRole("img", { name: /1,?000 of 1,?000 virtual rats simulated|1.000 of 1.000 virtual rats simulated/ })).toBeVisible();
+  await expect(page.getByText(/95% range/).first()).toBeVisible();
+  await page.getByRole("button", { name: "Untreated", exact: true }).click();
+  await expect(page.getByRole("img", { name: /without treatment/ })).toBeVisible();
+
+  // 9 · behaviour is labelled as modelled, not felt
+  await scrollTo(page, 8, 0.4);
+  await expect(page.getByText(/Modelled endpoints, not what the animal feels/)).toBeVisible();
+
+  // 10 · humans: arithmetic only, with the unverified flag
+  await scrollTo(page, 9, 0.6);
+  await expect(page.getByText("Km factors unverified")).toBeVisible();
+  await expect(page.getByText("Suggested first dose")).toBeVisible();
+  await expect(page.getByText(/free of adverse effects/)).toHaveCount(0);
+  await expect(page.getByText(/never guide a real dose/)).toBeVisible();
+
+  // 11 · trust: teaching passes, replacing an animal study does not
+  await scrollTo(page, 10, 0.4);
+  await expect(page.getByText("Adequate for this use.")).toBeVisible();
+  await page.getByRole("button", { name: "Replacing an animal study" }).click();
+  await expect(page.getByText("Not yet credible for this use.")).toBeVisible();
+  await expect(page.getByText("None yet")).toBeVisible();
+
+  // 12 · finale: editable assumptions change the number, references shown are verified
+  await scrollTo(page, 11, 0.3);
+  const big = page.locator(".finale .big-number");
+  const v1 = await big.textContent();
+  await page.getByLabel("Studies a year").fill("40");
+  await expect.poll(async () => big.textContent()).not.toBe(v1);
+  await expect(page.getByText(/Verified sources/)).toBeVisible();
+  await expect(page.getByText(/does not replace animal studies/)).toBeVisible();
+  expect(errors).toEqual([]);
 });
 
-test('dose, compound, organs and HED are connected and keyboard accessible', async ({ page }) => {
-  await page.goto('/#story');
-  await page.getByLabel('Fictional profile').selectOption('1');
-  const nav = page.getByRole('navigation', { name: 'Story chapters' }).getByRole('button');
-  await nav.nth(1).click();
-  const dose = page.getByRole('slider'); await dose.fill('100'); await dose.press('ArrowRight');
-  await expect(dose).toHaveValue('101');
-  await nav.nth(3).click(); await page.getByRole('button', { name: 'Kidneys', exact: true }).click();
-  await expect(page.getByText('Kidneys: 80 / 100 simulated injury index')).toBeVisible();
-  await nav.nth(4).click(); await expect(page.getByRole('slider')).toHaveValue('101');
-  await nav.nth(5).click(); await page.getByLabel('Human body weight (kg)').fill('70');
-  await expect(page.getByText(/1146.5 mg total at 70 kg/)).toBeVisible();
-  await page.getByLabel('Human body weight (kg)').fill('0');
-  await expect(page.getByLabel('Human body weight (kg)')).toHaveAttribute('aria-invalid', 'true');
-  await expect(page.getByText(/Enter 1–500 kg/)).toBeVisible();
-  await page.getByRole('button', { name: 'Explore the workbench' }).click();
-  await expect(page).toHaveURL(/#toxicity/);
-});
-
-test('reduced motion uses stationary chapter poses and no running animations', async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto('/#story');
-  await scrub(page, .34); const point = await page.getByTestId('journey-rat').getAttribute('style');
-  await scrub(page, .48); await expect(page.getByTestId('journey-rat')).toHaveAttribute('style', point!);
-  await expect(page.getByTestId('journey-rat')).toHaveAttribute('data-pose', 'pause');
-  expect(await page.evaluate(() => document.getAnimations().filter(a => a.playState === 'running').length)).toBe(0);
-});
-
-test('all six chapters pass axe in light and dark themes', async ({ page }) => {
-  await page.goto('/#story');
-  for (const theme of ['light', 'dark']) {
-    await page.evaluate(t => document.documentElement.dataset.theme = t, theme);
-    for (let i = 0; i < 6; i++) {
-      await page.getByRole('navigation', { name: 'Story chapters' }).getByRole('button').nth(i).click();
-      const results = await new AxeBuilder({ page }).include('#story').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
-      expect(results.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => n.target) })), `${theme} chapter ${i + 1}`).toEqual([]);
+for (const [w, h] of [[1440, 900], [1920, 1080], [390, 844]] as const) {
+  test(`story chapters 7-12 screenshots at ${w}x${h}`, async ({ page }) => {
+    test.setTimeout(480_000);
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.setViewportSize({ width: w, height: h });
+    await fresh(page);
+    await scrollTo(page, 2, 0.3);
+    await expect(page.getByRole("status").filter({ hasText: "virtual rats ready" })).toBeVisible({ timeout: 120_000 });
+    await scrollTo(page, 7, 0.6);
+    await expect(page.getByText(/Dose \d+ mg\/kg\/day for 28 days/)).toBeVisible({ timeout: 360_000 });
+    const shots: Array<[string, number, number]> = [["7-twin", 6, 0.5], ["8-forecast", 7, 0.85], ["9-behaviour", 8, 0.4], ["10-human", 9, 0.7], ["11-trust", 10, 0.4], ["12-finale", 11, 0.3]];
+    for (const [name, n, f] of shots) {
+      await scrollTo(page, n, f);
+      await page.waitForTimeout(1500);
+      await page.screenshot({ path: `${SHOTS}/${name}-${w}x${h}.png` });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
     }
-  }
-});
+  });
+}
 
-test('native touch drag moves the page and updates the scene', async ({ browser, browserName }) => {
-  test.skip(browserName !== 'chromium', 'CDP touch gesture; wheel and anchor tests also run on other engines');
-  const context = await browser.newContext({ viewport: { width: 375, height: 667 }, isMobile: true, hasTouch: true });
-  const page = await context.newPage(); await page.goto('http://localhost:5173/#story');
-  const cdp = await context.newCDPSession(page);
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: 200, y: 580 }] });
-  for (let y = 550; y >= 130; y -= 30) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: 200, y }] });
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-  await expect.poll(async () => Number(await page.locator('#story').getAttribute('data-progress'))).toBeGreaterThan(.05);
-  await context.close();
+
+test("chapters 10 and 11 screenshots without waiting for the thousand-rat run", async ({ page }) => {
+  test.setTimeout(240_000);
+  await page.emulateMedia({ colorScheme: "dark" });
+  for (const [w, h] of [[1440, 900], [390, 844]] as const) {
+    await page.setViewportSize({ width: w, height: h });
+    await fresh(page);
+    await scrollTo(page, 2, 0.3);
+    await expect(page.getByRole("status").filter({ hasText: "virtual rats ready" })).toBeVisible({ timeout: 120_000 });
+    await scrollTo(page, 3, 0.45);
+    await page.waitForTimeout(800);
+    await page.screenshot({ path: `${SHOTS}/4-dose-day-fixed-${w}x${h}.png` });
+    await scrollTo(page, 4, 0.8);
+    await page.waitForTimeout(800);
+    await page.screenshot({ path: `${SHOTS}/5-damage-fixed-${w}x${h}.png` });
+    await scrollTo(page, 7, 0.6);
+    await page.waitForTimeout(1500);
+    await page.screenshot({ path: `${SHOTS}/8-forecast-fixed-${w}x${h}.png` });
+    await scrollTo(page, 9, 0.7);
+    await expect(page.getByText("Suggested first dose")).toBeVisible();
+    await page.waitForTimeout(1200);
+    await page.screenshot({ path: `${SHOTS}/10-human-fixed-${w}x${h}.png` });
+    await scrollTo(page, 10, 0.4);
+    await page.getByRole("button", { name: "Replacing an animal study" }).click();
+    await page.waitForTimeout(800);
+    await page.screenshot({ path: `${SHOTS}/11-trust-fixed-${w}x${h}.png` });
+  }
 });

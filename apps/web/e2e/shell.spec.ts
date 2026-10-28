@@ -25,7 +25,7 @@ test("story hero, footer disclaimer and honest status chip", async ({ page }) =>
   test.setTimeout(240_000);
   const errors = watchConsole(page);
   await fresh(page);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Meet the compound");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Every animal we spare");
   await expect(page.getByRole("contentinfo")).toContainText("Not validated for regulatory or safety decisions");
   const chip = page.getByRole("button", { name: /parameters awaiting expert verification/ });
   await expect(chip).toBeVisible();
@@ -36,15 +36,14 @@ test("story hero, footer disclaimer and honest status chip", async ({ page }) =>
   await chip.click();
   await expect(page.getByRole("dialog")).toContainText("has not been validated against real animal data");
   await page.getByRole("button", { name: "Close" }).click();
-  await expect(page.locator(".journey-scene")).toBeVisible();
+  await expect(page.getByText(/virtual rats ready/)).toBeVisible({ timeout: 150_000 });
   expect(errors.filter((e) => !/Download the React DevTools|GL Driver Message|GPU stall/.test(e))).toEqual([]);
 });
 
 test("Lab opens on the Overview, with five sections for the full analysis", async ({ page }) => {
   const errors = watchConsole(page);
   await fresh(page);
-  await page.getByLabel("More options").click();
-  await page.getByRole("button", { name: /^Lab/ }).click();
+  await page.getByRole("button", { name: "Lab", exact: true }).click();
   const nav = page.getByRole("navigation", { name: "Lab sections" });
   for (const s of ["Overview", "Design", "Animal", "Data", "Population", "Translate & Trust"]) await expect(nav.getByRole("button", { name: new RegExp(`^${s}`) })).toBeVisible();
   await expect(nav.getByRole("button", { name: /^Overview/ })).toHaveAttribute("aria-current", "page");
@@ -80,7 +79,6 @@ test("theme toggle and colour-blind palette apply to the document", async ({ pag
   await page.getByRole("button", { name: /^Theme:/ }).click();
   const theme = await page.evaluate(() => document.documentElement.getAttribute("data-theme"));
   expect(["dark", "light"]).toContain(theme);
-  await page.getByLabel("More options").click();
   await page.getByRole("button", { name: /CB palette/ }).click();
   expect(await page.evaluate(() => document.documentElement.getAttribute("data-palette"))).toBe("cb");
 });
@@ -89,11 +87,10 @@ for (const [w, h] of [[1440, 900], [1920, 1080], [390, 844]] as const) {
   test(`screenshots and no horizontal scroll at ${w}x${h}`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     await fresh(page);
-    await expect(page.locator(".journey-scene")).toBeVisible();
+    await expect(page.getByText(/virtual rats ready/)).toBeVisible({ timeout: 90_000 });
     await page.screenshot({ path: `${SHOTS}/story-hero-${w}x${h}.png` });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
-    await page.getByLabel("More options").click();
-  await page.getByRole("button", { name: /^Lab/ }).click();
+    await page.getByRole("button", { name: "Lab", exact: true }).click();
     await expect(page.getByRole("heading", { name: /No adverse effect|Adverse effects/ })).toBeVisible({ timeout: 90_000 });
     await page.screenshot({ path: `${SHOTS}/lab-overview-${w}x${h}.png`, fullPage: false });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
@@ -113,10 +110,9 @@ test("dark theme screenshots", async ({ page }) => {
   for (const [w, h] of [[1440, 900], [390, 844]] as const) {
     await page.setViewportSize({ width: w, height: h });
     await fresh(page);
-    await expect(page.locator(".journey-scene")).toBeVisible();
+    await expect(page.getByText(/virtual rats ready/)).toBeVisible({ timeout: 90_000 });
     await page.screenshot({ path: `${SHOTS}/dark-story-hero-${w}x${h}.png` });
-    await page.getByLabel("More options").click();
-  await page.getByRole("button", { name: /^Lab/ }).click();
+    await page.getByRole("button", { name: "Lab", exact: true }).click();
     await page.getByRole("navigation", { name: "Lab sections" }).getByRole("button", { name: /^Data/ }).click();
     await expect(page.getByRole("cell", { name: "First dose" })).toBeVisible({ timeout: 60_000 });
     await page.screenshot({ path: `${SHOTS}/dark-lab-data-${w}x${h}.png` });

@@ -15,7 +15,7 @@ describe("command list", () => {
     const ids = cmds.map((c) => c.id);
     expect(new Set(ids).size).toBe(ids.length);
     expect(cmds.filter((c) => c.group === "Story").length).toBe(CHAPTERS.length);
-    expect(CHAPTERS.length).toBe(6);
+    expect(CHAPTERS.length).toBe(12);
     for (const s of SECTIONS) for (const [v] of s.views) expect(ids).toContain(`lab-${v}`);
     for (const c of COMPOUNDS) expect(ids).toContain(`compound-${c.key}`);
     // the Overview plus the seventeen analysis views (sixteen, and the dose calculator)
@@ -30,8 +30,8 @@ describe("command list", () => {
     expect(a.goToxicity).toHaveBeenCalledOnce();
     cmds.find((c) => c.id === "learn")!.run();
     expect(a.goLearn).toHaveBeenCalledOnce();
-    cmds.find((c) => c.id === "story-5")!.run();
-    expect(a.goStory).toHaveBeenCalledWith(5);
+    cmds.find((c) => c.id === "story-7")!.run();
+    expect(a.goStory).toHaveBeenCalledWith(7);
     cmds.find((c) => c.id === "lab-validation")!.run();
     expect(a.goLab).toHaveBeenCalledWith("trust", "validation");
     cmds.find((c) => c.id === "compound-hepatotoxin")!.run();

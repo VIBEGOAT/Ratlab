@@ -18,4 +18,8 @@ export const SECTIONS: SectionDef[] = [
   { id: "trust", icon: "trust", label: "Translate & Trust", hint: "Human outlook, validation, sources", picker: false, views: [["calculator", "Dose calculator"], ["translation", "Human translation"], ["validation", "Validation"], ["fidelity", "Fidelity and parameters"], ["pitch", "Pitch and references"]] },
 ];
 
-export { JOURNEY_TITLES as CHAPTERS } from '../story/journey';
+/** The twelve Story chapters, in order. */
+export const CHAPTERS = [
+  "Every animal we spare", "Meet the rat", "Choose a compound", "Dose day", "Days, compressed", "The humane endpoint",
+  "Meet the twin", "A thousand rats", "How it behaves", "Toward humans", "How far to trust it", "What we could spare",
+] as const;
