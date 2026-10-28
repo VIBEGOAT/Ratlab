@@ -116,6 +116,7 @@ export function StoryPage() {
   const { pos, ref: posRef } = useStoryScroll();
   const goLab = useStore((s) => s.goLab);
   const study = useStore((s) => s.study);
+  const runStudy = useStore((s) => s.runStudy);
   const twin = useStore((s) => s.twin.data);
   const setup = useStore((s) => s.setup);
   const setSetup = useStore((s) => s.setSetup);
@@ -381,7 +382,12 @@ export function StoryPage() {
           {pos.chapter === 7 && <div className="stage-overlay"><ForecastField outcomes={popMode === "treated" ? population.treated : population.untreated} total={population.total / 2 || 1000} mode={popMode} palette={cb ? "cb" : "standard"} sorted={sorted && population.status === "done"} /></div>}
           {pos.chapter === 8 && t && u && gl && <div className="stage-overlay"><SceneBoundary fallback={<div className="poster"><RatPoster /></div>}><Suspense fallback={null}><ArenaScene mode="open" treated={t} untreated={u} day={days} hoursPerSec={1} /></Suspense></SceneBoundary></div>}
           {pos.chapter === 9 && <div className="stage-overlay center"><HumanScale progress={humanP} ratDose={noael} hedDose={scaled.hed} ratLabel="rat dose, no adverse effect" /></div>}
-          {!t && <div className="stage-status" role="status">Preparing the virtual study…</div>}
+          {!t && study.status === "error" ? (
+            <div className="stage-status" role="alert">
+              <span>We couldn’t prepare this virtual study.</span>
+              <button type="button" onClick={() => void runStudy()}>Retry</button>
+            </div>
+          ) : !t ? <div className="stage-status" role="status">Preparing the virtual study…</div> : null}
         </div>
       </div>
 
