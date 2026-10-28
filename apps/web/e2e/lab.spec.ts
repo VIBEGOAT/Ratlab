@@ -16,7 +16,6 @@ test("command palette: open, search, run, close, restore focus", async ({ page }
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await fresh(page);
-  await page.getByLabel('More options').click();
   await page.getByRole("button", { name: /^Search/ }).focus();
   await page.keyboard.press("Control+k");
   const dialog = page.getByRole("dialog", { name: "Command palette" });
@@ -53,10 +52,10 @@ test("command palette: open, search, run, close, restore focus", async ({ page }
 test("command palette jumps from the Lab to a Story chapter", async ({ page }) => {
   await fresh(page, "#lab/design");
   await page.keyboard.press("Control+k");
-  await page.getByRole("combobox", { name: "Search commands" }).fill("Make the human connection");
+  await page.getByRole("combobox", { name: "Search commands" }).fill("thousand");
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("heading", { name: "Make the human connection" })).toBeVisible({ timeout: 15_000 });
-  await expect(page.locator('#story')).toHaveAttribute('data-active-chapter', '5');
+  await expect(page.getByRole("heading", { name: "A thousand rats." })).toBeVisible({ timeout: 15_000 });
+  await expect.poll(() => page.evaluate(() => { const r = document.querySelector("[data-chapter='7']")!.getBoundingClientRect(); return r.top < innerHeight / 2 && r.bottom > 0; }), { timeout: 15_000 }).toBe(true);
 });
 
 test("charts: direct labels, keyboard readout, data table", async ({ page }) => {

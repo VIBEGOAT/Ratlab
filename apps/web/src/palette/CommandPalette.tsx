@@ -2,13 +2,14 @@
    Combobox pattern: focus stays in the input, which handles the keys; options are chosen by pointer or by Enter. The backdrop
    only adds a pointer way to dismiss; Escape is the keyboard way. */
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useReducedMotion } from "../lib/motion";
 import { ARCHETYPES } from "@eliminate/sim-core";
 import { useStore } from "../store";
 import { download, studyToCsv, studyToHtml, studyToJson } from "../lib/export";
 import { disableSound, enableSound, soundIsOn } from "../audio";
 import { usePresenter } from "../presenter/store";
 import { openNotesWindow } from "../presenter/channel";
-import { CHAPTER_IDS } from "../story/journey";
+import { runSlideScroll } from "../presenter/scroll";
 import { buildCommands, filterCommands, type PaletteActions } from "./commands";
 
 export const OPEN_PALETTE_EVENT = "eliminate:open-palette";
@@ -16,6 +17,7 @@ export const openPalette = () => window.dispatchEvent(new Event(OPEN_PALETTE_EVE
 
 /** Cmd/Ctrl+K. Jump to a Story chapter or Lab view, pick a compound, start a demo, change the look, export. */
 export function CommandPalette() {
+  const reduce = !!useReducedMotion();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
@@ -53,10 +55,10 @@ export function CommandPalette() {
       goToxicity: () => { if (usePresenter.getState().active) usePresenter.getState().stop(); st().setMode("toxicity"); window.scrollTo({ top: 0 }); },
       goLearn: () => { if (usePresenter.getState().active) usePresenter.getState().stop(); st().setMode("learn"); window.scrollTo({ top: 0 }); },
       goStory: (chapter) => {
+        const wasLab = st().mode !== "story";
         if (usePresenter.getState().active) usePresenter.getState().stop();
-        st().setMode("story");
-        location.hash = `#story/${CHAPTER_IDS[chapter]}`;
-        window.dispatchEvent(new HashChangeEvent('hashchange'));
+        if (wasLab) st().setMode("story");
+        window.setTimeout(() => runSlideScroll(chapter, 0.08, 0.08, 1.2, reduce), wasLab ? 250 : 30);
       },
       goLab: (section, view) => { if (usePresenter.getState().active) usePresenter.getState().stop(); st().goLab(section, view); window.scrollTo({ top: 0 }); },
       setCompound: (key) => st().setSetup({ compoundKey: key, highDose: ARCHETYPES[key]?.defaultDoseMgPerKg ?? st().setup.highDose }),
@@ -78,7 +80,7 @@ export function CommandPalette() {
       toggleDetail: () => st().setDetail(st().detail === "simple" ? "expert" : "simple"),
     };
     return buildCommands(actions);
-  }, [cb, data, soundOn, detail]);
+  }, [cb, data, soundOn, reduce, detail]);
 
   const results = useMemo(() => filterCommands(query, commands, 40), [query, commands]);
   useEffect(() => { setActive(0); }, [query]);

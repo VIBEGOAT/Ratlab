@@ -16,9 +16,8 @@ test("built site: Story loads, Lab opens, every section renders, no failed reque
   await page.goto(`${url}#story`);
   await page.evaluate(() => { localStorage.clear(); localStorage.setItem("no3d", "1"); });
   await page.goto(`${url}#story`);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Meet the compound");
-  await page.getByLabel("More options").click();
-  await page.getByRole("button", { name: /^Lab/ }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Every animal we spare");
+  await page.getByRole("button", { name: "Lab", exact: true }).click();
   await expect(page.getByRole("heading", { name: /No adverse effect|Adverse effects/ })).toBeVisible({ timeout: 120_000 });
   for (const s of ["Design", "Animal", "Data", "Population", "Translate & Trust"]) {
     await page.getByRole("navigation", { name: "Lab sections" }).getByRole("button", { name: new RegExp(`^${s}`) }).click();
