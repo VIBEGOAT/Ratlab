@@ -225,7 +225,7 @@ export default function CinematicHero({ animal, reduced, quality }: { animal: An
     return () => document.removeEventListener("visibilitychange", update);
   }, []);
   return <div className="cinematic-hero" data-testid="cinematic-hero" data-stage={stage}>
-    <Canvas frameloop={playing && visible && !reduced ? "always" : "demand"} camera={{ position: [3, 3, 10], fov: 40, near: .05, far: 110 }} dpr={[1, quality === "high" ? 1.5 : 1]} gl={{ antialias: true, powerPreference: "high-performance" }} style={{ touchAction: "pan-y" }}>
+    <Canvas frameloop={playing && visible ? "always" : "demand"} camera={{ position: [3, 3, 10], fov: 40, near: .05, far: 110 }} dpr={[1, quality === "high" ? 1.5 : 1]} gl={{ antialias: true, powerPreference: "high-performance" }} style={{ touchAction: "pan-y" }}>
       <Scene animal={animal} clock={clock} playing={playing && visible} reduced={reduced} quality={quality} onStage={setStage} onShot={setShot} onReady={() => setReady(true)} />
       {quality === "high" && <EffectComposer multisampling={0}><Bloom intensity={.4} luminanceThreshold={.85} luminanceSmoothing={.25} mipmapBlur /></EffectComposer>}
     </Canvas>
