@@ -32,13 +32,13 @@ for (const size of SIZES) {
     test.use({ viewport: { width: size.width, height: size.height } });
 
     test("story hero", async ({ page }) => {
-      await fresh(page, "", "light");
+      await fresh(page, "#story", "light");
       await settle(page);
       await expect(page).toHaveScreenshot(`story-hero-${size.name}.png`, { ...opts, mask: [page.locator(".big-number")] });
     });
 
     test("story hero, dark", async ({ page }) => {
-      await fresh(page, "", "dark");
+      await fresh(page, "#story", "dark");
       await settle(page);
       await expect(page).toHaveScreenshot(`story-hero-dark-${size.name}.png`, { ...opts, mask: [page.locator(".big-number")] });
     });

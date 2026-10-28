@@ -10,11 +10,11 @@
   </head>
   <body>
     <div id="root">
-      <main style="font-family:system-ui,sans-serif;padding:48px 32px" aria-busy="true">
-        <p>VAST / Virtual toxicology workbench</p>
-        <h1>Explore the dose. Understand the response.</h1>
-        <p>Preparing the simulation workspace…</p>
-      </main>
+      <div role="status" aria-label="Loading VAST" style="box-sizing:border-box;height:100dvh;padding:24px;display:grid;grid-template-rows:40px 1fr 32px;gap:24px">
+        <div style="width:140px;border-radius:12px;background:light-dark(#e2e5e7,#252b2d)"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px"><div style="align-self:center;height:45%;border-radius:20px;background:light-dark(#e2e5e7,#252b2d)"></div><div style="border-radius:24px;background:light-dark(#e2e5e7,#252b2d)"></div></div>
+        <div style="width:60%;border-radius:8px;background:light-dark(#e2e5e7,#252b2d)"></div>
+      </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

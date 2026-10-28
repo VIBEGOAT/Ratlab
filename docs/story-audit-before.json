@@ -1,0 +1,396 @@
+{
+  "scrollingElement": "HTML",
+  "root": "<main class=\"story\" id=\"main\"><div class=\"story-grid\"><div class=\"story-text\"><section data-chapter=",
+  "nodes": [
+    {
+      "element": "HTML.lenis.mouse-cursor-on",
+      "overflow": "visible",
+      "position": "static",
+      "height": "900px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 16513,
+      "clientHeight": 900
+    },
+    {
+      "element": "BODY.",
+      "overflow": "visible",
+      "position": "static",
+      "height": "900px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 16513,
+      "clientHeight": 900
+    },
+    {
+      "element": "SPAN#spared-assumptions.card",
+      "overflow": "visible",
+      "position": "absolute",
+      "height": "143px",
+      "transform": "matrix(1, 0, 0, 1, 0, -4)",
+      "willChange": "auto",
+      "scrollHeight": 141,
+      "clientHeight": 141
+    },
+    {
+      "element": "svg",
+      "overflow": "hidden",
+      "position": "static",
+      "height": "240px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 240,
+      "clientHeight": 240
+    },
+    {
+      "element": "DIV.sticky-block",
+      "overflow": "visible",
+      "position": "sticky",
+      "height": "313.312px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 313,
+      "clientHeight": 313
+    },
+    {
+      "element": "DIV.sticky-block",
+      "overflow": "visible",
+      "position": "sticky",
+      "height": "545.797px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 546,
+      "clientHeight": 546
+    },
+    {
+      "element": "svg",
+      "overflow": "hidden",
+      "position": "static",
+      "height": "30px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 30,
+      "clientHeight": 30
+    },
+    {
+      "element": "svg",
+      "overflow": "hidden",
+      "position": "static",
+      "height": "30px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 30,
+      "clientHeight": 30
+    },
+    {
+      "element": "svg",
+      "overflow": "hidden",
+      "position": "static",
+      "height": "30px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 30,
+      "clientHeight": 30
+    },
+    {
+      "element": "svg",
+      "overflow": "hidden",
+      "position": "static",
+      "height": "30px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 30,
+      "clientHeight": 30
+    },
+    {
+      "element": "H2#c5.sr-only",
+      "overflow": "hidden",
+      "position": "absolute",
+      "height": "1px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 64,
+      "clientHeight": 1
+    },
+    {
+      "element": "SPAN.sr-only",
+      "overflow": "hidden",
+      "position": "absolute",
+      "height": "1px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 23,
+      "clientHeight": 1
+    },
+    {
+      "element": "SPAN.sr-only",
+      "overflow": "hidden",
+      "position": "absolute",
+      "height": "1px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 23,
+      "clientHeight": 1
+    },
+    {
+      "element": "DIV.sticky-block",
+      "overflow": "visible",
+      "position": "sticky",
+      "height": "748.656px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 749,
+      "clientHeight": 749
+    },
+    {
+      "element": "DIV.segmented",
+      "overflow": "auto",
+      "position": "static",
+      "height": "38px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 36,
+      "clientHeight": 36
+    },
+    {
+      "element": "g",
+      "overflow": "visible",
+      "position": "static",
+      "height": "auto",
+      "transform": "matrix(1, 0, 0, 1, 42, 24)",
+      "willChange": "auto",
+      "scrollHeight": 0,
+      "clientHeight": 0
+    },
+    {
+      "element": "SPAN.sr-only",
+      "overflow": "hidden",
+      "position": "absolute",
+      "height": "1px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 1,
+      "clientHeight": 1
+    },
+    {
+      "element": "SPAN.card",
+      "overflow": "visible",
+      "position": "absolute",
+      "height": "84.5px",
+      "transform": "matrix(1, 0, 0, 1, 0, -4)",
+      "willChange": "auto",
+      "scrollHeight": 83,
+      "clientHeight": 83
+    },
+    {
+      "element": "SPAN.sr-only",
+      "overflow": "hidden",
+      "position": "absolute",
+      "height": "1px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 23,
+      "clientHeight": 1
+    },
+    {
+      "element": "DIV.sticky-block",
+      "overflow": "visible",
+      "position": "sticky",
+      "height": "340.25px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 340,
+      "clientHeight": 340
+    },
+    {
+      "element": "SPAN.card",
+      "overflow": "visible",
+      "position": "absolute",
+      "height": "84.5px",
+      "transform": "matrix(1, 0, 0, 1, 0, -4)",
+      "willChange": "auto",
+      "scrollHeight": 83,
+      "clientHeight": 83
+    },
+    {
+      "element": "SPAN.card",
+      "overflow": "visible",
+      "position": "absolute",
+      "height": "143px",
+      "transform": "matrix(1, 0, 0, 1, 0, -4)",
+      "willChange": "auto",
+      "scrollHeight": 141,
+      "clientHeight": 141
+    },
+    {
+      "element": "SPAN.card",
+      "overflow": "visible",
+      "position": "absolute",
+      "height": "123.5px",
+      "transform": "matrix(1, 0, 0, 1, 0, -4)",
+      "willChange": "auto",
+      "scrollHeight": 122,
+      "clientHeight": 122
+    },
+    {
+      "element": "SPAN.card",
+      "overflow": "visible",
+      "position": "absolute",
+      "height": "104px",
+      "transform": "matrix(1, 0, 0, 1, 0, -4)",
+      "willChange": "auto",
+      "scrollHeight": 102,
+      "clientHeight": 102
+    },
+    {
+      "element": "SPAN.card",
+      "overflow": "visible",
+      "position": "absolute",
+      "height": "84.5px",
+      "transform": "matrix(1, 0, 0, 1, 0, -4)",
+      "willChange": "auto",
+      "scrollHeight": 83,
+      "clientHeight": 83
+    },
+    {
+      "element": "SPAN.card",
+      "overflow": "visible",
+      "position": "absolute",
+      "height": "143px",
+      "transform": "matrix(1, 0, 0, 1, 0, -4)",
+      "willChange": "auto",
+      "scrollHeight": 141,
+      "clientHeight": 141
+    },
+    {
+      "element": "SPAN.card",
+      "overflow": "visible",
+      "position": "absolute",
+      "height": "84.5px",
+      "transform": "matrix(1, 0, 0, 1, 0, -4)",
+      "willChange": "auto",
+      "scrollHeight": 83,
+      "clientHeight": 83
+    },
+    {
+      "element": "SPAN.card",
+      "overflow": "visible",
+      "position": "absolute",
+      "height": "104px",
+      "transform": "matrix(1, 0, 0, 1, 0, -4)",
+      "willChange": "auto",
+      "scrollHeight": 102,
+      "clientHeight": 102
+    },
+    {
+      "element": "SPAN.card",
+      "overflow": "visible",
+      "position": "absolute",
+      "height": "84.5px",
+      "transform": "matrix(1, 0, 0, 1, 0, -4)",
+      "willChange": "auto",
+      "scrollHeight": 83,
+      "clientHeight": 83
+    },
+    {
+      "element": "INPUT#sp-studies.",
+      "overflow": "clip",
+      "position": "static",
+      "height": "39px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 37,
+      "clientHeight": 37
+    },
+    {
+      "element": "INPUT#sp-groups.",
+      "overflow": "clip",
+      "position": "static",
+      "height": "39px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 37,
+      "clientHeight": 37
+    },
+    {
+      "element": "INPUT#sp-n.",
+      "overflow": "clip",
+      "position": "static",
+      "height": "39px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 37,
+      "clientHeight": 37
+    },
+    {
+      "element": "INPUT#sp-screen.",
+      "overflow": "clip",
+      "position": "static",
+      "height": "39px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 37,
+      "clientHeight": 37
+    },
+    {
+      "element": "INPUT#sp-vcg.",
+      "overflow": "clip",
+      "position": "static",
+      "height": "39px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 37,
+      "clientHeight": 37
+    },
+    {
+      "element": "DIV.story-stage",
+      "overflow": "visible",
+      "position": "sticky",
+      "height": "813px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 813,
+      "clientHeight": 813
+    },
+    {
+      "element": "DIV.cinematic-hero",
+      "overflow": "hidden",
+      "position": "absolute",
+      "height": "813px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 813,
+      "clientHeight": 813
+    },
+    {
+      "element": "DIV.",
+      "overflow": "hidden",
+      "position": "relative",
+      "height": "813px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 813,
+      "clientHeight": 813
+    },
+    {
+      "element": "CANVAS.",
+      "overflow": "clip",
+      "position": "static",
+      "height": "813px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 813,
+      "clientHeight": 813
+    },
+    {
+      "element": "DIV.moment",
+      "overflow": "visible",
+      "position": "fixed",
+      "height": "900px",
+      "transform": "none",
+      "willChange": "auto",
+      "scrollHeight": 900,
+      "clientHeight": 900
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "lighthouseVersion": "13.5.0",
+  "fetchTime": "2026-10-21T09:59:05.135Z",
+  "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+  "formFactor": "mobile",
+  "throttlingMethod": "simulate",
+  "performance": 0.97,
+  "accessibility": 1,
+  "metrics": {
+    "first-contentful-paint": {
+      "value": 1510.0865,
+      "display": "1.5 s"
+    },
+    "largest-contentful-paint": {
+      "value": 1620.5865,
+      "display": "1.6 s"
+    },
+    "total-blocking-time": {
+      "value": 171,
+      "display": "170 ms"
+    },
+    "cumulative-layout-shift": {
+      "value": 0.0001590366207430394,
+      "display": "0"
+    },
+    "speed-index": {
+      "value": 1510.0865,
+      "display": "1.5 s"
+    }
+  }
+}

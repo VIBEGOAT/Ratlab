@@ -18,7 +18,7 @@ export function Footer() {
     <>
       <footer className="footer" role="contentinfo">
         <span><b style={{ color: "var(--ink-2)", fontWeight: 600 }}>{DISCLAIMER}</b></span>
-        <button type="button" className="status-chip" onClick={() => setOpen(true)} aria-haspopup="dialog" aria-label={`Prototype. ${nConst} of ${totalConst} parameters awaiting expert verification. Open details.`}>
+        <button type="button" className="status-chip" onClick={() => setOpen(true)} aria-haspopup="dialog" aria-label={`Prototype · ${nConst}/${totalConst} unverified. ${nConst} of ${totalConst} parameters awaiting expert verification. Open details.`}>
           <span className="dot" aria-hidden="true" /><span className="long">Prototype · {nConst} of {totalConst} parameters awaiting expert verification</span><span className="short" aria-hidden="true">Prototype · {nConst}/{totalConst} unverified</span>
         </button>
       </footer>

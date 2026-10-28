@@ -1,14 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "../lib/motion";
-import type { Organ } from "@eliminate/sim-core";
 import { useStore } from "../store";
-import { ORGAN_LABEL } from "../lib/setup";
-import { fmtPct } from "../design/format";
 import { SoundToggle } from "../audio/SoundToggle";
 import { uiTick } from "../audio";
 import { TRACKS, trackSeconds, type TrackId } from "./tracks";
 import { usePresenter, trackProgress } from "./store";
-import { PREDICT_ORGANS, firstToFail, shareCorrect, totalVotes } from "./prediction";
 import { runSlideScroll } from "./scroll";
 import { openChannel, openNotesWindow, type Cmd, type Msg, type SyncState } from "./channel";
 
@@ -37,13 +33,10 @@ export function Presenter() {
   const reduce = !!useReducedMotion();
   const p = usePresenter();
   const mode = useStore((s) => s.mode);
-  const twin = useStore((s) => s.twin.data);
-  const answer = useMemo(() => (twin ? firstToFail(twin.treated) : null), [twin]);
   const chan = useRef<BroadcastChannel | null>(null);
   const fs = useRef(false);
   const idle = useIdle(2800);
   const [hudFocus, setHudFocus] = useState(false);
-  const lastVote = useRef<Organ | null>(null);
   const slide = TRACKS[p.track].slides[p.index]!;
 
   const runCmd = (cmd: Cmd) => {
@@ -68,7 +61,6 @@ export function Presenter() {
       const k = e.key;
       if (k === "p" || k === "P") { e.preventDefault(); if (s.active) s.stop(); else s.start(); return; }
       if (!s.active) return;
-      const slideKind = TRACKS[s.track].slides[s.index]!.kind;
       if (k === "ArrowRight" || k === "ArrowDown" || k === "PageDown" || k === " " || k === "Enter") { e.preventDefault(); s.next(); }
       else if (k === "ArrowLeft" || k === "ArrowUp" || k === "PageUp" || k === "Backspace") { e.preventDefault(); s.prev(); }
       else if (k === "Home") { e.preventDefault(); s.goto(0); }
@@ -76,7 +68,6 @@ export function Presenter() {
       else if (k === "Escape") { s.stop(); }
       else if (k === "a" || k === "A") { s.setPlaying(!s.playing); }
       else if (k === "n" || k === "N") { openNotesWindow(); }
-      else if (slideKind === "ask" && k >= "1" && k <= "5") { const o = PREDICT_ORGANS[Number(k) - 1]; if (o) { s.vote(o); lastVote.current = o; uiTick(); } }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -123,7 +114,7 @@ export function Presenter() {
     if (!c) return;
     const snapshot = (): SyncState => {
       const s = usePresenter.getState();
-      return { active: s.active, track: s.track, index: s.index, playing: s.playing, slideElapsed: s.slideElapsed, votes: s.votes, revealed: s.revealed, answer: answerRef.current };
+      return { active: s.active, track: s.track, index: s.index, playing: s.playing, slideElapsed: s.slideElapsed, votes: s.votes, revealed: s.revealed, answer: null };
     };
     const push = () => c.postMessage({ type: "state", state: snapshot() } satisfies Msg);
     c.onmessage = (ev: MessageEvent<Msg>) => {
@@ -135,8 +126,6 @@ export function Presenter() {
     push();
     return () => { window.clearInterval(t); unsub(); c.close(); };
   }, []);
-  const answerRef = useRef<Organ | null>(null);
-  answerRef.current = answer?.organ ?? null;
 
   if (!p.active) return null;
 
@@ -149,46 +138,6 @@ export function Presenter() {
       <div className="p-progress" role="progressbar" aria-label="Demo progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)}>
         <i style={{ width: `${progress * 100}%` }} />
       </div>
-
-      {slide.kind === "ask" && (
-        <section className="predict" aria-label="Audience prediction">
-          <p className="predict-q">Which organ will fail first?</p>
-          <div className="predict-btns" role="group" aria-label="Choose an organ">
-            {PREDICT_ORGANS.map((o, i) => (
-              <button key={o} type="button" onClick={() => { p.vote(o); lastVote.current = o; uiTick(); }} aria-label={`${ORGAN_LABEL[o]}, ${p.votes[o]} votes. Add a vote. Key ${i + 1}.`}>
-                <span className="k" aria-hidden="true">{i + 1}</span>
-                <b>{ORGAN_LABEL[o]}</b>
-                <span className="count" aria-hidden="true">{p.votes[o]}</span>
-              </button>
-            ))}
-          </div>
-          <div className="predict-foot">
-            <span role="status">{totalVotes(p.votes)} {totalVotes(p.votes) === 1 ? "vote" : "votes"}, counted on this device only</span>
-            <button type="button" className="ghost" disabled={!lastVote.current} onClick={() => { if (lastVote.current) { p.vote(lastVote.current, -1); lastVote.current = null; } }}>Undo last</button>
-            <button type="button" className="ghost" onClick={() => { p.clearVotes(); lastVote.current = null; }}>Clear</button>
-          </div>
-        </section>
-      )}
-
-      {slide.kind === "reveal" && answer && (
-        <section className="predict reveal" aria-label="The answer" aria-live="polite">
-          <p className="predict-q">
-            {answer.basis === "first to reach mild injury"
-              ? <>{ORGAN_LABEL[answer.organ]} was the first to show injury{answer.day !== null ? <>, on study day {answer.day}</> : null}.</>
-              : <>No organ reached mild injury. {ORGAN_LABEL[answer.organ]} came closest.</>}
-          </p>
-          <p className="predict-share">
-            {(() => { const s = shareCorrect(p.votes, answer.organ); return s === null ? "No votes were counted." : `${fmtPct(s)} of the room chose ${ORGAN_LABEL[answer.organ].toLowerCase()}.`; })()}
-          </p>
-          <div className="predict-bars" aria-hidden="true">
-            {PREDICT_ORGANS.map((o) => {
-              const t = Math.max(1, totalVotes(p.votes));
-              return <div key={o} className={o === answer.organ ? "right" : ""}><i style={{ height: `${(p.votes[o] / t) * 100}%` }} /><span>{ORGAN_LABEL[o]}</span></div>;
-            })}
-          </div>
-          <p className="small muted">A modelled result for a virtual rat and a fictional compound. Real animals would have been dosed for this answer.</p>
-        </section>
-      )}
 
       <div className={"p-hud" + (showHud ? " show" : "")} onFocus={() => setHudFocus(true)} onBlur={() => setHudFocus(false)}>
         <div className="p-title"><b>{slide.title}</b><span>{p.index + 1} / {TRACKS[p.track].slides.length} · {TRACKS[p.track].label}{p.playing ? " · auto" : ""}</span></div>
