@@ -32,6 +32,7 @@ function ExportMenu() {
 
 function MainApp() {
   const mode = useStore((s) => s.mode);
+  const labSection = useStore((s) => s.labSection);
   const setMode = useStore((s) => s.setMode);
   const theme = useStore((s) => s.theme);
   const setTheme = useStore((s) => s.setTheme);
@@ -64,6 +65,24 @@ function MainApp() {
     if (theme === "system") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", theme);
     if (cb) root.setAttribute("data-palette", "cb"); else root.removeAttribute("data-palette");
   }, [theme, cb]);
+  useEffect(() => {
+    const meta = document.querySelector<HTMLMetaElement>('meta[name="description"]');
+    const pages: Record<LabSection | "toxicity" | "learn" | "story", [string, string]> = {
+      toxicity: ["Toxicity — VAST Virtual Toxicology Workbench", "Explore simulated organ responses, dose comparisons, pharmacokinetics, and human-equivalent dose conversion."],
+      learn: ["Learn pharmacokinetics — VAST", "Work through guided, fictional dose and exposure experiments in the VAST virtual toxicology lab."],
+      story: ["Story — VAST Virtual Toxicology Workbench", "Follow a virtual laboratory rat through dose, exposure, organ response, and model credibility."],
+      overview: ["Lab overview — VAST", "Review the simulated study design, findings, virtual rat, and model assumptions."],
+      design: ["Study design — VAST Lab", "Configure fictional compounds, dose groups, duration, and study assumptions."],
+      animal: ["Virtual rat — VAST Lab", "Inspect the virtual rat, organs, behaviour, and clinical observations."],
+      data: ["Study data — VAST Lab", "Explore pharmacokinetics, clinical pathology, histopathology, and statistics."],
+      population: ["Population — VAST Lab", "Explore virtual population variability, humane endpoints, and uncertainty."],
+      trust: ["Translation and trust — VAST Lab", "Review human-equivalent dose calculations, validation status, and model fidelity."],
+    };
+    const key = mode === "lab" ? labSection : mode;
+    const [title, description] = pages[key];
+    document.title = title;
+    if (meta) meta.content = description;
+  }, [mode, labSection]);
   // Let the first shell paint before fetching/parsing the baked study. The idle timeout keeps
   // the study responsive on browsers without requestIdleCallback or under continuous activity.
   useEffect(() => {
