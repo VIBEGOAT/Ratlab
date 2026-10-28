@@ -1,7 +1,6 @@
 import { lazy, Suspense, useEffect, useRef } from "react";
 import { useStore, type LabSection } from "./store";
 import { Footer } from "./app/Footer";
-import { StoryPage } from "./story/StoryPage";
 import { download, studyToCsv, studyToHtml, studyToJson } from "./lib/export";
 import { usePresenter } from "./presenter/store";
 import { Presenter } from "./presenter/Presenter";
@@ -13,6 +12,7 @@ import { MouseCursor } from "./components/MouseCursor";
 
 const ToxicityPage = lazy(() => import("./toxicity/ToxicityPage").then((m) => ({ default: m.ToxicityPage })));
 const LearnPage = lazy(() => import("./learn/LearnPage").then((m) => ({ default: m.LearnPage })));
+const StoryPage = lazy(() => import("./story/StoryPage").then((m) => ({ default: m.StoryPage })));
 const LabShell = lazy(() => import("./app/LabShell").then((m) => ({ default: m.LabShell })));
 const SECTIONS: LabSection[] = ["overview", "design", "animal", "data", "population", "trust"];
 
@@ -121,7 +121,7 @@ function MainApp() {
           <button className={`ghost${focused ? " app-theme" : ""}`} onClick={() => setTheme(nextTheme)} title={`Switch to ${nextTheme}`} aria-label={`Theme: ${theme === "system" ? "Auto" : theme === "dark" ? "Dark" : "Light"}`}>{focused ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" /></svg> : `Theme: ${theme === "system" ? "Auto" : theme === "dark" ? "Dark" : "Light"}`}</button>
         </div>
       </header>
-      {mode === "toxicity" ? <Suspense fallback={<div className="empty">Loading the toxicity workbench…</div>}><ToxicityPage /></Suspense> : mode === "learn" ? <Suspense fallback={<div className="empty">Loading the practical…</div>}><LearnPage /></Suspense> : mode === "story" ? <StoryPage /> : <Suspense fallback={<div className="empty" style={{ margin: 24 }}>Loading the Lab…</div>}><LabShell /></Suspense>}
+      {mode === "toxicity" ? <Suspense fallback={<div className="empty">Loading the toxicity workbench…</div>}><ToxicityPage /></Suspense> : mode === "learn" ? <Suspense fallback={<div className="empty">Loading the practical…</div>}><LearnPage /></Suspense> : mode === "story" ? <Suspense fallback={<div className="empty">Loading the story…</div>}><StoryPage /></Suspense> : <Suspense fallback={<div className="empty" style={{ margin: 24 }}>Loading the Lab…</div>}><LabShell /></Suspense>}
       <Footer />
       <Presenter />
       <CommandPalette />
