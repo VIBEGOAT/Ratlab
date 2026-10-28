@@ -1,4 +1,8 @@
+import { existsSync } from "node:fs";
 import { defineConfig, devices } from "@playwright/test";
+
+const executablePath = process.env.PLAYWRIGHT_EXECUTABLE_PATH
+  ?? (existsSync("/usr/bin/chromium") ? "/usr/bin/chromium" : undefined);
 
 export default defineConfig({
   testDir: "./e2e",
@@ -10,7 +14,7 @@ export default defineConfig({
   use: {
     baseURL: "http://localhost:5173",
     trace: "retain-on-failure",
-    launchOptions: process.env.PLAYWRIGHT_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_EXECUTABLE_PATH } : undefined,
+    launchOptions: executablePath ? { executablePath } : undefined,
   },
   webServer: { command: "npm run dev -- --port 5173 --strictPort", url: "http://localhost:5173", reuseExistingServer: true, timeout: 120_000 },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } } }],
