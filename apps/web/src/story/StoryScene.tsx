@@ -188,7 +188,7 @@ export function StoryScene(p: StorySceneProps) {
   const split = p.chapter === 6 && p.treated && p.untreated;
   const tempo = p.chapter === 5 ? 0.25 : 1;
   return (
-    <Canvas onCreated={fastShaders} frameloop={p.paused ? "never" : "always"} camera={{ position: SHOTS[0]!.pos, fov: 34, near: 0.05, far: 100 }} dpr={p.quality === "high" ? [1, 2] : [1, 1.25]} gl={{ antialias: true, powerPreference: "high-performance" }} style={{ touchAction: "pan-y" }}>
+    <Canvas onCreated={fastShaders} frameloop={p.paused ? "demand" : "always"} camera={{ position: SHOTS[0]!.pos, fov: 34, near: 0.05, far: 100 }} dpr={p.quality === "high" ? [1, 2] : [1, 1.25]} gl={{ antialias: true, powerPreference: "high-performance" }} style={{ touchAction: "pan-y" }}>
       <color attach="background" args={[p.background]} />
       <fog attach="fog" args={[p.background, 12, 26]} />
       <PerformanceMonitor bounds={() => [38, 50]} onIncline={p.onIncline} onDecline={p.onDecline} flipflops={2} onFallback={p.onDecline} />

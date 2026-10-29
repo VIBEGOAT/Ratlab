@@ -368,8 +368,9 @@ export function StoryPage() {
         <div className="story-stage" ref={stageRef} aria-hidden={pos.chapter === 5 ? true : undefined}>
           {gl ? (
             <Suspense fallback={<div className="poster"><RatPoster /></div>}>
-              {pos.chapter === 0 && t ? <SceneBoundary fallback={<div className="poster"><RatPoster /></div>}><CinematicHero animal={t} reduced={reduce} quality={qualitySetting === "auto" ? "low" : quality} /></SceneBoundary> : <StoryScene posRef={posRef as React.MutableRefObject<StoryPos>} chapter={pos.chapter} treated={t} untreated={u} day={damageDay} moment={moment} exposure={exposure} plasmaRef={plasmaRef}
-                reduceMotion={reduce} palette={cb ? "cb" : "standard"} quality={quality} onDecline={() => { declined.current = true; setAutoQ("low"); }} onIncline={() => { if (!declined.current) setAutoQ("high"); }} background={bg} paused={paused} splitRef={splitRef} twinDay={twinDay} />}
+              <StoryScene posRef={posRef as React.MutableRefObject<StoryPos>} chapter={pos.chapter} treated={t} untreated={u} day={damageDay} moment={moment} exposure={exposure} plasmaRef={plasmaRef}
+                reduceMotion={reduce} palette={cb ? "cb" : "standard"} quality={quality} onDecline={() => { declined.current = true; setAutoQ("low"); }} onIncline={() => { if (!declined.current) setAutoQ("high"); }} background={bg} paused={paused || pos.chapter === 0} splitRef={splitRef} twinDay={twinDay} />
+              {pos.chapter === 0 && t && <div className="story-hero-layer"><SceneBoundary fallback={<div className="poster"><RatPoster /></div>}><CinematicHero animal={t} reduced={reduce} quality={qualitySetting === "auto" ? "low" : quality} /></SceneBoundary></div>}
             </Suspense>
           ) : <div className="poster"><RatPoster /></div>}
           {glOk && software && (
