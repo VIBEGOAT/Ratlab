@@ -21,6 +21,45 @@ const ORGAN_TOUR = [
 ];
 type Clock = React.MutableRefObject<number>;
 
+function DetailedHeart({ clock, focus, heartRate, reduced }: { clock: Clock; focus: React.MutableRefObject<string | null>; heartRate: number; reduced: boolean }) {
+  const root = useRef<THREE.Group>(null);
+  const vessels = useMemo(() => {
+    const paths = [
+      [[0.02, .18, .02], [.08, .38, .02], [.02, .55, .02], [-.04, .68, .02]],
+      [[-.02, .04, .02], [-.18, -.08, .04], [-.28, -.24, .02]],
+      [[.02, .02, -.02], [.2, -.08, -.04], [.3, -.22, -.02]],
+    ];
+    return paths.map((points, i) => ({ i, geometry: new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map((p) => new THREE.Vector3(...p as [number, number, number]))), 20, i === 0 ? .025 : .012, 6, false) }));
+  }, []);
+  useEffect(() => () => vessels.forEach((v) => v.geometry.dispose()), [vessels]);
+  useFrame(() => {
+    const group = root.current;
+    if (!group) return;
+    const active = focus.current === "heart";
+    group.visible = active;
+    if (!active) return;
+    const beat = reduced ? 0 : Math.pow(Math.max(0, Math.sin((clock.current * heartRate / 60) * Math.PI * 2)), 8);
+    group.scale.setScalar(1.55 + beat * .1);
+  });
+  return <group ref={root} position={[1.02, .82, .23]} scale={1.55}>
+    <mesh position={[-.09, .02, 0]} scale={[.19, .25, .15]} rotation={[0, 0, -.18]}>
+      <sphereGeometry args={[1, 32, 24]} />
+      <meshStandardMaterial color="#b9344a" roughness={.34} metalness={.04} emissive="#3b0712" emissiveIntensity={.28} />
+    </mesh>
+    <mesh position={[.09, .02, 0]} scale={[.19, .25, .15]} rotation={[0, 0, .18]}>
+      <sphereGeometry args={[1, 32, 24]} />
+      <meshStandardMaterial color="#a92b43" roughness={.34} metalness={.04} emissive="#3b0712" emissiveIntensity={.28} />
+    </mesh>
+    <mesh position={[0, -.18, 0]} rotation={[0, 0, Math.PI]} scale={[.1, .24, .1]}>
+      <coneGeometry args={[1, 1, 24]} />
+      <meshStandardMaterial color="#8e2039" roughness={.38} emissive="#2a0610" emissiveIntensity={.25} />
+    </mesh>
+    {vessels.map(({ i, geometry }) => <mesh key={i} geometry={geometry}>
+      <meshStandardMaterial color={i === 0 ? "#e04d59" : "#5d78d8"} roughness={.28} emissive={i === 0 ? "#4b0b15" : "#111d55"} emissiveIntensity={.5} />
+    </mesh>)}
+  </group>;
+}
+
 /** Brain-to-spine-to-periphery paths: illustrative, not a complete nerve atlas. */
 function neuralPaths() {
   const brain: Vec3 = [1.88, 1.08, 0];
@@ -202,6 +241,7 @@ function Scene({ animal, clock, playing, reduced, quality, onStage, onShot, onRe
     <Meadow clock={clock} natural={natural} quality={quality} />
     <group ref={rat} visible={!!body}>
       <RatModel v={visual} layers={{ ...DEFAULT_LAYERS, xray: false, labels: false, tumor: false }} quality={quality} walk={reduced ? 0 : 3.2} gaitSpeed={3.4} animate={playing && !reduced} sweepRef={sweep} organOpacity={organs} cinematicFocus={cinematicFocus} />
+      <DetailedHeart clock={clock} focus={cinematicFocus} heartRate={visual.heartRateBpm} reduced={reduced} />
       <Signals clock={clock} opacity={nerves} />
       <mesh ref={gutPulse}><sphereGeometry args={[.055, 12, 8]} /><meshBasicMaterial color="#ffc875" toneMapped={false} /></mesh>
     </group>
