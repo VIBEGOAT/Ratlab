@@ -49,23 +49,16 @@ test("automatic cinema completes its three-stage loop", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Play cinematic scene" })).toBeVisible();
 });
 
-test("organ tour shows individual close-ups and honest rate labels", async ({ page }) => {
-  const errors: string[] = [];
-  page.on("pageerror", (e) => errors.push(e.message));
+test("manual views hold their state until Auto resumes the director", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("force3d", "1"));
   await page.goto("/#story");
   const hero = page.getByTestId("cinematic-hero");
-  await expect(page.getByText("Growing a little world…")).not.toBeVisible();
   await hero.getByRole("button", { name: "Organs", exact: true }).click();
-  for (const name of ["Heart", "Stomach", "Lungs"]) {
-    await expect(hero.locator(".cinematic-caption")).toHaveAttribute("data-organ", name);
-    await expect(hero.locator(".cinematic-rate strong")).toContainText(/\d+/);
-    await page.waitForTimeout(1100);
-    await page.getByRole("button", { name: "Pause cinematic scene" }).click();
-    await expect(hero.locator(".cinematic-caption")).toHaveAttribute("data-organ", name);
-    await hero.screenshot({ path: `test-results/organ-closeup-${name.toLowerCase()}.png` });
-    await page.getByRole("button", { name: "Play cinematic scene" }).click();
-  }
-  await expect(hero.locator(".cinematic-caption")).not.toHaveAttribute("data-organ", /.+/);
-  expect(errors).toEqual([]);
+  await expect(hero).toHaveAttribute("data-stage", "1");
+  await page.waitForTimeout(8000);
+  await expect(hero).toHaveAttribute("data-stage", "1");
+  await hero.getByRole("button", { name: "Nerves", exact: true }).click();
+  await expect(hero).toHaveAttribute("data-stage", "2");
+  await hero.getByRole("button", { name: "Auto", exact: true }).click();
+  await expect(hero).toHaveAttribute("data-stage", "0", { timeout: 15000 });
 });

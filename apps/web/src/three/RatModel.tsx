@@ -45,6 +45,8 @@ export interface RatModelProps {
   gaitSpeed?: number;
   /** Cinematic hero only: fade organ anatomy while revealing neural paths. */
   organOpacity?: React.MutableRefObject<number>;
+  xrayProgress?: React.MutableRefObject<number>;
+  animationClock?: React.MutableRefObject<number>;
   cinematicFocus?: React.MutableRefObject<string | null>;
 }
 
@@ -151,7 +153,11 @@ function Vessels() {
   return <group>{geo.map(({ v, g }) => <mesh key={v.id} geometry={g}><meshStandardMaterial color={v.kind === "artery" ? "#c8323c" : v.kind === "portal" ? "#8a4fb0" : "#4a6fc8"} roughness={0.5} emissive={v.kind === "artery" ? "#4a0c10" : "#101a40"} /></mesh>)}</group>;
 }
 
-export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale = 1, animate = true, quality = "high", exposure = {}, palette = "standard", sweep, sweepRef, labelMode = "grade", tempo = 1, gaitSpeed = 1, organOpacity, cinematicFocus }: RatModelProps) {
+export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale = 1, animate = true, quality = "high", exposure = {}, palette = "standard", sweep, sweepRef, labelMode = "grade", tempo = 1, gaitSpeed = 1, organOpacity, cinematicFocus, animationClock, xrayProgress }: RatModelProps) {
+  const whiskerRef = useRef<THREE.LineSegments>(null);
+  const ears = useRef<Array<THREE.Group | null>>([]);
+  const noseRef = useRef<THREE.Mesh>(null);
+  const tailRef = useRef<THREE.Mesh>(null);
   const anatomyRef = useRef<THREE.Group>(null);
   const digestionRef = useRef<THREE.Group>(null);
   const lungsRef = useRef<THREE.Group>(null);
@@ -177,7 +183,7 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
   const furColor = useMemo(() => new THREE.Color("#efe8dd"), []);
   // A few close shells read as short laboratory-rat fur without the moiré shimmer of a deep shell stack.
   const shells = quality === "high" ? 7 : 0;
-  const furMats = useMemo(() => Array.from({ length: shells + 1 }, (_, i) => makeFurMaterial(uniforms, furColor, i === 0 ? 0 : i / shells, 0.028)), [uniforms, furColor, shells]);
+  const furMats = useMemo(() => Array.from({ length: shells + 1 }, (_, i) => makeFurMaterial(uniforms, furColor, i === 0 ? 0 : i / shells, 0.028, !!animationClock)), [uniforms, furColor, shells, animationClock]);
   const whiskers = useMemo(() => new Float32Array([1, -1].flatMap((z) => [-0.08, 0, 0.08].flatMap((dy) => [feat.nose[0] - 0.08, feat.nose[1] - 0.01, 0.05 * z, feat.nose[0] + 0.35, feat.nose[1] + dy * 2.5, 0.42 * z]))), [feat]);
   const xray = useMemo(() => makeXrayMaterial(uniforms, new THREE.Color("#7fe6d6")), [uniforms]);
   const skinMat = useMemo(() => new THREE.MeshStandardMaterial({ color: "#e8a9a2", roughness: 0.55 }), []);
@@ -201,9 +207,15 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
 
   useFrame((_, dt) => {
     if (animate) clockT.current += Math.min(dt, 0.1) * tempo;
-    const t = clockT.current;
+    const t = animationClock ? animationClock.current : clockT.current;
+    if (animationClock) {
+      if (whiskerRef.current) whiskerRef.current.scale.z = 1 + .16 * Math.sin(t*Math.PI*20);
+      if (noseRef.current) noseRef.current.scale.y = .055*(1+.12*Math.sin(t*50));
+      ears.current.forEach((ear,i)=>{ if(ear) ear.rotation.z=.1 + .14*Math.pow(Math.max(0,Math.sin(t*2.7+i*2)),10); });
+      if (tailRef.current) tailRef.current.rotation.y=.055*Math.sin(t*5)+.025*Math.sin(t*9-.7);
+    }
     if (organOpacity && anatomyRef.current) {
-      anatomyRef.current.visible = organOpacity.current > 0.005;
+      anatomyRef.current.visible = !animationClock && organOpacity.current > 0.005;
       anatomyRef.current.traverse((object) => {
         if (object instanceof THREE.Mesh && object.material instanceof THREE.MeshStandardMaterial) {
           object.material.transparent = true;
@@ -221,6 +233,14 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
       if (digestionRef.current) digestionRef.current.scale.set(1, 1 + Math.sin(t * Math.PI * .4) * 0.045, 1 + Math.cos(t * Math.PI * .4) * 0.035);
       if (lungsRef.current) lungsRef.current.scale.set(1, 1 + Math.sin(t * 4) * .065, 1 + Math.sin(t * 4) * .065);
     }
+    if (xrayProgress && root.current) root.current.traverse(object => {
+      if (!(object instanceof THREE.Mesh || object instanceof THREE.LineSegments)) return;
+      const mat = object.material;
+      if (Array.isArray(mat) || furMats.includes(mat as THREE.MeshStandardMaterial) || mat === xray) return;
+      if (!mat.transparent) { mat.transparent = true; mat.needsUpdate = true; }
+      mat.opacity = xrayProgress.current;
+    });
+    uniforms.uDissolve.value = xrayProgress ? 1-xrayProgress.current : -1;
     uniforms.uTime.value = t * gaitSpeed;
     uniforms.uSweep.value = sweepRef ? sweepRef.current : sweep !== undefined ? sweep : layers.xray ? -99 : 99;
     uniforms.uBreath.value = (v.respirationBpm / 60) * 0.45 * (1 - 0.4 * v.lethargy);
@@ -252,13 +272,13 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
       {/* skin and fur */}
       {(sweepRef || sweep !== undefined || layers.xray) && <mesh geometry={body ?? placeholder} material={xray} renderOrder={20} />}
       {(sweepRef || sweep !== undefined || !layers.xray) && furMats.map((m, i) => <mesh key={i} geometry={body ?? placeholder} material={m} renderOrder={i} castShadow={i === 0} />)}
-      <mesh geometry={tail} material={skinMat} />
+      <mesh ref={tailRef} geometry={tail} material={skinMat} />
 
       {/* ears, seated on the skull (base sunk into the skin), flattening back with a grimace */}
       {[feat.earL, feat.earR].map((p, i) => {
         const side = i === 0 ? 1 : -1;
         return (
-          <group key={i} position={p} rotation={[side * (0.5 + earBack), side * -0.35, 0.1 + earBack * 0.9]}>
+          <group ref={node=>{ears.current[i]=node;}} key={i} position={p} rotation={[side * (0.5 + earBack), side * -0.35, 0.1 + earBack * 0.9]}>
             <mesh geometry={SPHERE} position={[0, 0.13, 0]} scale={[0.2, 0.22, 0.03]}><meshStandardMaterial color={skin} roughness={0.55} transparent={layers.xray} opacity={layers.xray ? 0.45 : 1} /></mesh>
             <mesh geometry={SPHERE} position={[0, 0.13, 0.012 * side]} scale={[0.15, 0.17, 0.02]}><meshStandardMaterial color={new THREE.Color("#d98c8a").lerp(new THREE.Color("#cdb33c"), v.jaundice * 0.8)} roughness={0.6} transparent={layers.xray} opacity={layers.xray ? 0.45 : 1} /></mesh>
           </group>
@@ -279,10 +299,10 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
       {/* muzzle details keep the exterior readable at close range */}
       <mesh geometry={SPHERE} position={[feat.nose[0] - 0.16, feat.nose[1] - 0.015, 0.105]} scale={[0.2, 0.13, 0.12]}><meshStandardMaterial color={fur} roughness={0.92} /></mesh>
       <mesh geometry={SPHERE} position={[feat.nose[0] - 0.16, feat.nose[1] - 0.015, -0.105]} scale={[0.2, 0.13, 0.12]}><meshStandardMaterial color={fur} roughness={0.92} /></mesh>
-      <mesh geometry={SPHERE} position={feat.nose} scale={[0.07, 0.055, 0.065]} material={noseMat} />
+      <mesh ref={noseRef} geometry={SPHERE} position={feat.nose} scale={[0.07, 0.055, 0.065]} material={noseMat} />
       <mesh geometry={SPHERE} position={[feat.nose[0] + 0.05, feat.nose[1] + 0.008, 0.035]} scale={0.012}><meshBasicMaterial color="#4c2630" /></mesh>
       <mesh geometry={SPHERE} position={[feat.nose[0] + 0.05, feat.nose[1] + 0.008, -0.035]} scale={0.012}><meshBasicMaterial color="#4c2630" /></mesh>
-      <lineSegments position={[0, 0, 0]}>
+      <lineSegments ref={whiskerRef} position={[0, 0, 0]}>
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" count={12} itemSize={3} array={whiskers} />
         </bufferGeometry>

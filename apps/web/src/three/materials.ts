@@ -12,6 +12,7 @@ import * as THREE from "three";
 
 export interface BodyUniforms {
   uTime: { value: number };
+  uDissolve: { value: number };
   uBreath: { value: number };
   uHunch: { value: number };
   uWaste: { value: number };
@@ -25,7 +26,7 @@ export interface BodyUniforms {
 
 export function makeBodyUniforms(): BodyUniforms {
   return {
-    uTime: { value: 0 }, uBreath: { value: 1.4 }, uHunch: { value: 0 }, uWaste: { value: 0 }, uWalk: { value: 0 },
+    uDissolve: { value: -1 }, uTime: { value: 0 }, uBreath: { value: 1.4 }, uHunch: { value: 0 }, uWaste: { value: 0 }, uWalk: { value: 0 },
     uTremor: { value: 0 }, uRuffle: { value: 0 }, uSkinColor: { value: new THREE.Color("#e8a9a2") }, uSweep: { value: 99 },
   };
 }
@@ -65,8 +66,9 @@ float ratHash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(
  * Skin and fur. `shell` is 0 for the base surface and 0 to 1 for fur shells. Areas with skinW
  * (paws, nose) show bare skin coloured by uSkinColor, which carries the jaundice tint.
  */
-export function makeFurMaterial(u: BodyUniforms, furColor: THREE.Color, shell: number, furLength: number): THREE.MeshStandardMaterial {
-  const m = new THREE.MeshStandardMaterial({ color: furColor, roughness: 0.92, metalness: 0, vertexColors: false });
+export function makeFurMaterial(u: BodyUniforms, furColor: THREE.Color, shell: number, furLength: number, physical = false): THREE.MeshStandardMaterial {
+  const m = physical ? new THREE.MeshPhysicalMaterial({ color: furColor, roughness: .82, sheen: 1, sheenColor: new THREE.Color("#fff0d6"), sheenRoughness: .8 }) : new THREE.MeshStandardMaterial({ color: furColor, roughness: .92 });
+  if (physical) { m.transparent = true; m.depthWrite = false; }
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u, { uShell: { value: shell }, uFurLen: { value: furLength } });
     sh.vertexShader = sh.vertexShader
@@ -77,9 +79,9 @@ export function makeFurMaterial(u: BodyUniforms, furColor: THREE.Color, shell: n
         transformed += normal * uShell * uFurLen * ruff * (1.0 - skinW);
         transformed.y -= uShell * uShell * uFurLen * 0.35 * (1.0 - uRuffle);`);
     sh.fragmentShader = sh.fragmentShader
-      .replace("#include <common>", `#include <common>\n${HASH_GLSL}\nuniform float uShell; uniform vec3 uSkinColor; uniform float uRuffle; uniform float uSweep; varying float vSkinW; varying vec3 vObj;`)
+      .replace("#include <common>", `#include <common>\n${HASH_GLSL}\nuniform float uDissolve; uniform float uShell; uniform vec3 uSkinColor; uniform float uRuffle; uniform float uSweep; varying float vSkinW; varying vec3 vObj;`)
       .replace("#include <color_fragment>", `#include <color_fragment>
-        if (vObj.x > uSweep) discard;
+        if (uDissolve >= 0.0) { diffuseColor.a *= 1.0-uDissolve; if(uDissolve > .995) discard; } else if (vObj.x > uSweep) discard;
         if (uShell > 0.0) {
           if (vSkinW > 0.5) discard;
           float strand = ratHash(floor(vObj * 170.0));
@@ -114,11 +116,11 @@ export function makeXrayMaterial(u: BodyUniforms, color: THREE.Color): THREE.Sha
         vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz);
         gl_Position = projectionMatrix * mv;
       }`,
-    fragmentShader: `uniform vec3 uColor; uniform float uSweep; varying vec3 vN; varying vec3 vV; varying float vX;
+    fragmentShader: `uniform vec3 uColor; uniform float uSweep; uniform float uDissolve; varying vec3 vN; varying vec3 vV; varying float vX;
       void main() {
-        if (vX < uSweep) discard;
+        if (uDissolve < 0.0 && vX < uSweep) discard;
         float f = pow(1.0 - abs(dot(normalize(vN), normalize(vV))), 2.4);
-        gl_FragColor = vec4(uColor, 0.035 + 0.75 * f);
+        gl_FragColor = vec4(uColor, uDissolve >= 0.0 ? uDissolve*(.025+.12*f) : .035+.75*f);
       }`,
     transparent: true, depthWrite: false, side: THREE.FrontSide,
   });
