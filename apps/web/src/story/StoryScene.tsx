@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { AdaptiveDpr, ContactShadows, Environment, Lightformer, PerformanceMonitor } from "@react-three/drei";
 import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
@@ -179,26 +179,7 @@ function SweepRat({ posRef, v, layers, palette, quality, chapter, exposure, temp
   return <RatModel v={v} layers={layers} palette={palette} quality={quality} sweepRef={sweepRef} labelMode={chapter === 1 ? "names" : "grade"} exposure={exposure} tempo={tempo} />;
 }
 
-/**
- * Compiles every shader in parallel before the first frame. The browser compiles on its own threads, so the page stays
- * responsive, where compiling inside the first render would stall the main thread for about a second.
- */
-function CompileGate({ onReady }: { onReady: () => void }) {
-  const { gl, scene, camera } = useThree();
-  useEffect(() => {
-    let live = true;
-    const done = () => { if (live) onReady(); };
-    const timer = window.setTimeout(done, 4000);
-    const r = gl as unknown as { compileAsync?: (s: unknown, c: unknown) => Promise<unknown> };
-    if (r.compileAsync) r.compileAsync(scene, camera).then(done, done); else done();
-    return () => { live = false; window.clearTimeout(timer); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  return null;
-}
-
 export function StoryScene(p: StorySceneProps) {
-  const [compiled, setCompiled] = useState(false);
   const momentBundle = p.moment?.who === "untreated" ? p.untreated : p.treated;
   const bundle = p.chapter === 5 && p.moment ? momentBundle : p.treated;
   const day = p.chapter === 5 && p.moment ? p.moment.day : p.chapter === 4 ? p.day : p.chapter >= 3 ? 0 : 0;
@@ -207,10 +188,9 @@ export function StoryScene(p: StorySceneProps) {
   const split = p.chapter === 6 && p.treated && p.untreated;
   const tempo = p.chapter === 5 ? 0.25 : 1;
   return (
-    <Canvas onCreated={fastShaders} frameloop={p.paused || !compiled ? "never" : "always"} camera={{ position: SHOTS[0]!.pos, fov: 34, near: 0.05, far: 100 }} dpr={p.quality === "high" ? [1, 2] : [1, 1.25]} gl={{ antialias: true, powerPreference: "high-performance" }} style={{ touchAction: "pan-y" }}>
+    <Canvas onCreated={fastShaders} frameloop={p.paused ? "never" : "always"} camera={{ position: SHOTS[0]!.pos, fov: 34, near: 0.05, far: 100 }} dpr={p.quality === "high" ? [1, 2] : [1, 1.25]} gl={{ antialias: true, powerPreference: "high-performance" }} style={{ touchAction: "pan-y" }}>
       <color attach="background" args={[p.background]} />
       <fog attach="fog" args={[p.background, 12, 26]} />
-      <CompileGate onReady={() => setCompiled(true)} />
       <PerformanceMonitor bounds={() => [38, 50]} onIncline={p.onIncline} onDecline={p.onDecline} flipflops={2} onFallback={p.onDecline} />
       <AdaptiveDpr pixelated={false} />
       <hemisphereLight args={["#dfefff", "#2a2420", 0.55]} />
