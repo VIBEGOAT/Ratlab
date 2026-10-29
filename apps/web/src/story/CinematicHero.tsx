@@ -20,12 +20,6 @@ const ORGAN_TOUR = [
   { name: "Lungs", center: [.98, .98, 0] as Vec3, function: "Exchange oxygen and carbon dioxide", unit: "breaths/min" },
 ];
 type Clock = React.MutableRefObject<number>;
-type StoryRoute = "heart" | "food" | "breath";
-const ROUTES: Array<{ id: StoryRoute; label: string; note: string; start: number }> = [
-  { id: "heart", label: "Follow the heartbeat", note: "Circulation and cardiac exposure", start: 8.05 },
-  { id: "food", label: "Follow the food", note: "Stomach, gut, and liver", start: 12.05 },
-  { id: "breath", label: "Follow the breath", note: "Lungs and oxygen exchange", start: 16.05 },
-];
 
 function DetailedHeart({ clock, focus, heartRate, reduced }: { clock: Clock; focus: React.MutableRefObject<string | null>; heartRate: number; reduced: boolean }) {
   const root = useRef<THREE.Group>(null);
@@ -266,7 +260,6 @@ export default function CinematicHero({ animal, reduced, quality }: { animal: An
   const [playing, setPlaying] = useState(true);
   const [stage, setStage] = useState(0);
   const [shot, setShot] = useState(-1);
-  const [route, setRoute] = useState<StoryRoute | null>(null);
   const visual = useMemo(() => ratVisualState(animal, 0), [animal]);
   const rates = [Math.round(visual.heartRateBpm), 12, Math.round(visual.respirationBpm)];
   const [ready, setReady] = useState(false);
@@ -276,13 +269,6 @@ export default function CinematicHero({ animal, reduced, quality }: { animal: An
     document.addEventListener("visibilitychange", update);
     return () => document.removeEventListener("visibilitychange", update);
   }, []);
-  const chooseRoute = (next: StoryRoute) => {
-    const selected = ROUTES.find((item) => item.id === next)!;
-    clock.current = selected.start;
-    setRoute(next);
-    setStage(1);
-    setPlaying(true);
-  };
   return <div className="cinematic-hero" data-testid="cinematic-hero" data-stage={stage}>
     <Canvas frameloop={playing && visible ? "always" : "demand"} camera={{ position: [3, 3, 10], fov: 40, near: .05, far: 110 }} dpr={[1, stableQuality === "high" ? 1.5 : 1]} gl={{ antialias: true, powerPreference: "high-performance" }} style={{ touchAction: "pan-y" }}>
       <Scene animal={animal} clock={clock} playing={playing && visible} reduced={reduced} quality={stableQuality} onStage={setStage} onShot={setShot} onReady={() => setReady(true)} />
@@ -290,18 +276,6 @@ export default function CinematicHero({ animal, reduced, quality }: { animal: An
     </Canvas>
     <div className="cinematic-top"><span>VAST / LIVING SYSTEMS</span><span>0{stage + 1} — 03</span></div>
     {!ready && <div className="cinematic-loading" role="status">Growing a little world…</div>}
-    {!route && ready && <div className="cinematic-route-layer" aria-label="Choose a biological route">
-      <div className="cinematic-route-card">
-        <span className="eyebrow">A living system, one path at a time</span>
-        <h2>What do you want to follow?</h2>
-        <p>Choose one signal and let the camera carry you inside.</p>
-        <div className="cinematic-route-options">
-          {ROUTES.map((item) => <button key={item.id} type="button" onClick={() => chooseRoute(item.id)}>
-            <strong>{item.label}</strong><small>{item.note}</small><span aria-hidden="true">↗</span>
-          </button>)}
-        </div>
-      </div>
-    </div>}
     <div className="cinematic-caption" data-organ={shot >= 0 ? ORGAN_TOUR[shot]!.name : undefined}><p>{shot >= 0 ? ORGAN_TOUR[shot]!.name : TITLES[stage]}</p><span>{shot >= 0 ? ORGAN_TOUR[shot]!.function : DESCRIPTIONS[stage]}</span>{shot >= 0 && <div className="cinematic-rate"><strong>{rates[shot]}</strong> {ORGAN_TOUR[shot]!.unit}<small>{shot === 1 ? "Illustrative animation rate" : "Simulated baseline · animation stylized"}</small></div>}</div>
     <div className="cinematic-controls" role="group" aria-label="Cinematic rat views">
       {["Meadow", "Organs", "Nerves"].map((label, i) => <button key={label} aria-pressed={stage === i} onClick={() => { clock.current = HERO_STARTS[i]!; setStage(i); }}>{label}</button>)}
