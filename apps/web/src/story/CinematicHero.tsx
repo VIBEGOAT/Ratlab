@@ -44,18 +44,18 @@ function DetailedHeart({ clock, focus, heartRate, reduced }: { clock: Clock; foc
   return <group ref={root} position={[1.02, .82, .23]} scale={1.55}>
     <mesh position={[-.09, .02, 0]} scale={[.19, .25, .15]} rotation={[0, 0, -.18]}>
       <sphereGeometry args={[1, 32, 24]} />
-      <meshStandardMaterial color="#b9344a" roughness={.34} metalness={.04} emissive="#3b0712" emissiveIntensity={.28} />
+      <meshStandardMaterial color="#b9344a" roughness={.34} metalness={.04} emissive="#3b0712" emissiveIntensity={.28} depthTest={false} />
     </mesh>
     <mesh position={[.09, .02, 0]} scale={[.19, .25, .15]} rotation={[0, 0, .18]}>
       <sphereGeometry args={[1, 32, 24]} />
-      <meshStandardMaterial color="#a92b43" roughness={.34} metalness={.04} emissive="#3b0712" emissiveIntensity={.28} />
+      <meshStandardMaterial color="#a92b43" roughness={.34} metalness={.04} emissive="#3b0712" emissiveIntensity={.28} depthTest={false} />
     </mesh>
     <mesh position={[0, -.18, 0]} rotation={[0, 0, Math.PI]} scale={[.1, .24, .1]}>
       <coneGeometry args={[1, 1, 24]} />
-      <meshStandardMaterial color="#8e2039" roughness={.38} emissive="#2a0610" emissiveIntensity={.25} />
+      <meshStandardMaterial color="#8e2039" roughness={.38} emissive="#2a0610" emissiveIntensity={.25} depthTest={false} />
     </mesh>
     {vessels.map(({ i, geometry }) => <mesh key={i} geometry={geometry}>
-      <meshStandardMaterial color={i === 0 ? "#e04d59" : "#5d78d8"} roughness={.28} emissive={i === 0 ? "#4b0b15" : "#111d55"} emissiveIntensity={.5} />
+      <meshStandardMaterial color={i === 0 ? "#e04d59" : "#5d78d8"} roughness={.28} emissive={i === 0 ? "#4b0b15" : "#111d55"} emissiveIntensity={.5} depthTest={false} />
     </mesh>)}
   </group>;
 }
@@ -241,9 +241,11 @@ function Scene({ animal, clock, playing, reduced, quality, onStage, onShot, onRe
     <Meadow clock={clock} natural={natural} quality={quality} />
     <group ref={rat} visible={!!body}>
       <RatModel v={visual} layers={{ ...DEFAULT_LAYERS, xray: false, labels: false, tumor: false }} quality={quality} walk={reduced ? 0 : 3.2} gaitSpeed={3.4} animate={playing && !reduced} sweepRef={sweep} organOpacity={organs} cinematicFocus={cinematicFocus} />
-      <DetailedHeart clock={clock} focus={cinematicFocus} heartRate={visual.heartRateBpm} reduced={reduced} />
       <Signals clock={clock} opacity={nerves} />
       <mesh ref={gutPulse}><sphereGeometry args={[.055, 12, 8]} /><meshBasicMaterial color="#ffc875" toneMapped={false} /></mesh>
+    </group>
+    <group renderOrder={80}>
+      <DetailedHeart clock={clock} focus={cinematicFocus} heartRate={visual.heartRateBpm} reduced={reduced} />
     </group>
     <mesh ref={scan} position={[0, .85, 0]}><torusGeometry args={[1.05, .012, 8, 80]} /><meshBasicMaterial color="#61dfff" transparent depthWrite={false} toneMapped={false} /></mesh>
     {body && <ContactShadows position={[0, -.025, 0]} opacity={.45} scale={15} blur={2.5} far={2.5} resolution={256} frames={1} />}
