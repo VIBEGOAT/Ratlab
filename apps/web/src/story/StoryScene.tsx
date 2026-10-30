@@ -1,6 +1,6 @@
 import { useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { AdaptiveDpr, ContactShadows, Environment, Lightformer, PerformanceMonitor } from "@react-three/drei";
+import { ContactShadows, Environment, Lightformer } from "@react-three/drei";
 import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
 import * as THREE from "three";
 import type { AnimalBundle, Organ } from "@eliminate/sim-core";
@@ -43,9 +43,6 @@ export interface StorySceneProps {
   reduceMotion: boolean;
   palette: "standard" | "cb";
   quality: Quality;
-  onDecline: () => void;
-  /** steady frames: the page may raise quality again */
-  onIncline?: () => void;
   background: string;
   /** a full-stage overlay covers the canvas, so stop rendering */
   paused: boolean;
@@ -63,13 +60,17 @@ function CameraChoreo({ posRef, reduceMotion }: { posRef: React.MutableRefObject
     const shot = SHOTS[Math.min(chapter, SHOTS.length - 1)]!;
     const p = new THREE.Vector3(...shot.pos);
     const tg = new THREE.Vector3(...shot.target);
-    if (chapter === 0 && !reduceMotion) { const a = state.clock.elapsedTime * 0.12; p.set(Math.sin(a) * 9.8 - 0.8, 2.4, Math.cos(a) * 9.8); }
+    if (chapter <= 1) {
+      const reveal = reduceMotion ? .6 : THREE.MathUtils.smoothstep(chapter === 0 ? 0 : progress, 0, .7);
+      p.set(2.1 - reveal * 1.5, 2.4 - reveal * .65, 10 - reveal * 1.2);
+      tg.set(-.55,.8,0);
+    }
     if (chapter === 4) { const a = 0.55 + progress * 0.9; p.set(Math.sin(a) * 8.6 - 0.4, 2.6, Math.cos(a) * 8.6); }
     if (chapter === 5) p.multiplyScalar(1 + progress * 0.12);
     // the rat is long and low: on narrow or square stages, back off so the whole body stays in frame
     const fit = Math.max(1, 1.45 / Math.max(0.3, size.width / Math.max(1, size.height)));
     p.sub(tg).multiplyScalar(fit).add(tg);
-    const k = reduceMotion ? 1 : 1 - Math.exp(-dt * 2.2);
+    const k = reduceMotion || chapter <= 1 ? 1 : 1 - Math.exp(-dt * 2.2);
     camera.position.lerp(p, k);
     target.current.lerp(tg, k);
     camera.lookAt(target.current);
@@ -172,11 +173,28 @@ function SweepRat({ posRef, v, layers, palette, quality, chapter, exposure, temp
 }) {
   // fur below the sweep line, X-ray above it; the line runs head to tail as the reader scrolls chapter 1
   const sweepRef = useRef(99);
+  const exterior = useRef(1);
+  const entrance = useRef<THREE.Group>(null);
   useFrame(() => {
     const { chapter: c, progress } = posRef.current;
+    const reveal = THREE.MathUtils.smoothstep(progress, 0, .7);
+    exterior.current = c === 1 ? .82 - .74 * reveal : 1;
+    if (entrance.current) { entrance.current.scale.setScalar(c === 1 ? .94 + .06 * reveal : 1); entrance.current.position.y = c === 1 ? .1 * (1-reveal) : 0; }
     sweepRef.current = c === 1 ? 3.3 - Math.min(1, progress / 0.6) * 5.2 : c >= 3 ? -99 : 99;
   });
-  return <RatModel v={v} layers={layers} palette={palette} quality={quality} sweepRef={sweepRef} labelMode={chapter === 1 ? "names" : "grade"} exposure={exposure} tempo={tempo} />;
+  return <group ref={entrance}><RatModel v={v} layers={layers} surfacePhysical={true} xrayProgress={chapter === 1 ? exterior : undefined} palette={palette} quality={quality} sweepRef={sweepRef} labelMode={chapter === 1 ? "names" : "grade"} exposure={exposure} tempo={tempo} /></group>;
+}
+
+/** A fixed studio backdrop: stable lighting and a subtle illuminated stage at every quality. */
+function AnatomyStudio() {
+  return <group>
+    <mesh position={[0,1,-4]}>
+      <planeGeometry args={[40,24]}/>
+      <shaderMaterial depthWrite={false} vertexShader="varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}" fragmentShader="varying vec2 vUv; void main(){vec2 p=(vUv-.5)*vec2(2.,1.); float halo=exp(-dot(p,p)*14.); gl_FragColor=vec4(mix(vec3(.008,.018,.035),vec3(.025,.15,.20),halo),1.);}"/>
+    </mesh>
+    {[3.8,4.2].map((r,i)=><mesh key={r} rotation={[-Math.PI/2,0,0]} position={[-.4,-.035-i*.005,0]}><ringGeometry args={[r,r+.012,128]}/><meshBasicMaterial color={i===0?'#4fc9d9':'#38738c'} transparent opacity={i===0?.35:.16} depthWrite={false}/></mesh>)}
+    <pointLight position={[-2,2,-2]} color="#75e3e9" intensity={4} distance={9}/>
+  </group>;
 }
 
 export function StoryScene(p: StorySceneProps) {
@@ -184,15 +202,14 @@ export function StoryScene(p: StorySceneProps) {
   const bundle = p.chapter === 5 && p.moment ? momentBundle : p.treated;
   const day = p.chapter === 5 && p.moment ? p.moment.day : p.chapter === 4 ? p.day : p.chapter >= 3 ? 0 : 0;
   const v = useMemo(() => (bundle ? ratVisualState(bundle, day) : null), [bundle, day]);
-  const layers: Layers = { ...DEFAULT_LAYERS, xray: p.chapter >= 3 && p.chapter <= 5, labels: p.chapter === 1 || p.chapter === 4, vessels: p.chapter >= 1, tumor: p.chapter >= 4 && p.chapter <= 6 };
+  const layers: Layers = { ...DEFAULT_LAYERS, xray: p.chapter >= 3 && p.chapter <= 5, labels: (p.chapter === 1 && p.posRef.current.progress > .28) || p.chapter === 4, vessels: p.chapter >= 1, tumor: p.chapter >= 4 && p.chapter <= 6 };
   const split = p.chapter === 6 && p.treated && p.untreated;
   const tempo = p.chapter === 5 ? 0.25 : 1;
+  const background = p.chapter <= 1 ? "#07121e" : p.background;
   return (
     <Canvas onCreated={fastShaders} frameloop={p.paused ? "demand" : "always"} camera={{ position: SHOTS[0]!.pos, fov: 34, near: 0.05, far: 100 }} dpr={p.quality === "high" ? [1, 2] : [1, 1.25]} gl={{ antialias: true, powerPreference: "high-performance" }} style={{ touchAction: "pan-y" }}>
-      <color attach="background" args={[p.background]} />
-      <fog attach="fog" args={[p.background, 12, 26]} />
-      <PerformanceMonitor bounds={() => [38, 50]} onIncline={p.onIncline} onDecline={p.onDecline} flipflops={2} onFallback={p.onDecline} />
-      <AdaptiveDpr pixelated={false} />
+      <color attach="background" args={[background]} />
+      <fog attach="fog" args={[background, 12, 26]} />
       <hemisphereLight args={["#dfefff", "#2a2420", 0.55]} />
       <directionalLight position={[4, 7, 5]} intensity={1.6} color="#fff6ea" />
       <directionalLight position={[-6, 3, -4]} intensity={1.0} color="#9fe8ff" />
@@ -200,6 +217,7 @@ export function StoryScene(p: StorySceneProps) {
         <Lightformer form="rect" intensity={2.2} position={[0, 6, 3]} scale={[10, 4, 1]} />
         <Lightformer form="rect" intensity={1.2} position={[-6, 2, -3]} rotation-y={Math.PI / 2} scale={[8, 3, 1]} color="#bff3ff" />
       </Environment>
+      {(p.chapter === 0 || p.chapter === 1) && <AnatomyStudio />}
       <CameraChoreo posRef={p.posRef} reduceMotion={p.reduceMotion} />
       {split && p.treated && p.untreated && <TwinRats splitRef={p.splitRef} treated={p.treated} untreated={p.untreated} day={p.twinDay} palette={p.palette} quality={p.quality} />}
       {v && !split && (

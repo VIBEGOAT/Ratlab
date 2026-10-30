@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { memo, useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import type { Quality } from '../three/RatModel';
 type Clock = React.MutableRefObject<number>;
 type V = [number, number, number];
 function Vessel({ points, radius = .015, color = '#c43b49', opacity = 1 }: { points: V[]; radius?: number; color?: string; opacity?: number }) {
@@ -26,17 +27,17 @@ function cortexGeometry() {
   for(let i=0;i<p.count;i++) { const x=p.getX(i),y=p.getY(i),z=p.getZ(i);const ridge=1+.035*Math.sin(26*x+5*Math.sin(10*z))*Math.sin(20*y+4*z);p.setXYZ(i,x*ridge,y*ridge,z*ridge); }
   g.computeVertexNormals();return g;
 }
-export function MacroAnatomy({clock, organs, nerves}: {clock: Clock; organs: Clock; nerves: Clock}) {
+export const MacroAnatomy = memo(function MacroAnatomy({clock, organs, nerves, quality}: {clock: Clock; organs: Clock; nerves: Clock; quality: Quality}) {
   const heart=useRef<THREE.Group>(null), lungs=useRef<THREE.Group>(null), brain=useRef<THREE.Group>(null), root=useRef<THREE.Group>(null), blood=useRef<THREE.InstancedMesh>(null);
   const cortex=useMemo(cortexGeometry,[]), curve=useMemo(()=>new THREE.CatmullRomCurve3(aorta.map(p=>new THREE.Vector3(...p))),[]), dummy=useMemo(()=>new THREE.Object3D(),[]);
   useEffect(()=>()=>cortex.dispose(),[cortex]);
   useFrame(()=>{
     const t=clock.current;
-    if(root.current) root.current.visible=organs.current+nerves.current>.01;
+    if(root.current) { root.current.visible=organs.current+nerves.current>.01; if(!root.current.visible) return; }
     if(heart.current) heart.current.children.forEach((c,i)=>{const phase=t*5.5-i*.06;const beat=Math.exp(-Math.pow(((phase%1)-.16)*12,2))+.45*Math.exp(-Math.pow(((phase%1)-.38)*15,2));c.scale.setScalar(1-.07*beat);});
     if(lungs.current) lungs.current.scale.set(1,1+.045*Math.sin(t*2*Math.PI*1.5),1+.065*Math.sin(t*2*Math.PI*1.5));
     if(brain.current) brain.current.scale.setScalar(1+.008*Math.sin(t*5));
-    if(blood.current) {for(let i=0;i<32;i++){dummy.position.copy(curve.getPointAt((t*.4+i/32)%1));dummy.scale.setScalar(.012);dummy.updateMatrix();blood.current.setMatrixAt(i,dummy.matrix);}blood.current.instanceMatrix.needsUpdate=true;}
+    if(blood.current) {for(let i=0;i<32;i++){curve.getPointAt((t*.4+i/32)%1,dummy.position);dummy.scale.setScalar(.012);dummy.updateMatrix();blood.current.setMatrixAt(i,dummy.matrix);}blood.current.instanceMatrix.needsUpdate=true;}
   });
   return <group ref={root}>
     <group ref={heart} position={[1.02,.82,.04]}>
@@ -46,7 +47,7 @@ export function MacroAnatomy({clock, organs, nerves}: {clock: Clock; organs: Clo
     <Vessel points={[[.92,.96,.04],[.88,1.15,.12],[1.1,1.22,.18],[1.28,1.05,.25]]} radius={.032} color='#668bab'/>
     {coronaries.map((p,i)=><Vessel key={i} points={p} radius={.007}/>)}
     <group ref={lungs}>
-      {[-1,1].map(side=><mesh key={side} position={[.88,.98,side*.26]} scale={[.35,.28,.15]} rotation={[0,side*.16,-.22]}><sphereGeometry args={[1,40,32]}/><meshPhysicalMaterial color='#f28b94' transmission={.65} thickness={.25} roughness={.28} transparent opacity={.48} depthWrite={false} clearcoat={.4}/></mesh>)}
+      {[-1,1].map(side=><mesh key={side} position={[.88,.98,side*.26]} scale={[.35,.28,.15]} rotation={[0,side*.16,-.22]}><sphereGeometry args={[1,40,32]}/><meshPhysicalMaterial color='#f28b94' transmission={quality === "high" ? .65 : 0} thickness={.25} roughness={.28} transparent opacity={.48} depthWrite={false} clearcoat={.4}/></mesh>)}
       {bronchial.map((p,i)=><Vessel key={i} points={p} radius={Math.max(.003,.016-i*.00015)} color='#ffd7bd'/>)}
     </group>
     <group ref={brain} position={[1.88,1.08,0]}>
@@ -57,4 +58,4 @@ export function MacroAnatomy({clock, organs, nerves}: {clock: Clock; organs: Clo
     {Array.from({length:9},(_,i)=><Vessel key={i} points={Array.from({length:17},(_,j)=>{const a=j/16*Math.PI*1.7;return [1.2-i*.18,.95+Math.cos(a)*.3,Math.sin(a)*.39] as V;})} radius={.009} color='#b4cbd1' opacity={.22}/>)}
     <instancedMesh ref={blood} args={[undefined,undefined,32]} frustumCulled={false}><sphereGeometry args={[1,8,6]}/><meshBasicMaterial color='#ff4d55' toneMapped={false}/></instancedMesh>
   </group>;
-}
+});

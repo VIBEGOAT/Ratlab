@@ -122,10 +122,8 @@ export function StoryPage() {
   const setSetup = useStore((s) => s.setSetup);
   const cb = useStore((s) => s.cbPalette);
   const qualitySetting = useStore((s) => s.quality);
-  // Auto starts light so the page is usable at once, then rises to high when frames stay steady (and never again after a drop)
-  const [autoQ, setAutoQ] = useState<Quality>("low");
-  const declined = useRef(false);
-  const quality: Quality = qualitySetting === "auto" ? autoQ : qualitySetting;
+  // Automatic quality is fixed for the visit: changing materials mid-scroll caused visible flashes.
+  const quality: Quality = qualitySetting === "auto" ? "low" : qualitySetting;
   const bg = useThemeBackground();
   const [glOk, setGlOk] = useState(false);
   // paint the page with the poster first, then bring the live 3D scene up when the browser is idle
@@ -208,6 +206,8 @@ export function StoryPage() {
   const scaled = scaleDose(noael);
   const humanP = pos.chapter === 9 ? Math.min(1, Math.max(0, (pos.progress - 0.15) / 0.6)) : pos.chapter > 9 ? 1 : 0;
   const paused = pos.chapter >= 7 && pos.chapter <= 9;
+  const heroExit = Math.min(1, Math.max(0, (pos.progress - .78) / .22));
+  const heroOpacity = reduce ? 1 : 1 - heroExit * heroExit * (3 - 2 * heroExit);
   const damageDay = pos.chapter === 4 ? Math.min(days, Math.round(Math.min(1, pos.progress / 0.85) * days)) : days;
   const vDay = t ? ratVisualState(t, damageDay) : null;
   const animals = study.data?.study.animals ?? [];
@@ -369,8 +369,8 @@ export function StoryPage() {
           {gl ? (
             <Suspense fallback={<div className="poster"><RatPoster /></div>}>
               <StoryScene posRef={posRef as React.MutableRefObject<StoryPos>} chapter={pos.chapter} treated={t} untreated={u} day={damageDay} moment={moment} exposure={exposure} plasmaRef={plasmaRef}
-                reduceMotion={reduce} palette={cb ? "cb" : "standard"} quality={quality} onDecline={() => { declined.current = true; setAutoQ("low"); }} onIncline={() => { if (!declined.current) setAutoQ("high"); }} background={bg} paused={paused || pos.chapter === 0} splitRef={splitRef} twinDay={twinDay} />
-              {pos.chapter === 0 && t && <div className="story-hero-layer"><SceneBoundary fallback={<div className="poster"><RatPoster /></div>}><CinematicHero animal={t} reduced={reduce} quality={qualitySetting === "auto" ? (window.innerWidth > 900 ? "high" : "low") : quality} /></SceneBoundary></div>}
+                reduceMotion={reduce} palette={cb ? "cb" : "standard"} quality={quality} background={bg} paused={paused || pos.chapter === 0} splitRef={splitRef} twinDay={twinDay} />
+              {pos.chapter === 0 && t && <div className="story-hero-layer" style={{ opacity: heroOpacity, pointerEvents: heroOpacity < .15 ? "none" : undefined }} aria-hidden={heroOpacity < .15 ? true : undefined}><SceneBoundary fallback={<div className="poster"><RatPoster /></div>}><CinematicHero animal={t} reduced={reduce} quality={qualitySetting === "auto" ? (window.innerWidth > 900 ? "high" : "low") : quality} /></SceneBoundary></div>}
             </Suspense>
           ) : <div className="poster"><RatPoster /></div>}
           {glOk && software && (
@@ -379,6 +379,7 @@ export function StoryPage() {
               <button type="button" onClick={() => { force3d(); setSoftware(false); setSceneReady(true); }}>Turn on 3D</button>
             </div>
           )}
+          {pos.chapter === 1 && <div className="meet-frame" aria-hidden="true"><div className="meet-frame-top"><span>VAST / ANATOMY STUDIO</span><span>02 — EXPLORE</span></div><div className="meet-frame-bottom"><span>A living system.<br/><strong>Revealed, layer by layer.</strong></span><small>SCROLL TO LOOK INSIDE ↓</small></div></div>}
           {pos.chapter === 6 && t && u && <SplitDivider split={split} onChange={setSplit} stage={stageRef} />}
           {pos.chapter === 7 && <div className="stage-overlay"><ForecastField outcomes={popMode === "treated" ? population.treated : population.untreated} total={population.total / 2 || 1000} mode={popMode} palette={cb ? "cb" : "standard"} sorted={sorted && population.status === "done"} /></div>}
           {pos.chapter === 8 && t && u && gl && <div className="stage-overlay"><SceneBoundary fallback={<div className="poster"><RatPoster /></div>}><Suspense fallback={null}><ArenaScene mode="open" treated={t} untreated={u} day={days} hoursPerSec={1} /></Suspense></SceneBoundary></div>}

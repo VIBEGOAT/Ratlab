@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
 test("cinematic hero renders all views, pauses, and fits mobile", async ({ page }) => {
+  test.setTimeout(180_000); // Software WebGL needs additional time for three full-resolution captures.
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("console", (message) => { if (message.type() === "error" && /shader|WebGLProgram/.test(message.text())) errors.push(message.text()); });
@@ -20,9 +21,10 @@ test("cinematic hero renders all views, pauses, and fits mobile", async ({ page 
   }
   expect((await new AxeBuilder({ page }).include(".cinematic-hero").analyze()).violations).toEqual([]);
   await page.setViewportSize({ width: 390, height: 844 });
-  await hero.scrollIntoViewIfNeeded();
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+  await expect(page.locator(".story-stage")).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await hero.screenshot({ path: "test-results/cinematic-mobile.png" });
+
   expect(errors).toEqual([]);
 });
 
@@ -61,4 +63,17 @@ test("manual views hold their state until Auto resumes the director", async ({ p
   await expect(hero).toHaveAttribute("data-stage", "2");
   await hero.getByRole("button", { name: "Auto", exact: true }).click();
   await expect(hero).toHaveAttribute("data-stage", "0", { timeout: 15000 });
+});
+
+ test("phone story opens with a pinned scene and no horizontal overflow", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => localStorage.setItem("force3d", "1"));
+  await page.goto("/#story");
+  await page.getByRole("button", { name: "Begin", exact: true }).focus();
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+  const hero = page.getByTestId("cinematic-hero");
+  await expect(hero).toBeVisible();
+  await expect(page.getByText("Growing a little world…")).not.toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await hero.screenshot({ path: "test-results/cinematic-mobile.png" });
 });

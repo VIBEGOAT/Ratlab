@@ -45,6 +45,7 @@ export interface RatModelProps {
   gaitSpeed?: number;
   /** Cinematic hero only: fade organ anatomy while revealing neural paths. */
   organOpacity?: React.MutableRefObject<number>;
+  surfacePhysical?: boolean;
   xrayProgress?: React.MutableRefObject<number>;
   animationClock?: React.MutableRefObject<number>;
   cinematicFocus?: React.MutableRefObject<string | null>;
@@ -153,7 +154,8 @@ function Vessels() {
   return <group>{geo.map(({ v, g }) => <mesh key={v.id} geometry={g}><meshStandardMaterial color={v.kind === "artery" ? "#c8323c" : v.kind === "portal" ? "#8a4fb0" : "#4a6fc8"} roughness={0.5} emissive={v.kind === "artery" ? "#4a0c10" : "#101a40"} /></mesh>)}</group>;
 }
 
-export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale = 1, animate = true, quality = "high", exposure = {}, palette = "standard", sweep, sweepRef, labelMode = "grade", tempo = 1, gaitSpeed = 1, organOpacity, cinematicFocus, animationClock, xrayProgress }: RatModelProps) {
+export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale = 1, animate = true, quality = "high", exposure = {}, palette = "standard", sweep, sweepRef, labelMode = "grade", tempo = 1, gaitSpeed = 1, organOpacity, cinematicFocus, animationClock, xrayProgress, surfacePhysical = false }: RatModelProps) {
+  const surfaceOpacity = useMemo(() => new Map<THREE.Material, { opacity: number; transparent: boolean }>(), []);
   const whiskerRef = useRef<THREE.LineSegments>(null);
   const ears = useRef<Array<THREE.Group | null>>([]);
   const noseRef = useRef<THREE.Mesh>(null);
@@ -183,7 +185,7 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
   const furColor = useMemo(() => new THREE.Color("#efe8dd"), []);
   // A few close shells read as short laboratory-rat fur without the moiré shimmer of a deep shell stack.
   const shells = quality === "high" ? 7 : 0;
-  const furMats = useMemo(() => Array.from({ length: shells + 1 }, (_, i) => makeFurMaterial(uniforms, furColor, i === 0 ? 0 : i / shells, 0.028, !!animationClock)), [uniforms, furColor, shells, animationClock]);
+  const furMats = useMemo(() => Array.from({ length: shells + 1 }, (_, i) => makeFurMaterial(uniforms, furColor, i === 0 ? 0 : i / shells, 0.028, !!animationClock || surfacePhysical)), [uniforms, furColor, shells, animationClock, surfacePhysical]);
   const whiskers = useMemo(() => new Float32Array([1, -1].flatMap((z) => [-0.08, 0, 0.08].flatMap((dy) => [feat.nose[0] - 0.08, feat.nose[1] - 0.01, 0.05 * z, feat.nose[0] + 0.35, feat.nose[1] + dy * 2.5, 0.42 * z]))), [feat]);
   const xray = useMemo(() => makeXrayMaterial(uniforms, new THREE.Color("#7fe6d6")), [uniforms]);
   const skinMat = useMemo(() => new THREE.MeshStandardMaterial({ color: "#e8a9a2", roughness: 0.55 }), []);
@@ -235,11 +237,17 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
     }
     if (xrayProgress && root.current) root.current.traverse(object => {
       if (!(object instanceof THREE.Mesh || object instanceof THREE.LineSegments)) return;
+      for (let ancestor: THREE.Object3D | null = object; ancestor; ancestor = ancestor.parent) if (ancestor === anatomyRef.current) return;
       const mat = object.material;
       if (Array.isArray(mat) || furMats.includes(mat as THREE.MeshStandardMaterial) || mat === xray) return;
+      if (!surfaceOpacity.has(mat)) surfaceOpacity.set(mat, { opacity: mat.opacity, transparent: mat.transparent });
       if (!mat.transparent) { mat.transparent = true; mat.needsUpdate = true; }
-      mat.opacity = xrayProgress.current;
+      mat.opacity = surfaceOpacity.get(mat)!.opacity * xrayProgress.current;
     });
+    if (!xrayProgress && surfaceOpacity.size) {
+      surfaceOpacity.forEach((original, mat) => { mat.opacity = original.opacity; mat.transparent = original.transparent; mat.needsUpdate = true; });
+      surfaceOpacity.clear();
+    }
     uniforms.uDissolve.value = xrayProgress ? 1-xrayProgress.current : -1;
     uniforms.uTime.value = t * gaitSpeed;
     uniforms.uSweep.value = sweepRef ? sweepRef.current : sweep !== undefined ? sweep : layers.xray ? -99 : 99;

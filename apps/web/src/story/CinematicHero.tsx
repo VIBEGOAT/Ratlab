@@ -59,24 +59,32 @@ function Signals({ clock, opacity }: { clock: Clock; opacity: Clock }) {
   const curves = useMemo(neuralPaths, []);
   const geometry = useMemo(() => curves.map((curve, i) => new THREE.TubeGeometry(curve, 32, i < 43 ? .006 : .0025, 4, false)), [curves]);
   const dummy = useMemo(() => new THREE.Object3D(), []);
+  const colors = useMemo(() => COLORS.map(c => new THREE.Color(c).multiplyScalar(2)), []);
+  const lastTime = useRef(-1), lastOpacity = useRef(-1);
+  useEffect(() => {
+    if (!pulses.current) return;
+    curves.forEach((_, i) => { for (let j = 0; j < 3; j++) pulses.current!.setColorAt(i * 3 + j, colors[i % colors.length]!); });
+    if (pulses.current.instanceColor) pulses.current.instanceColor.needsUpdate = true;
+  }, [curves, colors]);
   useEffect(() => () => geometry.forEach((g) => g.dispose()), [geometry]);
   useFrame(() => {
     if (!group.current || !pulses.current) return;
     group.current.visible = opacity.current > .001;
+    if (!group.current.visible) return;
+    if (lastTime.current === clock.current && lastOpacity.current === opacity.current) return;
+    lastTime.current = clock.current; lastOpacity.current = opacity.current;
     group.current.traverse((node) => {
       if (node instanceof THREE.Mesh && node.material instanceof THREE.MeshBasicMaterial) node.material.opacity = opacity.current * .85;
     });
     curves.forEach((curve, i) => {
       for (let j = 0; j < 3; j++) {
-        dummy.position.copy(curve.getPointAt((clock.current * .72 + j / 3) % 1));
+        curve.getPointAt((clock.current * .72 + j / 3) % 1, dummy.position);
         dummy.scale.setScalar(i < 43 ? .017 : .008);
         dummy.updateMatrix();
         pulses.current!.setMatrixAt(i * 3 + j, dummy.matrix);
-        pulses.current!.setColorAt(i * 3 + j, new THREE.Color(COLORS[i % COLORS.length]!).multiplyScalar(2));
       }
     });
     pulses.current.instanceMatrix.needsUpdate = true;
-    if (pulses.current.instanceColor) pulses.current.instanceColor.needsUpdate = true;
   });
   return <group ref={group}>
     {geometry.map((g, i) => <mesh key={i} geometry={g}><meshBasicMaterial color={COLORS[i % COLORS.length]} transparent depthWrite={false} toneMapped={false} /></mesh>)}
@@ -116,6 +124,8 @@ function Scene({ animal, clock, playing, reduced, quality, manual, onStage, onSh
   const previousShot = useRef(-1);
   const lookAt = useMemo(() => new THREE.Vector3(), []);
   const focusPoint = useMemo(() => new THREE.Vector3(), []);
+  const closePosition = useMemo(() => new THREE.Vector3(), []);
+  const backdrop = useMemo(() => ({ current: new THREE.Color(), meadow: new THREE.Color("#637254"), inside: new THREE.Color("#02050c") }), []);
   const resumed = useRef(true);
   useEffect(() => { resumed.current = true; }, [playing]);
   useEffect(() => { if (body) onReady(); }, [body, onReady]);
@@ -131,7 +141,7 @@ function Scene({ animal, clock, playing, reduced, quality, manual, onStage, onSh
     natural.current = state.natural; nerves.current = state.nerves; organs.current = state.organs;
     sweep.current = state.natural >= .999 ? 99 : state.natural <= .001 ? -99 : -1.9 + state.natural * 5.1;
     if (previous.current !== state.stage) { previous.current = state.stage; onStage(state.stage); }
-    const bg = new THREE.Color("#02050c").lerp(new THREE.Color("#637254"), state.natural);
+    const bg = backdrop.current.copy(backdrop.inside).lerp(backdrop.meadow, state.natural);
     scene.background = bg;
     if (scene.fog instanceof THREE.Fog) scene.fog.color.copy(bg);
     if (ground.current) { ground.current.uniforms.natural!.value = state.natural; ground.current.uniforms.time!.value = clock.current; }
@@ -146,7 +156,7 @@ function Scene({ animal, clock, playing, reduced, quality, manual, onStage, onSh
     if (interior > .001) {
       focusPoint.set(1.02 + state.nerves * .76, .9 + state.nerves * .2, .02);
       const distance = Math.max(1.65, 1.8 / (size.width / size.height));
-      const closePosition = new THREE.Vector3(focusPoint.x + .35 * Math.sin(clock.current*.3), focusPoint.y+.48, distance);
+      closePosition.set(focusPoint.x + .35 * Math.sin(clock.current*.3), focusPoint.y+.48, distance);
       camera.position.lerp(closePosition, interior);
       lookAt.lerp(focusPoint, interior);
     }
@@ -171,7 +181,7 @@ function Scene({ animal, clock, playing, reduced, quality, manual, onStage, onSh
     <group ref={rat} visible={!!body}>
       <RatModel v={visual} layers={{ ...DEFAULT_LAYERS, xray: false, labels: false, tumor: false }} quality={quality} xrayProgress={natural} walk={reduced ? 0 : walk} gaitSpeed={1} animationClock={motionClock} animate={playing && !reduced} sweepRef={sweep} organOpacity={organs} cinematicFocus={cinematicFocus} />
       <Signals clock={motionClock} opacity={nerves} />
-      <MacroAnatomy clock={motionClock} organs={organs} nerves={nerves} />
+      <MacroAnatomy clock={motionClock} organs={organs} nerves={nerves} quality={quality} />
       <mesh ref={gutPulse}><sphereGeometry args={[.055, 12, 8]} /><meshBasicMaterial color="#ffc875" toneMapped={false} /></mesh>
     </group>
     <mesh ref={scan} position={[0, .85, 0]}><torusGeometry args={[1.05, .012, 8, 80]} /><meshBasicMaterial color="#61dfff" transparent depthWrite={false} toneMapped={false} /></mesh>

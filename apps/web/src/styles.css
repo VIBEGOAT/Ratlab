@@ -292,8 +292,8 @@ details.more[open] summary { margin-bottom: 10px; }
 .moment .big-number { color: #eef4f3; }
 .moment-caption { color: #9fb3b0; max-width: 46ch; margin: 8px auto 0; }
 @media (max-width: 900px) {
-  .story-grid { grid-template-columns: minmax(0, 1fr); }
-  .story-stage { order: -1; top: 53px; height: 42vh; z-index: 1; }
+  .story-grid { display: flex; flex-direction: column; }
+  .story-stage { order: -1; flex: none; width: 100%; top: 53px; height: 42dvh; z-index: 3; }
   .story-text { padding: 0 16px; }
   .chapter-sec { min-height: 80vh; background: transparent; }
   .chapter-sec > * { background: color-mix(in srgb, var(--bg) 82%, transparent); border-radius: 12px; }
@@ -621,3 +621,13 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
 }
 .trust-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .calc-card .small b { font: inherit; font-weight: 700; letter-spacing: 0; color: var(--ink); }
+
+.meet-frame { position: absolute; inset: 22px; z-index: 1; pointer-events: none; border: 1px solid #86d9ef30; border-radius: 20px; color: #d4eaf2; animation: meet-frame-enter .7s ease-out both; }
+.meet-frame-top, .meet-frame-bottom { position: absolute; left: 20px; right: 20px; display: flex; justify-content: space-between; gap: 12px; }
+.meet-frame-top { top: 18px; font: 9px var(--f-mono); letter-spacing: .15em; color: #91c8d8; }
+.meet-frame-bottom { bottom: 20px; align-items: end; font-size: clamp(15px,1.7vw,23px); line-height: 1.4; }
+.meet-frame-bottom strong { font-weight: 500; color: #fff; }
+.meet-frame-bottom small { font: 8px var(--f-mono); color: #91c8d8; letter-spacing: .1em; }
+@keyframes meet-frame-enter { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: scale(1); } }
+@media(max-width:900px) { .meet-frame { inset: 10px; border-radius: 12px; } .meet-frame-top, .meet-frame-bottom { left: 12px; right: 12px; } .meet-frame-top { top: 10px; font-size: 7px; } .meet-frame-bottom { bottom: 12px; font-size: 13px; } .meet-frame-bottom small { display: none; } }
+@media(prefers-reduced-motion:reduce) { .meet-frame { animation: none; } }
