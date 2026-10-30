@@ -2,7 +2,6 @@ import { Html } from "@react-three/drei";
 import { advanceStride, getTerrainHeight } from "./locomotion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { ContactShadows } from "@react-three/drei";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import * as THREE from "three";
 import type { AnimalBundle } from "@eliminate/sim-core";
@@ -19,7 +18,7 @@ import { ratAgility } from "./ratAgility";
 
 const TITLES = ["Life in motion", "Beneath the surface", "A network of signals"];
 const DESCRIPTIONS = ["A running rat in a sunlit meadow", "Cardiac & pulmonary physiology · illustrative animation", "Central nervous system · illustrative signal propagation"];
-const COLORS = ["#67e8f9", "#ff83c8", "#a6ff72", "#ffd36c", "#b29aff"];
+const COLORS = ["#78c679", "#c6df73", "#a6cf83", "#e8a855", "#f4f0ea"];
 const ORGAN_TOUR = [
   { name: "Heart", center: [1.02, .82, .04] as Vec3, function: "Pumps blood through the body", unit: "beats/min" },
   { name: "Stomach", center: [.2, .8, -.22] as Vec3, function: "Mixes food and moves it toward the intestine", unit: "cycles/min" },
@@ -93,7 +92,7 @@ function Signals({ clock, opacity }: { clock: Clock; opacity: Clock }) {
   return <group ref={group}>
     {geometry.map((g, i) => <mesh key={i} geometry={g}><meshBasicMaterial color={COLORS[i % COLORS.length]} transparent depthWrite={false} toneMapped={false} /></mesh>)}
     <instancedMesh ref={pulses} args={[undefined, undefined, curves.length * 3]} frustumCulled={false}><sphereGeometry args={[1, 8, 6]} /><meshBasicMaterial color="white" transparent depthWrite={false} toneMapped={false} /></instancedMesh>
-    <mesh position={[1.88, 1.08, 0]} scale={[.28, .17, .2]}><sphereGeometry args={[1, 24, 16]} /><meshBasicMaterial color="#91dfff" transparent wireframe depthWrite={false} /></mesh>
+    <mesh position={[1.88, 1.08, 0]} scale={[.28, .17, .2]}><sphereGeometry args={[1, 24, 16]} /><meshBasicMaterial color="#78c679" transparent wireframe depthWrite={false} /></mesh>
   </group>;
 }
 
@@ -108,6 +107,10 @@ function Scene({ animal, clock, playing, reduced, quality, manual, exitProgress,
   const cinematicFocus = useRef<string | null>(null);
   const rat = useRef<THREE.Group>(null), scan = useRef<THREE.Mesh>(null), gutPulse = useRef<THREE.Mesh>(null);
   const ratPosition = useRef(new THREE.Vector3());
+  const ratDirection = useRef(new THREE.Vector3(1,0,0));
+  const rim = useRef<THREE.DirectionalLight>(null);
+  const rimColors = useMemo(() => [new THREE.Color("#e8a855"),new THREE.Color("#e05a47"),new THREE.Color("#78c679")], []);
+  const rimColor = useMemo(() => new THREE.Color(), []);
   const poseRotation = useMemo(() => new THREE.Quaternion(), []);
   const poseEuler = useMemo(() => new THREE.Euler(), []);
   const restRotation = useMemo(() => new THREE.Quaternion(), []);
@@ -120,24 +123,27 @@ function Scene({ animal, clock, playing, reduced, quality, manual, exitProgress,
   const lookAt = useMemo(() => new THREE.Vector3(), []);
   const focusPoint = useMemo(() => new THREE.Vector3(), []);
   const closePosition = useMemo(() => new THREE.Vector3(), []);
-  const backdrop = useMemo(() => ({ current: new THREE.Color(), meadow: new THREE.Color("#e8dec3"), inside: new THREE.Color("#02050c") }), []);
+  const backdrop = useMemo(() => ({ current: new THREE.Color(), meadow: new THREE.Color("#e8dec3"), inside: new THREE.Color("#0b0a09") }), []);
   const resumed = useRef(true);
-  useEffect(() => { resumed.current = true; }, [playing]);
+  useEffect(() => { resumed.current = true; }, [playing, body]);
   useEffect(() => { if (body) onReady(); }, [body, onReady]);
-  useFrame(({ camera, size, scene }, dt) => {
-    if (playing && !reduced && !resumed.current) clock.current += dt;
+  useFrame(({ camera, size, scene }, delta) => {
+    // R3F already advances its shared clock. Never call getDelta() a second time.
+    const dt = Math.min(Math.max(delta, 0), .05);
+    // Director time follows wall time; only physical motion is capped during slow frames.
+    if (playing && !reduced && body && !resumed.current) clock.current += delta;
     resumed.current = false;
     const targetState = heroCycle(manual === null ? clock.current : HERO_STARTS[manual]! + .5);
-    const blend = reduced ? 1 : 1 - Math.exp(-Math.min(dt,.5) * 3);
+    const blend = reduced || manual === null ? 1 : 1 - Math.exp(-delta * 12);
     const state = { ...targetState, natural: THREE.MathUtils.lerp(natural.current,targetState.natural,blend), organs: THREE.MathUtils.lerp(organs.current,targetState.organs,blend), nerves: THREE.MathUtils.lerp(nerves.current,targetState.nerves,blend) };
-    if (playing && !reduced) motionClock.current += Math.min(dt,.15) * (1 - .65 * (1-state.natural));
+    if (playing && !reduced) motionClock.current += dt * (1 - .65 * (1-state.natural));
     const pose = ratAgility(motionClock.current);
     agility.current = reduced ? 0 : state.natural;
     spineFlex.current = pose.flex * state.natural * .35;
     const distanceMoved=lastX.current===null?0:Math.abs(pose.x-lastX.current);
     lastX.current=pose.x;
-    if(playing&&!reduced)stride.current=advanceStride(stride.current,distanceMoved,Math.min(dt,.15));
-    walkAmount.current=THREE.MathUtils.damp(walkAmount.current,pose.state==="scurry"?Math.min(1,distanceMoved/Math.max(dt,.001)):0,12,Math.min(dt,.15));
+    if(playing&&!reduced)stride.current=advanceStride(stride.current,distanceMoved,dt);
+    walkAmount.current=THREE.MathUtils.damp(walkAmount.current,pose.state==="scurry"?Math.min(1,distanceMoved/Math.max(dt,.001)):0,12,dt);
     walk.current=walkAmount.current*state.natural;
     environment.current=state.natural*(1-exitProgress);
     natural.current = state.natural; nerves.current = state.nerves; organs.current = state.organs;
@@ -146,6 +152,10 @@ function Scene({ animal, clock, playing, reduced, quality, manual, exitProgress,
     const bg = backdrop.current.copy(backdrop.inside).lerp(backdrop.meadow, environment.current);
     scene.background = bg;
     if (scene.fog instanceof THREE.Fog) scene.fog.color.copy(bg);
+    if (rim.current) {
+      rimColor.setRGB(...(["r","g","b"] as const).map(c => rimColors[0]![c]*state.natural + rimColors[1]![c]*state.organs + rimColors[2]![c]*state.nerves) as [number,number,number]);
+      rim.current.color.copy(rimColor);
+    }
     const shot = state.stage === 1 ? organShot(state.localTime) : { index: -1, zoom: 0 };
     cinematicFocus.current = "macro";
     if (previousShot.current !== shot.index) { previousShot.current = shot.index; onShot(shot.index); }
@@ -170,6 +180,7 @@ function Scene({ animal, clock, playing, reduced, quality, manual, exitProgress,
       poseRotation.setFromEuler(poseEuler).slerp(restRotation, 1-movement);
       rat.current.quaternion.slerp(poseRotation, reduced ? 1 : 1-Math.exp(-dt*14));
       ratPosition.current.copy(rat.current.position);
+      ratDirection.current.set(1,0,0).applyQuaternion(rat.current.quaternion);
     }
     if (scan.current) {
       scan.current.visible = state.progress > 0;
@@ -185,18 +196,17 @@ function Scene({ animal, clock, playing, reduced, quality, manual, exitProgress,
     <hemisphereLight args={["#fff8e6", "#35492e", 1.8]} />
     <directionalLight position={[-6, 2.3, -6.5]} intensity={2.5} color="#fff0d1" />
     <directionalLight position={[2, 4, 6]} intensity={1.2} color="#fff3db" />
-    <directionalLight position={[-4, 3, -5]} intensity={1.7} color="#9cceff" />
+    <directionalLight ref={rim} position={[-4, 3, -5]} intensity={1.7} color="#e8a855" />
     <MeadowAtmosphere clock={motionClock} natural={environment}/>
-    <ShaderMeadow clock={motionClock} natural={environment} quality={quality} ratPosition={ratPosition}/>
-    <MeadowDetails clock={motionClock} natural={environment} quality={quality}/>
+    <ShaderMeadow clock={motionClock} natural={environment} quality={quality} ratPosition={ratPosition} ratDirection={ratDirection}/>
+    <MeadowDetails clock={motionClock} natural={environment} quality={quality} ratPosition={ratPosition} ratDirection={ratDirection}/>
     <group ref={rat} visible={!!body}>
       <RatModel v={visual} layers={{ ...DEFAULT_LAYERS, xray: false, labels: false, tumor: false }} quality={quality} xrayProgress={natural} walk={reduced ? 0 : walk} gaitSpeed={1} stridePhase={stride} agility={agility} spineFlex={spineFlex} animationClock={motionClock} animate={playing && !reduced} sweepRef={sweep} organOpacity={organs} cinematicFocus={cinematicFocus} />
       <Signals clock={motionClock} opacity={nerves} />
       <MacroAnatomy clock={motionClock} organs={organs} nerves={nerves} quality={quality} />
       <mesh ref={gutPulse}><sphereGeometry args={[.055, 12, 8]} /><meshBasicMaterial color="#ffc875" toneMapped={false} /></mesh>
     </group>
-    <mesh ref={scan} position={[0, .85, 0]}><torusGeometry args={[1.05, .012, 8, 80]} /><meshBasicMaterial color="#61dfff" transparent depthWrite={false} toneMapped={false} /></mesh>
-    {body && <ContactShadows position={[0, -.025, 0]} opacity={.45} scale={15} blur={2.5} far={2.5} resolution={256} frames={1} />}
+    <mesh ref={scan} position={[0, .85, 0]}><torusGeometry args={[1.05, .012, 8, 80]} /><meshBasicMaterial color="#e8a855" transparent depthWrite={false} toneMapped={false} /></mesh>
   </>;
 }
 

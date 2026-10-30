@@ -24,8 +24,8 @@ export function ChapterTwin({ tw, day, split }: { tw: TwinBundle | null; day: nu
       <p className="lede">The same rat, with and without treatment. A real animal can only ever be one of these.</p>
       <p className="small muted">Drag the divider, or use the arrow keys. Day {day}.</p>
       <div className="compare" role="table" aria-label="Treated against untreated twin">
-        <div role="row" className="compare-head"><span role="columnheader"><span className="sr-only">Measure</span></span><b role="columnheader">Treated</b><b role="columnheader">Untreated</b></div>
-        {rows.map(([k, a, b]) => <div role="row" key={k}><span role="rowheader" className="muted">{k}</span><b role="cell">{a}</b><b role="cell">{b}</b></div>)}
+        <div role="row" className="compare-head"><span role="columnheader"><span className="sr-only">Measure</span></span><b role="columnheader">Untreated</b><b role="columnheader">Dosed</b></div>
+        {rows.map(([k, a, b]) => <div role="row" key={k}><span role="rowheader" className="muted">{k}</span><b role="cell">{b}</b><b role="cell">{a}</b></div>)}
       </div>
       {u.humane && <p className="small">Without treatment this rat reaches a humane endpoint on day {u.humane.day}. {t.humane ? `With treatment, on day ${t.humane.day}.` : "With treatment, it does not."}</p>}
       <span className="sr-only">Divider at {Math.round(split * 100)} percent.</span>

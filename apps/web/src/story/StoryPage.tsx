@@ -1,3 +1,4 @@
+import { TwinTelemetry } from "./TwinComparison";
 import { PathologyHUD, type BridgeOrgan } from "./StoryDetails";
 /* eslint-disable jsx-a11y/no-noninteractive-tabindex --
    The animals-spared figure is focusable so its assumptions (a tooltip) are available to keyboard users. */
@@ -12,14 +13,13 @@ import { COMPOUNDS, ORGAN_LABEL } from "../lib/setup";
 import { fmt, fmtInt, fmtPct } from "../design/format";
 import { GRADE_WORD, gradeVar } from "../design/damage";
 import { ratVisualState } from "../three/ratState";
-import { SceneBoundary, force3d, softwareGraphics, webglAvailable } from "../three/webgl";
-import { ChapterBehaviour, ChapterFinale, ChapterForecast, ChapterHuman, ChapterTrust, ChapterTwin, scaleDose } from "./chapters";
+import { force3d, softwareGraphics, webglAvailable } from "../three/webgl";
+import { ChapterBehaviour, ChapterFinale, ChapterForecast, ChapterTrust, ChapterTwin, scaleDose } from "./chapters";
 import { ForecastField, HumanScale, SplitDivider } from "./overlays";
 import { useStoryScroll, type StoryPos } from "./useStoryScroll";
 import { DoseDial } from "./Dial";
 import type { Quality } from "../three/RatModel";
 
-const ArenaScene = lazy(() => import("../three/ArenaScene").then((m) => ({ default: m.ArenaScene })));
 const StoryScene = lazy(() => import("./StoryScene").then((m) => ({ default: m.StoryScene })));
 
 
@@ -101,9 +101,9 @@ function storyMoment(tw: TwinBundle | null): { who: "treated" | "untreated"; day
 }
 
 function useThemeBackground(): string {
-  const [bg, setBg] = useState("#0f1617");
+  const [bg, setBg] = useState("#141210");
   useEffect(() => {
-    const read = () => setBg(getComputedStyle(document.documentElement).getPropertyValue("--surface-2").trim() || "#0f1617");
+    const read = () => setBg(getComputedStyle(document.documentElement).getPropertyValue("--surface-2").trim() || "#141210");
     read();
     const mo = new MutationObserver(read);
     mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
@@ -208,7 +208,6 @@ export function StoryPage() {
   const twinDay = u?.humane ? Math.min(days, u.humane.day) : days;
   const noael = study.data?.noael.noael ?? null;
   const scaled = scaleDose(noael);
-  const humanP = pos.chapter === 9 ? Math.min(1, Math.max(0, (pos.progress - 0.15) / 0.6)) : pos.chapter > 9 ? 1 : 0;
   const paused = pos.chapter === 7 || pos.chapter === 8;
   const damageDay = pos.chapter === 4 ? Math.min(days, Math.round(Math.min(1, pos.progress / 0.85) * days)) : days;
   const vDay = t ? ratVisualState(t, damageDay) : null;
@@ -216,6 +215,7 @@ export function StoryPage() {
   const humaneCount = animals.filter((a) => a.terminalReason === "humane").length;
   const firstHumaneDay = animals.filter((a) => a.terminalReason === "humane").reduce((m, a) => Math.min(m, a.terminalDay), Infinity);
   const ref = ARCHETYPES[setup.compoundKey] ?? ARCHETYPES.cardiotoxin!;
+  const targetOrgan:Organ=setup.compoundKey.includes("hepato")?"liver":setup.compoundKey.includes("nephro")?"kidney":setup.compoundKey.includes("neuro")?"brain":setup.compoundKey.includes("myelo")?"marrow":"heart";
   const mult = setup.highDose / ref.defaultDoseMgPerKg;
   const signs = vDay ? ([["Weight loss", vDay.wasting * 2], ["Hunched posture", vDay.hunch], ["Ruffled fur", vDay.piloerection], ["Jaundice", vDay.jaundice], ["Red tears", vDay.tears], ["Tremor", vDay.tremor], ["Cataract", vDay.cataract], ["Tumour", vDay.tumorRadius > 0.15 ? 1 : 0]] as Array<[string, number]>).filter(([, x]) => x > 0.2) : [];
   const momentT = pos.chapter === 5 ? pos.progress : 0;
@@ -223,7 +223,7 @@ export function StoryPage() {
   const showLine = (from: number) => reduce || momentT > from;
 
   return (
-    <main className="story" id="main">
+    <main className="story" id="main" data-active-chapter={pos.chapter}>
       <div className="story-hero-grid" style={{opacity:pos.chapter===0?1:0,transition:reduce?"none":"opacity .6s ease"}}><div className="story-text">          {/* 1 · hero */}
           <section data-chapter={0} className="chapter-sec hero-sec" aria-labelledby="c0">
             <div className="eyebrow">Replace · Reduce · Refine</div>
@@ -331,7 +331,7 @@ export function StoryPage() {
           </section>
 
           {/* 8 · forecast */}
-          <section data-chapter={7} className="chapter-sec tall" aria-labelledby="c7">
+          <section data-chapter={7} className="chapter-sec cohort-chapter" aria-labelledby="c7">
             <div className="sticky-block">
               <span className="n">08</span>
               <h2 id="c7">A thousand rats.</h2>
@@ -347,12 +347,12 @@ export function StoryPage() {
           </section>
 
           {/* 10 · humans */}
-          <section data-chapter={9} className="chapter-sec" aria-labelledby="c9">
-            <div className="sticky-block">
-              <span className="n">10</span>
-              <h2 id="c9">Toward humans.</h2>
-              <ChapterHuman noael={noael} scaled={scaled} />
-            </div>
+          <section data-chapter={9} className="chapter-sec human-chapter" aria-labelledby="c9">
+            <span className="n">10</span>
+            <h2 id="c9">Toward humans.</h2>
+            <p className="lede">Across species. Through evidence.</p>
+            <p className="small muted">Select an organ to connect the two models.</p>
+            <div className="translation-overlay"><HumanScale ratDose={noael} hedDose={scaled.hed} selected={bridgeOrgan} onSelect={setBridgeOrgan} inputDose={setup.highDose} clearance={ref.clIntLPerHPerKg*1000/60} /></div>
           </section>
 
           {/* 11 · trust */}
@@ -370,14 +370,14 @@ export function StoryPage() {
           </section>
         </div>
 
-        <div className="story-stage" ref={stageRef} aria-hidden={pos.chapter === 5 ? true : undefined}>
-          {gl ? (
+        <div className="story-stage" data-chapter-view={pos.chapter} ref={stageRef} aria-hidden={pos.chapter === 5 ? true : undefined}>
+          <div className="story-canvas">{gl ? (
             <Suspense fallback={<div className="poster"><RatPoster /></div>}>
-              <StoryScene posRef={posRef as React.MutableRefObject<StoryPos>} chapter={pos.chapter} doseReplay={doseReplay} bridgeOrgan={bridgeOrgan} onBridgeOrgan={setBridgeOrgan} targetOrgan={setup.compoundKey.includes("hepato")?"liver":setup.compoundKey.includes("nephro")?"kidney":setup.compoundKey.includes("neuro")?"brain":setup.compoundKey.includes("myelo")?"marrow":"heart"} treated={t} untreated={u} day={damageDay} moment={moment} exposure={exposure} plasmaRef={plasmaRef}
+              <StoryScene posRef={posRef as React.MutableRefObject<StoryPos>} chapter={pos.chapter} doseReplay={doseReplay} bridgeOrgan={bridgeOrgan} onBridgeOrgan={setBridgeOrgan} targetOrgan={targetOrgan} treated={t} untreated={u} day={damageDay} moment={moment} exposure={exposure} plasmaRef={plasmaRef}
                 reduceMotion={reduce} palette={cb ? "cb" : "standard"} quality={quality} background={bg} paused={paused} splitRef={splitRef} twinDay={twinDay} />
 
             </Suspense>
-          ) : <div className="poster"><RatPoster /></div>}
+          ) : <div className="poster"><RatPoster /></div>}</div>
 
           {glOk && software && (
             <div className="gl-note" role="status">
@@ -390,11 +390,11 @@ export function StoryPage() {
           {pos.chapter === 3 && <div className="stage-scientific-note">Oral route → gut → portal liver → circulation → renal clearance<br/>Bio-tracers illustrate model transport; glow is normalized to each tissue’s peak.</div>}
           {pos.chapter===4&&t&&<PathologyHUD day={damageDay} days={days} volume={t.daily.tumorVolume[damageDay]??0}/>}
           {pos.chapter===2&&<div className="target-organ-callout"><strong>{setup.compoundKey.includes("hepato")?"Liver / hepatic lobes":setup.compoundKey.includes("nephro")?"Kidneys / renal tissue":setup.compoundKey.includes("neuro")?"Brain / CNS":setup.compoundKey.includes("myelo")?"Bone marrow":"Heart / myocardium"}</strong><p>{ref.description}</p></div>}
-          {pos.chapter === 6 && t && u && <div className="comparison-heatmap">{(["heart","liver","kidney"] as Organ[]).map(o=><span key={o}>{ORGAN_LABEL[o]} <b style={{color:gradeVar(ratVisualState(t,twinDay).organs[o].grade)}}>{GRADE_WORD[ratVisualState(t,twinDay).organs[o].grade]}</b><b style={{color:gradeVar(ratVisualState(u,twinDay).organs[o].grade)}}>{GRADE_WORD[ratVisualState(u,twinDay).organs[o].grade]}</b></span>)}</div>}
+          {pos.chapter === 6 && t && u && <TwinTelemetry treated={t} untreated={u} day={twinDay} target={targetOrgan} split={split}/>}
           {pos.chapter === 6 && t && u && <SplitDivider split={split} onChange={setSplit} stage={stageRef} />}
           {pos.chapter === 7 && <div className="stage-overlay"><ForecastField strain={setup.strain} onStrain={strain=>setSetup({strain})} outcomes={popMode === "treated" ? population.treated : population.untreated} total={population.total / 2 || 1000} mode={popMode} palette={cb ? "cb" : "standard"} sorted={sorted && population.status === "done"} /></div>}
 
-          {pos.chapter === 9 && <div className="translation-overlay"><HumanScale progress={humanP} ratDose={noael} hedDose={scaled.hed} ratLabel="rat dose, no adverse effect" selected={bridgeOrgan} onSelect={setBridgeOrgan} inputDose={setup.highDose} clearance={ref.clIntLPerHPerKg*1000/60} /></div>}
+
           {!t && study.status === "error" ? (
             <div className="stage-status" role="alert">
               <span>We couldn’t prepare this virtual study.</span>
@@ -405,7 +405,7 @@ export function StoryPage() {
       </div>
 
       {/* the humane endpoint moment: calm, dignified, no alarms */}
-      <div className="moment" style={{ opacity: dim > 0 ? 1 : 0, background: `radial-gradient(ellipse, rgba(12,37,49,${dim}), rgba(6,17,30,${dim}))`, visibility: dim > 0 ? "visible" : "hidden" }} aria-live="polite">
+      <div className="moment" style={{ opacity: dim > 0 ? 1 : 0, background: `rgba(11,10,9,${dim})`, visibility: dim > 0 ? "visible" : "hidden" }} aria-live="polite">
         {pos.chapter === 5 && (
           <div className="moment-inner">
             {moment ? (

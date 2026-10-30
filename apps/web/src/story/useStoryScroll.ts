@@ -29,9 +29,11 @@ export function useStoryScroll(): { pos: StoryPos; ref: React.MutableRefObject<S
     };
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(measure); };
     measure();
+    const observer = new ResizeObserver(onScroll);
+    document.querySelectorAll("[data-chapter]").forEach(el=>observer.observe(el));
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
-    return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); cancelAnimationFrame(raf); };
+    return () => { observer.disconnect(); window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); cancelAnimationFrame(raf); };
   }, []);
   return { pos, ref };
 }

@@ -1,18 +1,21 @@
-.cinematic-hero { position: absolute; inset: 0; overflow: hidden; background: #02050c; color: #fff; }
-.cinematic-hero::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg,#02050c55,transparent 24%,transparent 60%,#02050cdd); }
-.cinematic-top { position: absolute; z-index: 1; top: 30px; left: 30px; right: 30px; display: flex; justify-content: space-between; gap: 16px; font: 10px var(--f-mono); letter-spacing: .15em; color: #e0edeb; }
+.cinematic-hero { position: absolute; inset: 0; overflow: hidden; background: #0b0a09; color: #fff; }
+.cinematic-hero::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg,#0b0a0955,transparent 24%,transparent 60%,#0b0a09dd); }
+.cinematic-top { position: absolute; z-index: 1; top: 30px; left: 30px; right: 30px; display: flex; justify-content: space-between; gap: 16px; font: 10px var(--f-mono); letter-spacing: .15em; color: #f4f0ea; }
 .cinematic-caption { position: absolute; z-index: 1; bottom: 120px; left: 30px; right: 25px; pointer-events: none; }
 .cinematic-caption p { font-size: clamp(22px,2.8vw,36px); font-weight: 500; letter-spacing: -.04em; margin-bottom: 8px; }
-.cinematic-caption span { color: #d5e2e8; font-size: 12px; }
-.cinematic-rate { margin-top: 10px; color: #b5e5ff; font-size: 13px; }
+.cinematic-caption span { color: #d4cec3; font-size: 12px; }
+.cinematic-rate { margin-top: 10px; color: #e8a855; font-size: 13px; }
 .cinematic-rate strong { font-size: 28px; font-variant-numeric: tabular-nums; font-weight: 500; }
-.cinematic-rate small { display: block; color: #d5e2e8; font-size: 10px; margin-top: 2px; }
-.cinematic-caption[data-organ] { left: 24px; right: auto; bottom: 120px; max-width: 250px; padding: 14px 18px; border: 1px solid #657c9255; border-radius: 15px; background: #06101bd9; backdrop-filter: blur(14px); }
+.cinematic-rate small { display: block; color: #d4cec3; font-size: 10px; margin-top: 2px; }
+.cinematic-caption[data-organ] { left: 24px; right: auto; bottom: 120px; max-width: 250px; padding: 14px 18px; border: 1px solid #b8aa9255; border-radius: 15px; background: #141210d9; backdrop-filter: blur(14px); }
 @media(max-width:760px) { .cinematic-caption[data-organ] { bottom: 100px; left: 12px; padding: 8px 12px; max-width: 210px; } .cinematic-caption[data-organ] p { font-size: 19px; margin-bottom: 3px; } .cinematic-rate { margin-top: 4px; } .cinematic-rate strong { font-size: 22px; } }
 .cinematic-controls { position: absolute; z-index: 2; bottom: 62px; left: 30px; right: 30px; display: flex; gap: 5px; flex-wrap: wrap; }
-.cinematic-controls button { color: #e4ecf5; background: #091522c9; border: 1px solid #657c9280; padding: 9px 14px; font-size: 12px; backdrop-filter: blur(12px); }
-.cinematic-controls button[aria-pressed="true"] { background: #b5e5ff; color: #082035; border-color: #b5e5ff; }
-.cinematic-controls button:last-child { margin-left: auto; }
-.cinematic-note { position: absolute; z-index: 1; bottom: 28px; left: 30px; color: #c4d2de; font-size: 10px; }
-.cinematic-loading { position: absolute; inset: 0; display: grid; place-items: center; background: #111c1b; z-index: 3; color: #e4ecf5; }
+.cinematic-controls button { color: #f4f0ea; background: #141210c9; border: 1px solid #b8aa9280; padding: 9px 14px; font-size: 12px; backdrop-filter: blur(12px); }
+.cinematic-controls button[aria-pressed="true"] { background: #e8a855; color: #201307; border-color: #e8a855; }
+.cinematic-controls button[aria-label$="cinematic scene"] { margin-left: auto; }
+.cinematic-note { position: absolute; z-index: 1; bottom: 28px; left: 30px; color: #d4cec3; font-size: 10px; }
+.cinematic-loading { position: absolute; inset: 0; display: grid; place-items: center; background: #141210; z-index: 3; color: #f4f0ea; }
 @media(max-width:760px) { .cinematic-top { top: 16px; left: 16px; right: 16px; font-size: 8px; } .cinematic-caption { bottom: 100px; left: 16px; } .cinematic-caption span { font-size: 10px; } .cinematic-controls { left: 16px; right: 16px; bottom: 47px; } .cinematic-controls button { padding: 7px 10px; font-size: 10px; } .cinematic-note { bottom: 17px; left: 16px; font-size: 9px; } }
+
+.cinematic-controls button { transition: background .2s cubic-bezier(.16,1,.3,1), color .2s ease, transform .2s ease; min-height: 40px; }
+@media(prefers-reduced-motion:reduce) { .cinematic-controls button { transition: none; } }

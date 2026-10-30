@@ -101,13 +101,13 @@ export function OpenField({ t, u, day }: { t: AnimalBundle; u: AnimalBundle; day
   const telemetry=useMemo(()=>behaviorTelemetry(control?u:t),[control,t,u]);
   return (
     <>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}><planeGeometry args={[S, S]} /><meshStandardMaterial color="#2c3a3a" /></mesh>
-      <Line points={[[-S / 4, 0.01, -S / 4], [S / 4, 0.01, -S / 4], [S / 4, 0.01, S / 4], [-S / 4, 0.01, S / 4], [-S / 4, 0.01, -S / 4]]} color="#7a8b8a" dashed dashSize={0.15} gapSize={0.1} lineWidth={1} />
-      {[[0, -S / 2, S, 0.2], [0, S / 2, S, 0.2], [-S / 2, 0, 0.2, S], [S / 2, 0, 0.2, S]].map(([x, z, w, d], i) => <mesh key={i} position={[x!, 0.15, z!]}><boxGeometry args={[w!, 0.3, d!]} /><meshStandardMaterial color="#445555" /></mesh>)}
-      <group visible={!control}><RecentTrail bundle={t} color="#3fd0b8" size={S-.6}/></group>
-      <group visible={control}><RecentTrail bundle={u} color="#91adcd" size={S-.6}/></group>
-      <group visible={!control}><ArenaRat bundle={t} day={day} pose={treatedPose} color="#3fd0b8" label="Dosed" labelVisible={!control} /></group>
-      <group visible={control}><ArenaRat bundle={u} day={day} pose={controlPose} color="#8a9bad" label="Control" labelVisible={control} /></group>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}><planeGeometry args={[S, S]} /><meshStandardMaterial color="#24211d" /></mesh>
+      <Line points={[[-S / 4, 0.01, -S / 4], [S / 4, 0.01, -S / 4], [S / 4, 0.01, S / 4], [-S / 4, 0.01, S / 4], [-S / 4, 0.01, -S / 4]]} color="#9c978b" dashed dashSize={0.15} gapSize={0.1} lineWidth={1} />
+      {[[0, -S / 2, S, 0.2], [0, S / 2, S, 0.2], [-S / 2, 0, 0.2, S], [S / 2, 0, 0.2, S]].map(([x, z, w, d], i) => <mesh key={i} position={[x!, 0.15, z!]}><boxGeometry args={[w!, 0.3, d!]} /><meshStandardMaterial color="#444037" /></mesh>)}
+      <group visible={!control}><RecentTrail bundle={t} color="#e8a855" size={S-.6}/></group>
+      <group visible={control}><RecentTrail bundle={u} color="#78c679" size={S-.6}/></group>
+      <group visible={!control}><ArenaRat bundle={t} day={day} pose={treatedPose} color="#e8a855" label="Dosed" labelVisible={!control} /></group>
+      <group visible={control}><ArenaRat bundle={u} day={day} pose={controlPose} color="#78c679" label="Control" labelVisible={control} /></group>
       <Html fullscreen calculatePosition={(_,__,size)=>[size.width/2,size.height/2]} style={{pointerEvents:"none"}}><div className="arena-readout"><div role="group" aria-label="Open field comparison"><button aria-pressed={!control} onClick={()=>setControl(false)}>Dosed</button><button aria-pressed={control} onClick={()=>setControl(true)}>Control</button></div><div className="arena-kpis"><span>Velocity<strong>{telemetry.velocity.toFixed(1)} cm/s</strong></span><span>Exploration<strong>{telemetry.exploration.toFixed(1)} entries/min</strong></span><span>Rest<strong>{(telemetry.rest*100).toFixed(0)}%</strong></span></div><small>50 cm arena calibration · center-entry proxy · rearing not modelled</small></div></Html>
     </>
   );
@@ -118,12 +118,12 @@ function Maze({ t, u, day }: { t: AnimalBundle; u: AnimalBundle; day: number }) 
   const goal = t.waterMaze.platform;
   return (
     <>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}><planeGeometry args={[S, S]} /><meshStandardMaterial color="#27465a" /></mesh>
-      {Array.from({ length: G + 1 }, (_, i) => <Line key={`a${i}`} points={[[-S / 2 + i * c, 0.005, -S / 2], [-S / 2 + i * c, 0.005, S / 2]]} color="#4f7a96" lineWidth={1} />)}
-      {Array.from({ length: G + 1 }, (_, i) => <Line key={`b${i}`} points={[[-S / 2, 0.005, -S / 2 + i * c], [S / 2, 0.005, -S / 2 + i * c]]} color="#4f7a96" lineWidth={1} />)}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}><planeGeometry args={[S, S]} /><meshStandardMaterial color="#24211d" /></mesh>
+      {Array.from({ length: G + 1 }, (_, i) => <Line key={`a${i}`} points={[[-S / 2 + i * c, 0.005, -S / 2], [-S / 2 + i * c, 0.005, S / 2]]} color="#665f51" lineWidth={1} />)}
+      {Array.from({ length: G + 1 }, (_, i) => <Line key={`b${i}`} points={[[-S / 2, 0.005, -S / 2 + i * c], [S / 2, 0.005, -S / 2 + i * c]]} color="#665f51" lineWidth={1} />)}
       <mesh position={[((goal[0] + 0.5) / G - 0.5) * S, 0.03, ((goal[1] + 0.5) / G - 0.5) * S]}><cylinderGeometry args={[c * 0.35, c * 0.35, 0.06, 20]} /><meshStandardMaterial color="#e0a050" /></mesh>
-      <ArenaRat bundle={t} day={day} pose={routePose(t, S, 3)} color="#3fd0b8" label="Treated" />
-      <ArenaRat bundle={u} day={day} pose={routePose(u, S, 3)} color="#8a9bad" label="Untreated twin" />
+      <ArenaRat bundle={t} day={day} pose={routePose(t, S, 3)} color="#e8a855" label="Treated" />
+      <ArenaRat bundle={u} day={day} pose={routePose(u, S, 3)} color="#78c679" label="Untreated twin" />
     </>
   );
 }
@@ -146,8 +146,8 @@ function HomeCage({ t, u, day, hoursPerSec }: { t: AnimalBundle; u: AnimalBundle
       <mesh position={[2.6, 0.35, -1.2]}><cylinderGeometry args={[0.15, 0.15, 0.7, 12]} /><meshStandardMaterial color="#6db3ff" transparent opacity={0.7} /></mesh>
       <mesh position={[0, 0.1, 1.3]}><torusGeometry args={[0.6, 0.15, 8, 20]} /><meshStandardMaterial color="#c9b98a" /></mesh>
       <Html position={[0, 1.6, -1.8]} center><div ref={label} style={{ font: "500 12px 'IBM Plex Mono', monospace", padding: "2px 8px", background: "rgba(10,20,19,0.85)", color: "#e3efed", borderRadius: 4, whiteSpace: "nowrap" }}>00:00</div></Html>
-      <ArenaRat bundle={t} day={day} pose={homePose(t, day, clock, 0)} color="#3fd0b8" label="Treated" />
-      <ArenaRat bundle={u} day={day} pose={homePose(u, day, clock, 7)} color="#8a9bad" label="Untreated twin" />
+      <ArenaRat bundle={t} day={day} pose={homePose(t, day, clock, 0)} color="#e8a855" label="Treated" />
+      <ArenaRat bundle={u} day={day} pose={homePose(u, day, clock, 7)} color="#78c679" label="Untreated twin" />
     </>
   );
 }

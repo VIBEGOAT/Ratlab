@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-test('separate hero, staged reveal and chapter controls preserve the anatomy canvas',async({page})=>{
+test('chapter controls preserve the single anatomy canvas',async({page})=>{
  const errors:string[]=[];
  page.on('pageerror',e=>errors.push(e.message));
  page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
@@ -18,7 +18,7 @@ test('separate hero, staged reveal and chapter controls preserve the anatomy can
  for(const b of await page.locator('.story-cards button').all()) {await b.click(); await expect(canvas).toHaveAttribute('data-identity','stable');}
  await jump(3);await expect(page.locator('.pk-story-card')).toContainText('Cmax');
  await jump(7);await expect(page.locator('.population-matrix')).toBeVisible();
- await jump(9);await expect(page.locator('.translation-telemetry')).toContainText('Rat intrinsic clearance input');
+ await jump(9);await page.getByRole('tab',{name:'Clearance',exact:true}).click();await expect(page.locator('.translation-telemetry')).toContainText('Rat intrinsic clearance input');
  await page.setViewportSize({width:390,height:844});await jump(1);
  await expect(page.locator('.story-stage')).toBeInViewport();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);

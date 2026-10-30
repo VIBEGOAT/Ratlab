@@ -63,10 +63,10 @@ export default function RatViewport(p: ViewportProps) {
     }} style={{ touchAction: "pan-y" }}>
     <hemisphereLight args={["#ffffff", "#a6a8b1", 2.4]} />
     <directionalLight position={[3, 7, 5]} intensity={3} color="#fff8f2" />
-    <directionalLight position={[-4, 3, -4]} intensity={2} color="#d2e4ff" />
+    <directionalLight position={[-4, 3, -4]} intensity={2} color="#e9dfca" />
     <RatModel v={visual} layers={layers} selected={p.inside ? p.selected : null} onSelect={p.onSelect}
       animate={p.animate && p.active} quality={narrow ? "low" : "high"} palette={p.palette} />
-    {body && <ContactShadows key={`${p.day}-${p.inside}`} position={[0, 0, 0]} frames={1} opacity={0.22} scale={13} blur={2.5} far={2} resolution={256} color="#57627b" />}
+    {body && <ContactShadows key={`${p.day}-${p.inside}`} position={[0, 0, 0]} frames={1} opacity={0.22} scale={13} blur={2.5} far={2} resolution={256} color="#645b4d" />}
     <OrbitControls makeDefault target={[-0.4, 0.8, 0]} enableZoom={false} enablePan={false} enableDamping={false}
       minPolarAngle={0.25} maxPolarAngle={Math.PI * 0.48} touches={{ ONE: undefined, TWO: THREE.TOUCH.DOLLY_ROTATE }} />
     <Camera angle={p.angle} focus={focus} resetKey={p.resetKey} />

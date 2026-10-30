@@ -29,9 +29,9 @@ export interface RatSceneProps {
 
 /** Theme background read from CSS, so WebGL matches the page in both themes. */
 function useThemeBackground(): string {
-  const [bg, setBg] = useState("#0d1213");
+  const [bg, setBg] = useState("#141210");
   useEffect(() => {
-    const read = () => setBg(getComputedStyle(document.documentElement).getPropertyValue("--surface-2").trim() || "#0d1213");
+    const read = () => setBg(getComputedStyle(document.documentElement).getPropertyValue("--surface-2").trim() || "#141210");
     read();
     const mo = new MutationObserver(read);
     mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
@@ -94,12 +94,12 @@ export function RatScene(p: RatSceneProps) {
       <fog attach="fog" args={[bg, 14, 30]} />
       {p.quality === "auto" && <PerformanceMonitor onDecline={() => setAutoQ("low")} flipflops={2} onFallback={() => setAutoQ("low")} />}
       <AdaptiveDpr pixelated={false} />
-      <hemisphereLight args={["#dfefff", "#2a2420", 0.55]} />
+      <hemisphereLight args={["#f4f0ea", "#2a2420", 0.55]} />
       <directionalLight position={[4, 7, 5]} intensity={1.6} color="#fff6ea" />
-      <directionalLight position={[-6, 3, -4]} intensity={0.9} color="#9fe8ff" />
+      <directionalLight position={[-6, 3, -4]} intensity={0.9} color="#e8a855" />
       <Environment resolution={q === "high" ? 256 : 64}>
         <Lightformer form="rect" intensity={2.2} position={[0, 6, 3]} scale={[10, 4, 1]} />
-        <Lightformer form="rect" intensity={1.2} position={[-6, 2, -3]} rotation-y={Math.PI / 2} scale={[8, 3, 1]} color="#bff3ff" />
+        <Lightformer form="rect" intensity={1.2} position={[-6, 2, -3]} rotation-y={Math.PI / 2} scale={[8, 3, 1]} color="#e9dfca" />
         <Lightformer form="ring" intensity={1.5} position={[5, 3, -5]} scale={3} color="#ffe2c0" />
       </Environment>
 

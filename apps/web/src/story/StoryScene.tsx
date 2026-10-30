@@ -1,8 +1,9 @@
+import { EditorialStudio } from "./EditorialStudio";
 import { OralAdministration, OrganBridge, BehaviorEntry, type BridgeOrgan } from "./StoryDetails";
 import CinematicHero from "./CinematicHero";
 import { OpenField } from "../three/ArenaScene";
-import { MolecularAura, HumanHologram, PedestalTicks, AdministrationPortal } from "./ScientificStage";
-import { useEffect, useMemo, useRef } from "react";
+import { MolecularAura, HumanHologram } from "./ScientificStage";
+import { useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { ContactShadows, Environment, Lightformer } from "@react-three/drei";
 import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
@@ -25,7 +26,7 @@ const SHOTS: Array<{ pos: Vec3; target: Vec3 }> = [
   { pos: [0.4, 1.7, 9.4], target: [-0.7, 0.8, 0] },   // 6 untreated twin (side view for the split)
   { pos: [3.2, 2.4, 9.6], target: [-0.8, 0.75, 0] },  // 7 forecast (covered by the dot field)
   { pos: [3.2, 2.4, 9.6], target: [-0.8, 0.75, 0] },  // 8 behaviour (covered by the arena)
-  { pos: [3.2, 2.4, 9.6], target: [-0.8, 0.75, 0] },  // 9 humans (covered by the scale-up)
+  { pos: [1.2, 3.0, 11.0], target: [0, 1.4, 0] },         // 9 translation
   { pos: [3.6, 2.2, 9.8], target: [-0.8, 0.8, 0] },   // 10 trust
   { pos: [3.6, 2.2, 9.8], target: [-0.8, 0.8, 0] },   // 11 finale
 ];
@@ -120,43 +121,60 @@ function DoseFlow({ plasmaRef, visible }: { plasmaRef: React.MutableRefObject<nu
   return (
     <instancedMesh ref={inst} args={[undefined, undefined, N]} frustumCulled={false}>
       <sphereGeometry args={[1, 8, 6]} />
-      <meshBasicMaterial color="#5ff5dc" toneMapped={false} />
+      <meshBasicMaterial color="#e8a855" toneMapped={false} />
     </instancedMesh>
   );
 }
 
-/** Renders the same scene twice with a scissor: the treated rat left of the divider, its untreated twin right of it. */
+/** Independent viewports preserve the whole silhouette on both sides of the divider. */
 function SplitRenderer({ splitRef, a, b }: { splitRef: React.MutableRefObject<number>; a: React.RefObject<THREE.Group>; b: React.RefObject<THREE.Group> }) {
-  useFrame(({ gl, scene, camera, size }) => {
-    const ga = a.current, gb = b.current;
-    if (!ga || !gb) return;
-    const split = splitRef.current;
+  const camera = useMemo(() => new THREE.PerspectiveCamera(36, 1, .05, 450), []);
+  useFrame(({ gl, scene, size }) => {
+    if (!a.current || !b.current) return;
+    const divider = Math.round(size.width * splitRef.current);
+    const renderHalf = (x: number, width: number, control: boolean) => {
+      a.current!.visible = control; b.current!.visible = !control;
+      camera.aspect = width / size.height;
+      const distance = Math.max(8.6, 4.4 / (Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect));
+      camera.position.set(.2, .8 + distance * .1, distance);
+      camera.lookAt(-.65, .8, 0);
+      camera.updateProjectionMatrix();
+      gl.setViewport(x, 0, width, size.height);
+      gl.setScissor(x, 0, width, size.height);
+      gl.render(scene, camera);
+    };
     gl.setScissorTest(true);
-    gl.setViewport(0, 0, size.width, size.height);
-    ga.visible = true; gb.visible = false;
-    gl.setScissor(0, 0, Math.round(size.width * split), size.height);
-    gl.render(scene, camera);
-    ga.visible = false; gb.visible = true;
-    gl.setScissor(Math.round(size.width * split), 0, size.width - Math.round(size.width * split), size.height);
-    gl.render(scene, camera);
+    renderHalf(0, divider, true);
+    renderHalf(divider, size.width - divider, false);
     gl.setScissorTest(false);
-    ga.visible = true; gb.visible = false;
+    gl.setViewport(0, 0, size.width, size.height);
+    a.current.visible = true; b.current.visible = false;
   }, 1);
   return null;
 }
 
-function TwinRats({ splitRef, treated, untreated, day, palette, quality }: { splitRef: React.MutableRefObject<number>; treated: AnimalBundle; untreated: AnimalBundle; day: number; palette: "standard" | "cb"; quality: Quality }) {
-  const a = useRef<THREE.Group>(null), b = useRef<THREE.Group>(null);
+function TwinPulse({ color, clock, amount = 1 }: { color: string; clock: React.MutableRefObject<number>; amount?: number }) {
+  const points = useRef<THREE.InstancedMesh>(null);
+  const curve = useMemo(() => new THREE.CatmullRomCurve3(VESSELS.find(v=>v.id==='aorta')!.path.map(p=>new THREE.Vector3(...p))), []);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+  useFrame(() => {
+    if (!points.current) return;
+    for (let i=0;i<24;i++) { const phase=(i/24+clock.current*.18)%1; curve.getPointAt(phase,dummy.position);dummy.scale.setScalar(.012*amount*Math.sin(phase*Math.PI));dummy.updateMatrix();points.current.setMatrixAt(i,dummy.matrix); }
+    points.current.instanceMatrix.needsUpdate=true;
+  });
+  return <instancedMesh ref={points} args={[undefined,undefined,24]} frustumCulled={false}><sphereGeometry args={[1,8,6]}/><meshBasicMaterial color={color}/></instancedMesh>;
+}
+
+function TwinRats({ splitRef, treated, untreated, day, palette, quality, target, reduced }: { splitRef: React.MutableRefObject<number>; treated: AnimalBundle; untreated: AnimalBundle; day: number; palette: "standard" | "cb"; quality: Quality; target: Organ; reduced: boolean }) {
+  const a = useRef<THREE.Group>(null), b = useRef<THREE.Group>(null), time = useRef(0);
   const vt = useMemo(() => ratVisualState(treated, day), [treated, day]);
   const vu = useMemo(() => ratVisualState(untreated, day), [untreated, day]);
-  const layers: Layers = { ...DEFAULT_LAYERS, xray: false, labels: false };
-  return (
-    <>
-      <group ref={a}><RatModel v={vt} layers={layers} palette={palette} quality={quality} /></group>
-      <group ref={b} visible={false}><RatModel v={vu} layers={layers} palette={palette} quality={quality} /></group>
-      <SplitRenderer splitRef={splitRef} a={a} b={b} />
-    </>
-  );
+  useFrame((_,delta)=>{if(!reduced)time.current+=Math.min(delta,.05);});
+  return <>
+    <group ref={a} name="untreated-twin"><RatModel v={vu} layers={{...DEFAULT_LAYERS,xray:false,labels:false}} animationClock={time} animate={!reduced} physiologyTiming palette={palette} quality={quality} highlightColor="#78c679"/><TwinPulse color="#78c679" clock={time}/></group>
+    <group ref={b} name="dosed-twin" visible={false}><RatModel v={vt} layers={{...DEFAULT_LAYERS,xray:true,skeleton:true,labels:false}} cutaway selected={target} exposure={{[target]:.75}} animationClock={time} animate={!reduced} physiologyTiming palette={palette} quality={quality} highlightColor="#e05a47"/><TwinPulse color="#e05a47" clock={time} amount={1.7}/></group>
+    <SplitRenderer splitRef={splitRef} a={a} b={b}/>
+  </>;
 }
 
 function Turntable({ chapter, reduceMotion, children, posRef }: { chapter: number; reduceMotion: boolean; children: React.ReactNode; posRef: React.MutableRefObject<StoryPos> }) {
@@ -188,25 +206,7 @@ function SweepRat({ posRef, v, layers, palette, quality, chapter, exposure, temp
     if (entrance.current) { entrance.current.scale.setScalar(c === 1 ? .94 + .06 * reveal : 1); entrance.current.position.y = c === 1 ? .1 * (1-reveal) : 0; }
     sweepRef.current = c === 1 ? slice : c >= 2 ? -99 : 99;
   });
-  return <group ref={entrance}>{chapter===1&&<mesh ref={scanPlane} position={[3.1,1,0]}><boxGeometry args={[.018,2.4,1.5]}/><meshBasicMaterial color="#79d7ef" transparent opacity={.15} depthWrite={false}/></mesh>}<RatModel v={v} layers={layers} surfacePhysical={true} onLungSelect={onLungSelect} onSelect={onSelect} selected={selected??null} animate={!reduceMotion} palette={palette} quality={quality} sweepRef={sweepRef} labelMode={chapter === 1 ? "names" : "grade"} exposure={exposure} tempo={tempo} /></group>;
-}
-
-/** A fixed studio backdrop: stable lighting and a subtle illuminated stage at every quality. */
-function AnatomyStudio() {
-  const motes=useMemo(()=>{const p=new Float32Array(180);for(let i=0;i<60;i++){p[i*3]=Math.sin(i*31.4)*8;p[i*3+1]=.3+(i%19)*.22;p[i*3+2]=Math.cos(i*14.1)*5-1;}return p;},[]);
-  return <group>
-    <PedestalTicks/>
-    <points><bufferGeometry><bufferAttribute attach="attributes-position" array={motes} count={60} itemSize={3}/></bufferGeometry><pointsMaterial size={.018} color="#9fcbd3" transparent opacity={.2} depthWrite={false}/></points>
-    <mesh position={[-.4,1.8,0]}><coneGeometry args={[4.2,3.6,48,1,true]}/><meshBasicMaterial color="#63bbcf" transparent opacity={.004} depthWrite={false} side={THREE.DoubleSide}/></mesh>
-    <mesh position={[0,1,-4]}>
-      <planeGeometry args={[40,24]}/>
-      <shaderMaterial depthWrite={false} vertexShader="varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}" fragmentShader="varying vec2 vUv; void main(){vec2 p=(vUv-.5)*vec2(2.,1.); float halo=exp(-dot(p,p)*14.); gl_FragColor=vec4(mix(vec3(.008,.018,.035),vec3(.025,.15,.20),halo),1.);}"/>
-    </mesh>
-    {[3.8,4.2].map((r,i)=><mesh key={r} rotation={[-Math.PI/2,0,0]} position={[-.4,-.035-i*.005,0]}><ringGeometry args={[r,r+.012,128]}/><meshBasicMaterial color={i===0?'#4fc9d9':'#38738c'} transparent opacity={i===0?.35:.16} depthWrite={false}/></mesh>)}
-    <mesh position={[-.4,-.16,0]}><cylinderGeometry args={[4.3,4.4,.22,96]}/><meshStandardMaterial color="#183242" metalness={.35} roughness={.8}/></mesh>
-    <mesh rotation={[-Math.PI/2,0,0]} position={[-.4,-.038,0]}><planeGeometry args={[32,32]}/><shaderMaterial transparent depthWrite={false} vertexShader="varying vec2 uvp;void main(){uvp=uv*32.-16.;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}" fragmentShader="varying vec2 uvp;void main(){vec2 edge=abs(fract(uvp)-.5);float grid=1.-smoothstep(.005,.025,min(edge.x,edge.y));float fade=exp(-length(uvp)*.2);gl_FragColor=vec4(.18,.45,.55,grid*fade*.14);}"/></mesh>
-    <pointLight position={[-2,2,-2]} color="#75e3e9" intensity={1.5} distance={9}/>
-  </group>;
+  return <group ref={entrance}>{chapter===1&&<mesh ref={scanPlane} position={[3.1,1,0]}><boxGeometry args={[.018,2.4,1.5]}/><meshBasicMaterial color="#e8a855" transparent opacity={.15} depthWrite={false}/></mesh>}<RatModel v={v} layers={layers} surfacePhysical={true} onLungSelect={onLungSelect} onSelect={onSelect} selected={selected??null} animate={!reduceMotion} palette={palette} quality={quality} sweepRef={sweepRef} labelMode={chapter === 1 ? "names" : "grade"} exposure={exposure} tempo={tempo} /></group>;
 }
 
 function StudioContent(p: StorySceneProps) {
@@ -217,24 +217,24 @@ function StudioContent(p: StorySceneProps) {
   const layers: Layers = { ...DEFAULT_LAYERS, xray: p.chapter >= 2 && p.chapter <= 5, labels: p.chapter===2 || (p.chapter === 1 && p.posRef.current.progress > .28) || p.chapter === 4, vessels: p.chapter >= 1, tumor: p.chapter >= 4 && p.chapter <= 6 };
   const split = p.chapter === 6 && p.treated && p.untreated;
   const tempo = p.chapter === 5 ? 0.25 : 1;
-  const background = "#07121e";
+  const background = "#0b0a09";
   return (
     <>
       <color attach="background" args={[background]} />
-      <fog attach="fog" args={[background, 12, 26]} />
-      <hemisphereLight args={["#dfefff", "#2a2420", 0.55]} />
+      {!split && <fog attach="fog" args={[background, 12, 26]} />}
+      <hemisphereLight args={["#f4f0ea", "#2a2420", 0.55]} />
       <directionalLight position={[4, 7, 5]} intensity={1.6} color="#fff6ea" />
-      <directionalLight position={[-6, 3, -4]} intensity={1.0} color="#9fe8ff" />
+      <directionalLight position={[-6, 3, -4]} intensity={1.0} color="#e8a855" />
       <Environment resolution={p.quality === "high" ? 256 : 64}>
         <Lightformer form="rect" intensity={2.2} position={[0, 6, 3]} scale={[10, 4, 1]} />
-        <Lightformer form="rect" intensity={1.2} position={[-6, 2, -3]} rotation-y={Math.PI / 2} scale={[8, 3, 1]} color="#bff3ff" />
+        <Lightformer form="rect" intensity={1.2} position={[-6, 2, -3]} rotation-y={Math.PI / 2} scale={[8, 3, 1]} color="#e9dfca" />
       </Environment>
-      <AnatomyStudio />
+      <EditorialStudio chapter={p.chapter} neural={p.targetOrgan === "brain" && p.chapter === 2} />
       {p.chapter === 2 && <MolecularAura />}
       {p.chapter === 9 && <><HumanHologram selected={p.bridgeOrgan} onSelect={p.onBridgeOrgan}/><OrganBridge organ={p.bridgeOrgan??"heart"}/></>}
-      {p.chapter === 3 && <OralAdministration key={p.doseReplay} posRef={p.posRef}/>}
+      {p.chapter === 3 && <OralAdministration key={p.doseReplay}/>}
       <CameraChoreo posRef={p.posRef} reduceMotion={p.reduceMotion} />
-      {split && p.treated && p.untreated && <TwinRats splitRef={p.splitRef} treated={p.treated} untreated={p.untreated} day={p.twinDay} palette={p.palette} quality={p.quality} />}
+      {split && p.treated && p.untreated && <TwinRats splitRef={p.splitRef} treated={p.treated} untreated={p.untreated} day={p.twinDay} palette={p.palette} quality={p.quality} target={p.targetOrgan??"heart"} reduced={p.reduceMotion} />}
       {v && !split && p.chapter!==7 && (
         <group position={p.chapter===9?[-2,0,0]:[0,0,0]} scale={p.chapter===9?.55:1}><Turntable chapter={p.chapter} reduceMotion={p.reduceMotion} posRef={p.posRef}>
           <SweepRat posRef={p.posRef} v={v} layers={layers} palette={p.palette} quality={p.quality} chapter={p.chapter} exposure={p.chapter === 3 ? p.exposure : p.chapter === 2 && p.targetOrgan ? {[p.targetOrgan]:.65} : {}} tempo={tempo} reduceMotion={p.reduceMotion} onLungSelect={p.chapter===9?()=>p.onBridgeOrgan?.("lungs"):undefined} selected={p.chapter===9&&p.bridgeOrgan!=="lungs"?p.bridgeOrgan:p.targetOrgan} onSelect={p.chapter===9?o=>{if(o!=="gut"&&o!=="marrow")p.onBridgeOrgan?.(o);}:undefined} />
@@ -253,10 +253,10 @@ function StudioContent(p: StorySceneProps) {
   );
 }
 
-function ArenaCamera(){useFrame(({camera},dt)=>{camera.position.lerp(new THREE.Vector3(0,6.5,6.5),1-Math.exp(-dt*5));camera.lookAt(0,0,0);});return null;}
+function ArenaCamera(){const target=useMemo(()=>new THREE.Vector3(0,6.5,6.5),[]);useFrame(({camera},dt)=>{camera.position.lerp(target,1-Math.exp(-Math.min(dt,.05)*5));camera.lookAt(0,0,0);});return null;}
 export function StoryScene(p:StorySceneProps){
  const heroClock=useRef(0);
  return <Canvas onCreated={fastShaders} camera={{position:[3,3,10],fov:40,near:.05,far:450}} dpr={[1,1.25]} gl={{antialias:true,powerPreference:"high-performance"}} style={{touchAction:"pan-y"}}>
-  {p.chapter===0&&p.treated?<CinematicHero animal={p.treated} reduced={p.reduceMotion} quality={p.quality} storyExit={THREE.MathUtils.smoothstep(p.posRef.current.progress,.8,1)} embedded clockRef={heroClock}/>:p.chapter===8&&p.treated&&p.untreated?<><color attach="background" args={["#07121e"]}/><ambientLight intensity={.8}/><directionalLight position={[3,8,4]}/><ArenaCamera/><BehaviorEntry posRef={p.posRef} reduced={p.reduceMotion}><OpenField t={p.treated} u={p.untreated} day={p.day}/></BehaviorEntry></>:<StudioContent {...p}/>}
+  {p.chapter===0&&p.treated?<CinematicHero animal={p.treated} reduced={p.reduceMotion} quality={p.quality} storyExit={THREE.MathUtils.smoothstep(p.posRef.current.progress,.8,1)} embedded clockRef={heroClock}/>:p.chapter===8&&p.treated&&p.untreated?<><color attach="background" args={["#0b0a09"]}/><ambientLight intensity={.8}/><directionalLight position={[3,8,4]}/><ArenaCamera/><BehaviorEntry posRef={p.posRef} reduced={p.reduceMotion}><OpenField t={p.treated} u={p.untreated} day={p.day}/></BehaviorEntry></>:<StudioContent {...p}/>}
  </Canvas>;
 }
