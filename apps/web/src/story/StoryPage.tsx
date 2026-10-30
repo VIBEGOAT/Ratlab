@@ -125,6 +125,17 @@ export function StoryPage() {
   // Automatic quality is fixed for the visit: changing materials mid-scroll caused visible flashes.
   const quality: Quality = qualitySetting === "auto" ? "low" : qualitySetting;
   const bg = useThemeBackground();
+  const [entryPhase, setEntryPhase] = useState<"ready" | "fade" | "initialize">("ready");
+  const previousChapter = useRef(0);
+  useEffect(() => {
+    const entering = pos.chapter === 1 && previousChapter.current === 0 && !reduce;
+    previousChapter.current = pos.chapter;
+    if (!entering) { setEntryPhase("ready"); return; }
+    setEntryPhase("fade");
+    const fade = window.setTimeout(() => setEntryPhase("initialize"), 600);
+    const ready = window.setTimeout(() => setEntryPhase("ready"), 2000);
+    return () => { clearTimeout(fade); clearTimeout(ready); };
+  }, [pos.chapter, reduce]);
   const [glOk, setGlOk] = useState(false);
   // paint the page with the poster first, then bring the live 3D scene up when the browser is idle
   const [sceneReady, setSceneReady] = useState(false);
@@ -171,7 +182,7 @@ export function StoryPage() {
   // smooth scrolling, never under reduced motion
   useEffect(() => {
     if (reduce) return;
-    const lenis = new Lenis({ lerp: 0.09, smoothWheel: true });
+    const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
     let id = 0;
     const raf = (t: number) => { lenis.raf(t); id = requestAnimationFrame(raf); };
     id = requestAnimationFrame(raf);
@@ -205,9 +216,7 @@ export function StoryPage() {
   const noael = study.data?.noael.noael ?? null;
   const scaled = scaleDose(noael);
   const humanP = pos.chapter === 9 ? Math.min(1, Math.max(0, (pos.progress - 0.15) / 0.6)) : pos.chapter > 9 ? 1 : 0;
-  const paused = pos.chapter >= 7 && pos.chapter <= 9;
-  const heroExit = Math.min(1, Math.max(0, (pos.progress - .78) / .22));
-  const heroOpacity = reduce ? 1 : 1 - heroExit * heroExit * (3 - 2 * heroExit);
+  const paused = pos.chapter === 7 || pos.chapter === 8;
   const damageDay = pos.chapter === 4 ? Math.min(days, Math.round(Math.min(1, pos.progress / 0.85) * days)) : days;
   const vDay = t ? ratVisualState(t, damageDay) : null;
   const animals = study.data?.study.animals ?? [];
@@ -222,9 +231,7 @@ export function StoryPage() {
 
   return (
     <main className="story" id="main">
-      <div className="story-grid">
-        <div className="story-text">
-          {/* 1 · hero */}
+      <div className="story-hero-grid" style={{opacity:pos.chapter===0?1:0,transition:reduce?"none":"opacity .6s ease"}}><div className="story-text">          {/* 1 · hero */}
           <section data-chapter={0} className="chapter-sec hero-sec" aria-labelledby="c0">
             <div className="eyebrow">Replace · Reduce · Refine</div>
             <h1 id="c0">Every animal we spare starts with a simulation <span className="accent">we can trust.</span></h1>
@@ -244,6 +251,9 @@ export function StoryPage() {
             </div>
           </section>
 
+</div><div className="story-hero-viewport">{gl && t ? <SceneBoundary fallback={<div className="poster"><RatPoster /></div>}><Suspense fallback={<div className="poster"><RatPoster /></div>}><CinematicHero animal={t} reduced={reduce} quality={quality} /></Suspense></SceneBoundary> : <div className="poster"><RatPoster /></div>}</div></div>
+      <div className="story-grid">
+        <div className="story-text">
           {/* 2 · meet the rat */}
           <section data-chapter={1} className="chapter-sec" aria-labelledby="c1">
             <span className="n">02</span>
@@ -286,6 +296,7 @@ export function StoryPage() {
                 <div><span className="eyebrow">Heart tissue</span><b>{fmt(t.tissue.heart[hour] ?? 0, 2)}</b><span className="small muted">mg/L</span></div>
               </div>
             )}
+            {t && <div className="pk-story-card"><span className="eyebrow">Plasma exposure · first 24 hours</span><svg viewBox="0 0 300 100" role="img" aria-label="Simulated plasma concentration over the first 24 hours"><polyline fill="none" stroke="var(--accent)" strokeWidth="2" points={t.plasma.slice(0,25).map((c,i)=>`${12+i*11.5},${90-c/Math.max(...t.plasma.slice(0,25),1e-9)*75}`).join(" ")}/><line x1={12+hour*11.5} x2={12+hour*11.5} y1="8" y2="95" stroke="var(--ink)" strokeDasharray="3 3"/></svg><small>Cmax {Math.max(...t.plasma.slice(0,25)).toFixed(2)} mg/L · Tmax {t.plasma.slice(0,25).indexOf(Math.max(...t.plasma.slice(0,25)))} h</small></div>}
             <p className="small muted">Glow shows where the drug is, scaled to each organ's own peak. Concentrations come from the PBPK model.</p>
             </div>
           </section>
@@ -365,14 +376,15 @@ export function StoryPage() {
           </section>
         </div>
 
-        <div className="story-stage" ref={stageRef} aria-hidden={pos.chapter === 5 ? true : undefined}>
+        <div className="story-stage" data-entry={entryPhase} ref={stageRef} aria-hidden={pos.chapter === 5 ? true : undefined}>
           {gl ? (
             <Suspense fallback={<div className="poster"><RatPoster /></div>}>
-              <StoryScene posRef={posRef as React.MutableRefObject<StoryPos>} chapter={pos.chapter} treated={t} untreated={u} day={damageDay} moment={moment} exposure={exposure} plasmaRef={plasmaRef}
+              <StoryScene posRef={posRef as React.MutableRefObject<StoryPos>} chapter={pos.chapter} targetOrgan={setup.compoundKey.includes("hepato")?"liver":setup.compoundKey.includes("nephro")?"kidney":setup.compoundKey.includes("neuro")?"brain":setup.compoundKey.includes("marrow")?"marrow":"heart"} treated={t} untreated={u} day={damageDay} moment={moment} exposure={exposure} plasmaRef={plasmaRef}
                 reduceMotion={reduce} palette={cb ? "cb" : "standard"} quality={quality} background={bg} paused={paused || pos.chapter === 0} splitRef={splitRef} twinDay={twinDay} />
-              {pos.chapter === 0 && t && <div className="story-hero-layer" style={{ opacity: heroOpacity, pointerEvents: heroOpacity < .15 ? "none" : undefined }} aria-hidden={heroOpacity < .15 ? true : undefined}><SceneBoundary fallback={<div className="poster"><RatPoster /></div>}><CinematicHero animal={t} reduced={reduce} quality={qualitySetting === "auto" ? (window.innerWidth > 900 ? "high" : "low") : quality} /></SceneBoundary></div>}
+
             </Suspense>
           ) : <div className="poster"><RatPoster /></div>}
+          {entryPhase !== "ready" && <div className="story-initialize" role="status"><span>VAST / LIVING SYSTEMS</span><strong>A living system.<br/>Ready to explore.</strong><small>Initializing the anatomy studio</small></div>}
           {glOk && software && (
             <div className="gl-note" role="status">
               <span>Software graphics detected, so live 3D is paused to keep the page responsive.</span>
@@ -380,10 +392,13 @@ export function StoryPage() {
             </div>
           )}
           {pos.chapter === 1 && <div className="meet-frame" aria-hidden="true"><div className="meet-frame-top"><span>VAST / ANATOMY STUDIO</span><span>02 — EXPLORE</span></div><div className="meet-frame-bottom"><span>A living system.<br/><strong>Revealed, layer by layer.</strong></span><small>SCROLL TO LOOK INSIDE ↓</small></div></div>}
+          {pos.chapter === 2 && <div className="stage-scientific-note">Illustrative binding motif · target highlighting · not a real molecular structure</div>}
+          {pos.chapter === 3 && <div className="stage-scientific-note">Oral route → gut → portal liver → circulation → renal clearance<br/>Bio-tracers illustrate model transport; glow is normalized to each tissue’s peak.</div>}
+          {pos.chapter === 6 && t && u && <div className="comparison-heatmap">{(["heart","liver","kidney"] as Organ[]).map(o=><span key={o}>{ORGAN_LABEL[o]} <b style={{color:gradeVar(ratVisualState(t,twinDay).organs[o].grade)}}>{GRADE_WORD[ratVisualState(t,twinDay).organs[o].grade]}</b><b style={{color:gradeVar(ratVisualState(u,twinDay).organs[o].grade)}}>{GRADE_WORD[ratVisualState(u,twinDay).organs[o].grade]}</b></span>)}</div>}
           {pos.chapter === 6 && t && u && <SplitDivider split={split} onChange={setSplit} stage={stageRef} />}
           {pos.chapter === 7 && <div className="stage-overlay"><ForecastField outcomes={popMode === "treated" ? population.treated : population.untreated} total={population.total / 2 || 1000} mode={popMode} palette={cb ? "cb" : "standard"} sorted={sorted && population.status === "done"} /></div>}
           {pos.chapter === 8 && t && u && gl && <div className="stage-overlay"><SceneBoundary fallback={<div className="poster"><RatPoster /></div>}><Suspense fallback={null}><ArenaScene mode="open" treated={t} untreated={u} day={days} hoursPerSec={1} /></Suspense></SceneBoundary></div>}
-          {pos.chapter === 9 && <div className="stage-overlay center"><HumanScale progress={humanP} ratDose={noael} hedDose={scaled.hed} ratLabel="rat dose, no adverse effect" /></div>}
+          {pos.chapter === 9 && <div className="translation-overlay"><HumanScale progress={humanP} ratDose={noael} hedDose={scaled.hed} ratLabel="rat dose, no adverse effect" /></div>}
           {!t && study.status === "error" ? (
             <div className="stage-status" role="alert">
               <span>We couldn’t prepare this virtual study.</span>
@@ -394,7 +409,7 @@ export function StoryPage() {
       </div>
 
       {/* the humane endpoint moment: calm, dignified, no alarms */}
-      <div className="moment" style={{ opacity: dim > 0 ? 1 : 0, background: `rgba(4, 6, 7, ${dim})`, visibility: dim > 0 ? "visible" : "hidden" }} aria-live="polite">
+      <div className="moment" style={{ opacity: dim > 0 ? 1 : 0, background: `radial-gradient(ellipse, rgba(12,37,49,${dim}), rgba(6,17,30,${dim}))`, visibility: dim > 0 ? "visible" : "hidden" }} aria-live="polite">
         {pos.chapter === 5 && (
           <div className="moment-inner">
             {moment ? (

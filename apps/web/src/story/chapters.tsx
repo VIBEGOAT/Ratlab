@@ -1,3 +1,4 @@
+import { behaviorTelemetry } from "../three/behaviorTelemetry";
 import { useMemo, useState } from "react";
 import { CONSTANTS, CONTEXT_PRESETS, FIDELITY, REFERENCES, animalsSpared, listUnverifiedConstants, assessCredibility, humanEquivalentDose, kaplanMeier, maxRecommendedStartingDose, wilson, type AnimalBundle, type RatOutcome, type TwinBundle } from "@eliminate/sim-core";
 import { LineChart } from "../components/Chart";
@@ -64,7 +65,7 @@ export function ChapterForecast({ pop, days, progress, doseMgPerKg, mode, setMod
         <button type="button" aria-pressed={mode === "treated"} onClick={() => setMode("treated")}>Treated</button>
         <button type="button" aria-pressed={mode === "untreated"} onClick={() => setMode("untreated")}>Untreated</button>
       </div>
-      <label className="checks small"><input type="checkbox" checked={sorted} onChange={(e) => setSorted(e.target.checked)} />Group dots by outcome</label>
+      <label className="checks small"><input type="checkbox" checked={sorted} onChange={(e) => setSorted(e.target.checked)} />Order bands by severity</label>
       {mode === "treated" && (
         <div className="legend" aria-label="Colour key">{GRADE_WORD.map((w, g) => <span key={w}><i style={{ background: GRADE_VAR[g] }} />{w} {counts[g]}</span>)}<span><i style={{ background: "transparent", border: "2px solid var(--ink)", height: 8, width: 8, borderRadius: 4 }} />humane endpoint</span></div>
       )}
@@ -83,20 +84,10 @@ export function ChapterForecast({ pop, days, progress, doseMgPerKg, mode, setMod
 /** Chapter 9. Behaviour, labelled as modelled. */
 export function ChapterBehaviour({ tw }: { tw: TwinBundle | null }) {
   if (!tw) return null;
-  const last = tw.treated.days;
-  const pair = (k: string, label: string): [string, number, number] => [label, tw.treated.daily.behaviour[k]![last]!, tw.untreated.daily.behaviour[k]![last]!];
-  const rows = [pair("activityIndex", "Activity"), pair("explorationIndex", "Exploration"), pair("socialInteractionIndex", "Social interaction"), pair("anxietyLike", "Anxiety-like state")];
-  return (
-    <>
-      <p className="lede">A sick rat moves less, explores less and keeps to itself.</p>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}><Fidelity id="behaviour" /><span className="small muted">Modelled endpoints, not what the animal feels.</span></div>
-      <div className="compare" role="table" aria-label="Behaviour, treated against untreated">
-        <div role="row" className="compare-head"><span role="columnheader"><span className="sr-only">Measure</span></span><b role="columnheader">Treated</b><b role="columnheader">Untreated</b></div>
-        {rows.map(([k, a, b]) => <div role="row" key={k}><span role="rowheader" className="muted">{k}</span><b role="cell">{fmt(a, 2)}</b><b role="cell">{fmt(b, 2)}</b></div>)}
-      </div>
-      <p className="small muted">Open-field tracks on the last study day. 1.00 is the animal's own healthy baseline.</p>
-    </>
-  );
+  const t=behaviorTelemetry(tw.treated),u=behaviorTelemetry(tw.untreated);
+  const rows: Array<[string,string,string]> = [["Locomotor velocity",`${t.velocity.toFixed(1)} / ${u.velocity.toFixed(1)} cm/s`,'50 cm arena calibration'],["Exploration",`${t.exploration.toFixed(1)} / ${u.exploration.toFixed(1)} entries/min`,'Center entries; rearing is not modelled'],["Rest index",`${(t.rest*100).toFixed(0)}% / ${(u.rest*100).toFixed(0)}%`,'Intervals below the movement threshold']];
+  return <><p className="lede">Open-field actigraphy. One clear comparison.</p><p className="small muted">Dosed / control · illustrative tracks</p><div className="behavior-kpis">{rows.map(([label,value,note])=><div key={label}><span className="eyebrow">{label}</span><strong>{value}</strong><small>{note}</small></div>)}</div><Fidelity id="behaviour"/></>;
+
 }
 
 /** Chapter 10. Toward humans. Arithmetic only. */
@@ -111,7 +102,7 @@ export function ChapterHuman({ noael, scaled }: { noael: number | null; scaled: 
         <div className="forecast-stats">
           <div><span className="eyebrow">Rat NOAEL</span><b>{fmt(noael, 1)}</b><span className="small muted">mg/kg/day</span></div>
           <div><span className="eyebrow">Human equivalent</span><b>{fmt(scaled.hed, 2)}</b><span className="small muted">mg/kg/day</span></div>
-          <div><span className="eyebrow">Suggested first dose</span><b>{fmt(scaled.mrsdMg, 1)}</b><span className="small muted">mg for 60 kg, after a 10× safety factor</span></div>
+          <div><span className="eyebrow">Illustrative starting-dose arithmetic</span><b>{fmt(scaled.mrsdMg, 1)}</b><span className="small muted">mg for 60 kg, after a 10× safety factor</span></div>
         </div>
       )}
       <p className="small muted">This is scaling arithmetic on a simulated NOAEL of a fictional compound. It has not been compared with any human outcome and must never guide a real dose.</p>

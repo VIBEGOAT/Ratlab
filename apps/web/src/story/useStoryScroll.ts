@@ -19,6 +19,9 @@ export function useStoryScroll(): { pos: StoryPos; ref: React.MutableRefObject<S
       let best: StoryPos = { chapter: 0, progress: 0 };
       for (const el of els) {
         const r = el.getBoundingClientRect();
+        const clamp=(v:number)=>Math.max(0,Math.min(1,v));
+        const presence=Math.min(clamp((window.innerHeight*.95-r.top)/(window.innerHeight*.25)),clamp((r.bottom-window.innerHeight*.15)/(window.innerHeight*.25)));
+        el.style.setProperty("--chapter-presence",presence.toFixed(3));
         if (r.top <= mid) best = { chapter: Number(el.dataset.chapter), progress: Math.min(1, Math.max(0, (mid - r.top) / Math.max(1, r.height))) };
       }
       ref.current = best;

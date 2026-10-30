@@ -22,7 +22,7 @@ test("cinematic hero renders all views, pauses, and fits mobile", async ({ page 
   expect((await new AxeBuilder({ page }).include(".cinematic-hero").analyze()).violations).toEqual([]);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
-  await expect(page.locator(".story-stage")).toBeInViewport();
+  await expect(hero).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 
   expect(errors).toEqual([]);

@@ -1,4 +1,5 @@
-import { useMemo, useRef } from "react";
+import { MolecularAura, HumanHologram, PedestalTicks, AdministrationPortal } from "./ScientificStage";
+import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { ContactShadows, Environment, Lightformer } from "@react-three/drei";
 import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
@@ -30,6 +31,7 @@ export interface StorySceneProps {
   /** scroll position, read every frame */
   posRef: React.MutableRefObject<StoryPos>;
   chapter: number;
+  targetOrgan?: Organ;
   treated: AnimalBundle | null;
   untreated: AnimalBundle | null;
   /** the day shown during "damage unfolds" */
@@ -55,11 +57,12 @@ function CameraChoreo({ posRef, reduceMotion }: { posRef: React.MutableRefObject
   const camera = useThree((s) => s.camera);
   const size = useThree((s) => s.size);
   const target = useRef(new THREE.Vector3(...SHOTS[0]!.target));
+  const position=useMemo(()=>new THREE.Vector3(),[]),look=useMemo(()=>new THREE.Vector3(),[]);
   useFrame((state, dt) => {
     const { chapter, progress } = posRef.current;
     const shot = SHOTS[Math.min(chapter, SHOTS.length - 1)]!;
-    const p = new THREE.Vector3(...shot.pos);
-    const tg = new THREE.Vector3(...shot.target);
+    const p = position.set(...shot.pos);
+    const tg = look.set(...shot.target);
     if (chapter <= 1) {
       const reveal = reduceMotion ? .6 : THREE.MathUtils.smoothstep(chapter === 0 ? 0 : progress, 0, .7);
       p.set(2.1 - reveal * 1.5, 2.4 - reveal * .65, 10 - reveal * 1.2);
@@ -70,7 +73,7 @@ function CameraChoreo({ posRef, reduceMotion }: { posRef: React.MutableRefObject
     // the rat is long and low: on narrow or square stages, back off so the whole body stays in frame
     const fit = Math.max(1, 1.45 / Math.max(0.3, size.width / Math.max(1, size.height)));
     p.sub(tg).multiplyScalar(fit).add(tg);
-    const k = reduceMotion || chapter <= 1 ? 1 : 1 - Math.exp(-dt * 2.2);
+    const k = reduceMotion ? 1 : 1 - Math.pow(.92,Math.min(dt,.1)*60);
     camera.position.lerp(p, k);
     target.current.lerp(tg, k);
     camera.lookAt(target.current);
@@ -87,21 +90,22 @@ function DoseFlow({ plasmaRef, visible }: { plasmaRef: React.MutableRefObject<nu
     const aorta = VESSELS.find((v) => v.id === "aorta")!.path;
     const portal = VESSELS.find((v) => v.id === "portal")!.path;
     const gut = gutPath().filter((_, i) => i % 6 === 0);
-    const pts: Vec3[] = [ORGAN_SHAPES.stomach[0]!.center, ...gut, ...portal, ORGAN_SHAPES.liver[0]!.center, [0.6, 0.95, -0.03], ...vena.slice(3), ORGAN_SHAPES.heart[0]!.center, ...aorta.slice(0, 4), [-0.22, 1.08, 0.2]];
+    const pts: Vec3[] = [ORGAN_SHAPES.stomach[0]!.center, ...gut, ...portal, ORGAN_SHAPES.liver[0]!.center, [0.6, 0.95, -0.03], ...vena.slice(3), ORGAN_SHAPES.heart[0]!.center, [1.15,1.05,-.25], [1,1.2,.25], ORGAN_SHAPES.heart[0]!.center, ...aorta.slice(0, 4), [-0.22, 1.08, 0.2]];
     return new THREE.CatmullRomCurve3(pts.map((p) => new THREE.Vector3(...p)));
   }, []);
   const dummy = useMemo(() => new THREE.Object3D(), []);
   useFrame((state) => {
     const m = inst.current;
     if (!m) return;
-    const level = visible ? plasmaRef.current : 0;
+    m.visible=visible; if(!visible)return;
+    const level = plasmaRef.current;
     const t = state.clock.elapsedTime;
     for (let i = 0; i < N; i++) {
       const on = i / N < Math.max(0.05, level);
       const u = (i / N + t * 0.08) % 1;
-      const p = curve.getPointAt(u);
-      dummy.position.copy(p);
-      dummy.scale.setScalar(on && visible ? 0.022 + 0.012 * Math.sin(t * 6 + i) : 0.0001);
+      curve.getPointAt(u,dummy.position);
+      const fade=Math.sin(u*Math.PI);
+      dummy.scale.setScalar(on ? .026*fade*fade : .0001);
       dummy.updateMatrix();
       m.setMatrixAt(i, dummy.matrix);
     }
@@ -113,21 +117,6 @@ function DoseFlow({ plasmaRef, visible }: { plasmaRef: React.MutableRefObject<nu
       <meshBasicMaterial color="#5ff5dc" toneMapped={false} />
     </instancedMesh>
   );
-}
-
-/** The dose itself: a small capsule travelling from the mouth down to the stomach. */
-function Pill({ posRef }: { posRef: React.MutableRefObject<StoryPos> }) {
-  const ref = useRef<THREE.Mesh>(null);
-  const curve = useMemo(() => new THREE.CatmullRomCurve3([[3.6, 0.92, 0], [2.95, 0.86, 0], [2.2, 0.9, 0], [1.4, 0.92, -0.05], [0.6, 0.85, -0.15], ORGAN_SHAPES.stomach[0]!.center].map((p) => new THREE.Vector3(...(p as Vec3)))), []);
-  useFrame(() => {
-    const { chapter, progress } = posRef.current;
-    const m = ref.current;
-    if (!m) return;
-    const show = chapter === 3 && progress < 0.22;
-    m.visible = show;
-    if (show) m.position.copy(curve.getPointAt(Math.min(1, progress / 0.2)));
-  });
-  return <mesh ref={ref} rotation={[0, 0, Math.PI / 2]}><capsuleGeometry args={[0.035, 0.08, 6, 12]} /><meshStandardMaterial color="#f2b14c" emissive="#f2b14c" emissiveIntensity={0.8} toneMapped={false} /></mesh>;
 }
 
 /** Renders the same scene twice with a scissor: the treated rat left of the divider, its untreated twin right of it. */
@@ -165,35 +154,46 @@ function TwinRats({ splitRef, treated, untreated, day, palette, quality }: { spl
 }
 
 function Turntable({ chapter, reduceMotion, children }: { chapter: number; reduceMotion: boolean; children: React.ReactNode }) {
-  return <group rotation={[0, chapter === 0 && reduceMotion ? -0.5 : 0, 0]}>{children}</group>;
+  const root=useRef<THREE.Group>(null),phase=useRef(0),manualUntil=useRef(0),time=useRef(0);
+  useFrame((_,dt)=>{time.current+=Math.min(dt,.1);const active=chapter===1||chapter===11;if(active&&!reduceMotion&&time.current>manualUntil.current)phase.current+=Math.min(dt,.1)*.35;if(root.current)root.current.rotation.y=THREE.MathUtils.damp(root.current.rotation.y,active?phase.current:0,5,Math.min(dt,.1));});
+  return <group ref={root} onPointerMove={e=>{if(e.buttons===1&&(chapter===1||chapter===11)){phase.current+=e.movementX*.01;manualUntil.current=time.current+8;}}}>{children}</group>;
 }
 
-function SweepRat({ posRef, v, layers, palette, quality, chapter, exposure, tempo }: {
-  posRef: React.MutableRefObject<StoryPos>; v: ReturnType<typeof ratVisualState>; layers: Layers; palette: "standard" | "cb"; quality: Quality; chapter: number; exposure: Partial<Record<Organ, number>>; tempo: number;
+function SweepRat({ posRef, v, layers, palette, quality, chapter, exposure, tempo, reduceMotion }: {
+  posRef: React.MutableRefObject<StoryPos>; v: ReturnType<typeof ratVisualState>; layers: Layers; palette: "standard" | "cb"; quality: Quality; chapter: number; exposure: Partial<Record<Organ, number>>; tempo: number; reduceMotion: boolean;
 }) {
   // fur below the sweep line, X-ray above it; the line runs head to tail as the reader scrolls chapter 1
   const sweepRef = useRef(99);
-  const exterior = useRef(1);
+  const scanTime=useRef(0);
   const entrance = useRef<THREE.Group>(null);
-  useFrame(() => {
+  const scanPlane=useRef<THREE.Mesh>(null);
+  useFrame((_,dt) => {
+    if(!reduceMotion) scanTime.current+=Math.min(dt,.1);
+    const slice=.55+2.6*Math.cos(scanTime.current*.5);
+    if(scanPlane.current)scanPlane.current.position.x=slice;
     const { chapter: c, progress } = posRef.current;
     const reveal = THREE.MathUtils.smoothstep(progress, 0, .7);
-    exterior.current = c === 1 ? .82 - .74 * reveal : 1;
     if (entrance.current) { entrance.current.scale.setScalar(c === 1 ? .94 + .06 * reveal : 1); entrance.current.position.y = c === 1 ? .1 * (1-reveal) : 0; }
-    sweepRef.current = c === 1 ? 3.3 - Math.min(1, progress / 0.6) * 5.2 : c >= 3 ? -99 : 99;
+    sweepRef.current = c === 1 ? slice : c >= 3 ? -99 : 99;
   });
-  return <group ref={entrance}><RatModel v={v} layers={layers} surfacePhysical={true} xrayProgress={chapter === 1 ? exterior : undefined} palette={palette} quality={quality} sweepRef={sweepRef} labelMode={chapter === 1 ? "names" : "grade"} exposure={exposure} tempo={tempo} /></group>;
+  return <group ref={entrance}>{chapter===1&&<mesh ref={scanPlane} position={[3.1,1,0]}><boxGeometry args={[.018,2.4,1.5]}/><meshBasicMaterial color="#79d7ef" transparent opacity={.15} depthWrite={false}/></mesh>}<RatModel v={v} layers={layers} surfacePhysical={true} animate={!reduceMotion} palette={palette} quality={quality} sweepRef={sweepRef} labelMode={chapter === 1 ? "names" : "grade"} exposure={exposure} tempo={tempo} /></group>;
 }
 
 /** A fixed studio backdrop: stable lighting and a subtle illuminated stage at every quality. */
 function AnatomyStudio() {
+  const motes=useMemo(()=>{const p=new Float32Array(180);for(let i=0;i<60;i++){p[i*3]=Math.sin(i*31.4)*8;p[i*3+1]=.3+(i%19)*.22;p[i*3+2]=Math.cos(i*14.1)*5-1;}return p;},[]);
   return <group>
+    <PedestalTicks/>
+    <points><bufferGeometry><bufferAttribute attach="attributes-position" array={motes} count={60} itemSize={3}/></bufferGeometry><pointsMaterial size={.018} color="#9fcbd3" transparent opacity={.2} depthWrite={false}/></points>
+    <mesh position={[-.4,1.8,0]}><coneGeometry args={[4.2,3.6,48,1,true]}/><meshBasicMaterial color="#63bbcf" transparent opacity={.004} depthWrite={false} side={THREE.DoubleSide}/></mesh>
     <mesh position={[0,1,-4]}>
       <planeGeometry args={[40,24]}/>
       <shaderMaterial depthWrite={false} vertexShader="varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}" fragmentShader="varying vec2 vUv; void main(){vec2 p=(vUv-.5)*vec2(2.,1.); float halo=exp(-dot(p,p)*14.); gl_FragColor=vec4(mix(vec3(.008,.018,.035),vec3(.025,.15,.20),halo),1.);}"/>
     </mesh>
     {[3.8,4.2].map((r,i)=><mesh key={r} rotation={[-Math.PI/2,0,0]} position={[-.4,-.035-i*.005,0]}><ringGeometry args={[r,r+.012,128]}/><meshBasicMaterial color={i===0?'#4fc9d9':'#38738c'} transparent opacity={i===0?.35:.16} depthWrite={false}/></mesh>)}
-    <pointLight position={[-2,2,-2]} color="#75e3e9" intensity={4} distance={9}/>
+    <mesh position={[-.4,-.16,0]}><cylinderGeometry args={[4.3,4.4,.22,96]}/><meshStandardMaterial color="#183242" metalness={.35} roughness={.8}/></mesh>
+    <mesh rotation={[-Math.PI/2,0,0]} position={[-.4,-.038,0]}><planeGeometry args={[32,32]}/><shaderMaterial transparent depthWrite={false} vertexShader="varying vec2 uvp;void main(){uvp=uv*32.-16.;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}" fragmentShader="varying vec2 uvp;void main(){vec2 edge=abs(fract(uvp)-.5);float grid=1.-smoothstep(.005,.025,min(edge.x,edge.y));float fade=exp(-length(uvp)*.2);gl_FragColor=vec4(.18,.45,.55,grid*fade*.14);}"/></mesh>
+    <pointLight position={[-2,2,-2]} color="#75e3e9" intensity={1.5} distance={9}/>
   </group>;
 }
 
@@ -205,7 +205,7 @@ export function StoryScene(p: StorySceneProps) {
   const layers: Layers = { ...DEFAULT_LAYERS, xray: p.chapter >= 3 && p.chapter <= 5, labels: (p.chapter === 1 && p.posRef.current.progress > .28) || p.chapter === 4, vessels: p.chapter >= 1, tumor: p.chapter >= 4 && p.chapter <= 6 };
   const split = p.chapter === 6 && p.treated && p.untreated;
   const tempo = p.chapter === 5 ? 0.25 : 1;
-  const background = p.chapter <= 1 ? "#07121e" : p.background;
+  const background = "#07121e";
   return (
     <Canvas onCreated={fastShaders} frameloop={p.paused ? "demand" : "always"} camera={{ position: SHOTS[0]!.pos, fov: 34, near: 0.05, far: 100 }} dpr={p.quality === "high" ? [1, 2] : [1, 1.25]} gl={{ antialias: true, powerPreference: "high-performance" }} style={{ touchAction: "pan-y" }}>
       <color attach="background" args={[background]} />
@@ -217,15 +217,18 @@ export function StoryScene(p: StorySceneProps) {
         <Lightformer form="rect" intensity={2.2} position={[0, 6, 3]} scale={[10, 4, 1]} />
         <Lightformer form="rect" intensity={1.2} position={[-6, 2, -3]} rotation-y={Math.PI / 2} scale={[8, 3, 1]} color="#bff3ff" />
       </Environment>
-      {(p.chapter === 0 || p.chapter === 1) && <AnatomyStudio />}
+      <AnatomyStudio />
+      {p.chapter === 2 && <MolecularAura />}
+      {p.chapter === 9 && <HumanHologram />}
+      {p.chapter === 3 && <AdministrationPortal />}
       <CameraChoreo posRef={p.posRef} reduceMotion={p.reduceMotion} />
       {split && p.treated && p.untreated && <TwinRats splitRef={p.splitRef} treated={p.treated} untreated={p.untreated} day={p.twinDay} palette={p.palette} quality={p.quality} />}
       {v && !split && (
-        <Turntable chapter={p.chapter} reduceMotion={p.reduceMotion}>
-          <SweepRat posRef={p.posRef} v={v} layers={layers} palette={p.palette} quality={p.quality} chapter={p.chapter} exposure={p.chapter === 3 ? p.exposure : {}} tempo={tempo} />
+        <group position={p.chapter===9?[-2,0,0]:[0,0,0]} scale={p.chapter===9?.55:1}><Turntable chapter={p.chapter} reduceMotion={p.reduceMotion}>
+          <SweepRat posRef={p.posRef} v={v} layers={layers} palette={p.palette} quality={p.quality} chapter={p.chapter} exposure={p.chapter === 3 ? p.exposure : p.chapter === 2 && p.targetOrgan ? {[p.targetOrgan]:.65} : {}} tempo={tempo} reduceMotion={p.reduceMotion} />
           <DoseFlow plasmaRef={p.plasmaRef} visible={p.chapter === 3} />
-          <Pill posRef={p.posRef} />
-        </Turntable>
+
+        </Turntable></group>
       )}
       <ContactShadows position={[-0.4, 0.002, 0]} opacity={0.6} scale={16} blur={2.6} far={2.5} resolution={p.quality === "high" ? 1024 : 256} />
       {p.quality === "high" && !split && (

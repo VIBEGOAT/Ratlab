@@ -1,3 +1,4 @@
+import { Neoplasm } from "./Neoplasm";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
@@ -96,16 +97,16 @@ function OrganPart({ organ, shapes, damage, grade, selected, hovered, setHovered
   const mats = useRef<THREE.MeshStandardMaterial[]>([]);
   const color = useMemo(() => organColour(organ, damage), [organ, damage]);
   const gradeColor = useMemo(() => new THREE.Color(GRADE_HEX[palette][Math.min(5, grade)]!), [grade, palette]);
-  useFrame(({ clock }) => {
-    const t = clock.elapsedTime;
-    for (const m of mats.current) {
-      if (!m) continue;
-      if (selected || hovered) { m.emissive.set("#39d3bb"); m.emissiveIntensity = selected ? 0.55 : 0.3; continue; }
-      if (exposure > 0.02) { m.emissive.set("#39d3bb"); m.emissiveIntensity = 0.15 + 1.2 * exposure; continue; }
-      const shimmer = organ === "brain" ? 0.5 + 0.5 * Math.sin(t * 9 + Math.sin(t * 3.1) * 2) : 0.6 + 0.4 * Math.sin(t * 4);
-      const glow = organ === "marrow" && grade >= 1 ? 0.3 : 0;
-      m.emissive.copy(gradeColor);
-      m.emissiveIntensity = grade >= 2 ? (0.15 + 0.12 * grade) * shimmer : glow;
+  const teal=useMemo(()=>new THREE.Color("#39d3bb"),[]);
+  useFrame(({ clock },dt) => {
+    const t=clock.elapsedTime;
+    for(const m of mats.current){
+      if(!m)continue;
+      const active=selected||hovered||exposure>.02;
+      const pulse=.8+.2*Math.sin(t*2.2);
+      const target=selected?.55:hovered?.3:exposure>.02?(.15+1.2*exposure)*pulse:grade>=2?(.15+.12*grade)*(.8+.2*Math.sin(t*2.2)):organ==="marrow"&&grade>=1?.3:0;
+      m.emissive.lerp(active?teal:gradeColor,1-Math.exp(-Math.min(dt,.1)*8));
+      m.emissiveIntensity=THREE.MathUtils.damp(m.emissiveIntensity,target,8,Math.min(dt,.1));
     }
   });
   return (
@@ -256,14 +257,14 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
     uniforms.uTime.value = t * gaitSpeed;
     uniforms.uSweep.value = sweepRef ? sweepRef.current : sweep !== undefined ? sweep : layers.xray ? -99 : 99;
     uniforms.uBreath.value = (v.respirationBpm / 60) * 0.45 * (1 - 0.4 * v.lethargy);
-    uniforms.uHunch.value = v.hunch;
-    uniforms.uWaste.value = v.wasting;
-    uniforms.uTremor.value = v.tremor + 3 * v.convulsion;
+    uniforms.uHunch.value = THREE.MathUtils.damp(uniforms.uHunch.value,v.hunch,6,Math.min(dt,.1));
+    uniforms.uWaste.value = THREE.MathUtils.damp(uniforms.uWaste.value,v.wasting,6,Math.min(dt,.1));
+    uniforms.uTremor.value = 0; // Clinical signs remain in telemetry; never shake the geometry.
     uniforms.uRuffle.value = v.piloerection;
     uniforms.uWalk.value = typeof walk === "number" ? walk : walk.current;
     if (root.current && animate) {
-      root.current.rotation.y = Math.sin(t * 1.2) * 0.08 * v.ataxia;
-      root.current.rotation.x = Math.sin(t * 1.7) * 0.05 * v.ataxia + v.convulsion * 0.06 * Math.sin(t * 38);
+      root.current.rotation.y = THREE.MathUtils.damp(root.current.rotation.y,0,8,dt);
+      root.current.rotation.x = THREE.MathUtils.damp(root.current.rotation.x,0,8,dt);
     }
     if (heartRef.current && animate) {
       const f = (v.heartRateBpm / 360) * 1.25;
@@ -330,7 +331,7 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
 
       {/* tumour on the flank */}
       {layers.tumor && v.tumorRadius > 0 && (
-        <mesh geometry={SPHERE} position={feat.tumour} scale={[v.tumorRadius, v.tumorRadius * 0.85, v.tumorRadius * 0.9]}><meshStandardMaterial color="#9b5a86" roughness={0.6} /></mesh>
+        <Neoplasm radius={v.tumorRadius} position={feat.tumour} />
       )}
 
       {/* internal anatomy */}

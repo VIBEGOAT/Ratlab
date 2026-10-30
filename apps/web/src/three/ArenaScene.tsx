@@ -1,6 +1,7 @@
+import { behaviorTelemetry } from "./behaviorTelemetry";
 import { fastShaders } from "./webgl";
-import { useMemo, useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Html, Line, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import type { AnimalBundle } from "@eliminate/sim-core";
@@ -15,19 +16,19 @@ const RAT_SCALE = 0.3;
 interface Pose { x: number; z: number; heading: number; speed: number }
 
 /** A rat that follows a pose function every frame, and swings its legs in proportion to speed. */
-function ArenaRat({ bundle, day, pose, color, label }: { bundle: AnimalBundle; day: number; pose: (t: number) => Pose; color: string; label: string }) {
+function ArenaRat({ bundle, day, pose, color, label, labelVisible = true }: { bundle: AnimalBundle; day: number; pose: (t: number) => Pose; color: string; label: string; labelVisible?: boolean }) {
   const g = useRef<THREE.Group>(null);
   const walk = useRef(0);
   const v = useMemo(() => ratVisualState(bundle, day), [bundle, day]);
-  useFrame(({ clock }) => {
+  useFrame(({ clock }, dt) => {
     const p = pose(clock.elapsedTime);
-    if (g.current) { g.current.position.set(p.x, 0, p.z); g.current.rotation.y = p.heading; }
+    if (g.current) { g.current.position.x = THREE.MathUtils.damp(g.current.position.x,p.x,14,dt); g.current.position.z = THREE.MathUtils.damp(g.current.position.z,p.z,14,dt); g.current.rotation.y += Math.atan2(Math.sin(p.heading-g.current.rotation.y),Math.cos(p.heading-g.current.rotation.y))*(1-Math.exp(-dt*12)); }
     walk.current = Math.min(1, p.speed);
   });
   return (
     <group ref={g}>
       <RatModel v={v} layers={LAYERS} walk={walk} scale={RAT_SCALE} quality="low" />
-      <Html center position={[0, 1.1, 0]} distanceFactor={9} style={{ pointerEvents: "none" }}><div style={{ font: "600 11px 'IBM Plex Sans', sans-serif", padding: "1px 6px", borderRadius: 4, background: "rgba(10,20,19,0.8)", color, border: `1px solid ${color}`, whiteSpace: "nowrap" }}>{label}</div></Html>
+      <Html center position={[0, 1.1, 0]} distanceFactor={9} style={{ pointerEvents: "none", display: labelVisible ? undefined : "none" }}><div style={{ font: "600 11px 'IBM Plex Sans', sans-serif", padding: "1px 6px", borderRadius: 4, background: "rgba(10,20,19,0.8)", color, border: `1px solid ${color}`, whiteSpace: "nowrap" }}>{label}</div></Html>
     </group>
   );
 }
@@ -83,17 +84,31 @@ function homePose(b: AnimalBundle, day: number, clockHoursAt: (t: number) => num
   };
 }
 
+function RecentTrail({bundle,color,size}:{bundle:AnimalBundle;color:string;size:number}){
+ const ref=useRef<THREE.LineSegments>(null);
+ const geometry=useMemo(()=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(48*6),3));const c=new THREE.Color(color),colors=[];for(let i=0;i<48;i++)for(let j=0;j<2;j++)colors.push(c.r*(1-i/48),c.g*(1-i/48),c.b*(1-i/48));g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));return g;},[color]);
+ useEffect(()=>()=>geometry.dispose(),[geometry]);
+ const pose=useMemo(()=>trackPose(bundle,4,size),[bundle,size]);
+ useFrame(({clock})=>{const a=geometry.attributes.position!;for(let i=0;i<48;i++){const p=pose(Math.max(0,clock.elapsedTime-i*.045)),q=pose(Math.max(0,clock.elapsedTime-(i+1)*.045));const jump=Math.hypot(p.x-q.x,p.z-q.z)>.6;a.setXYZ(i*2,p.x,.025,p.z);a.setXYZ(i*2+1,jump?p.x:q.x,.025,jump?p.z:q.z);}a.needsUpdate=true;});
+ return <lineSegments ref={ref} geometry={geometry} frustumCulled={false}><lineBasicMaterial vertexColors transparent opacity={.7}/></lineSegments>;
+}
+
 function OpenField({ t, u, day }: { t: AnimalBundle; u: AnimalBundle; day: number }) {
   const S = 5.6;
+  const treatedPose = useMemo(()=>trackPose(t,4,S-.6),[t]);
+  const controlPose = useMemo(()=>trackPose(u,4,S-.6),[u]);
+  const [control,setControl]=useState(false);
+  const telemetry=useMemo(()=>behaviorTelemetry(control?u:t),[control,t,u]);
   return (
     <>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}><planeGeometry args={[S, S]} /><meshStandardMaterial color="#2c3a3a" /></mesh>
       <Line points={[[-S / 4, 0.01, -S / 4], [S / 4, 0.01, -S / 4], [S / 4, 0.01, S / 4], [-S / 4, 0.01, S / 4], [-S / 4, 0.01, -S / 4]]} color="#7a8b8a" dashed dashSize={0.15} gapSize={0.1} lineWidth={1} />
       {[[0, -S / 2, S, 0.2], [0, S / 2, S, 0.2], [-S / 2, 0, 0.2, S], [S / 2, 0, 0.2, S]].map(([x, z, w, d], i) => <mesh key={i} position={[x!, 0.15, z!]}><boxGeometry args={[w!, 0.3, d!]} /><meshStandardMaterial color="#445555" /></mesh>)}
-      <Line points={t.track.x.map((x, i) => [(x - 0.5) * (S - 0.6), 0.012, (t.track.y[i]! - 0.5) * (S - 0.6)] as [number, number, number])} color="#3fd0b8" lineWidth={1} transparent opacity={0.45} />
-      <Line points={u.track.x.map((x, i) => [(x - 0.5) * (S - 0.6), 0.011, (u.track.y[i]! - 0.5) * (S - 0.6)] as [number, number, number])} color="#a9b8b6" lineWidth={1} transparent opacity={0.4} />
-      <ArenaRat bundle={t} day={day} pose={trackPose(t, 4, S - 0.6)} color="#3fd0b8" label="Treated" />
-      <ArenaRat bundle={u} day={day} pose={trackPose(u, 4, S - 0.6)} color="#8a9bad" label="Untreated twin" />
+      <group visible={!control}><RecentTrail bundle={t} color="#3fd0b8" size={S-.6}/></group>
+      <group visible={control}><RecentTrail bundle={u} color="#91adcd" size={S-.6}/></group>
+      <group visible={!control}><ArenaRat bundle={t} day={day} pose={treatedPose} color="#3fd0b8" label="Dosed" labelVisible={!control} /></group>
+      <group visible={control}><ArenaRat bundle={u} day={day} pose={controlPose} color="#8a9bad" label="Control" labelVisible={control} /></group>
+      <Html fullscreen style={{pointerEvents:"none"}}><div className="arena-readout"><div role="group" aria-label="Open field comparison"><button aria-pressed={!control} onClick={()=>setControl(false)}>Dosed</button><button aria-pressed={control} onClick={()=>setControl(true)}>Control</button></div><div className="arena-kpis"><span>Velocity<strong>{telemetry.velocity.toFixed(1)} cm/s</strong></span><span>Exploration<strong>{telemetry.exploration.toFixed(1)} entries/min</strong></span><span>Rest<strong>{(telemetry.rest*100).toFixed(0)}%</strong></span></div><small>50 cm arena calibration · center-entry proxy · rearing not modelled</small></div></Html>
     </>
   );
 }
@@ -137,15 +152,22 @@ function HomeCage({ t, u, day, hoursPerSec }: { t: AnimalBundle; u: AnimalBundle
   );
 }
 
+function NativeArenaScroll(){
+ const gl=useThree(s=>s.gl);
+ useEffect(()=>{const frame=requestAnimationFrame(()=>{gl.domElement.style.touchAction="pan-y";});return()=>cancelAnimationFrame(frame);},[gl]);
+ return null;
+}
+
 export function ArenaScene({ mode, treated, untreated, day, hoursPerSec }: { mode: ArenaMode; treated: AnimalBundle; untreated: AnimalBundle; day: number; hoursPerSec: number }) {
   return (
-    <Canvas onCreated={fastShaders} key={mode} camera={{ position: [0, 6.5, 6.5], fov: 40 }} dpr={[1, 2]} gl={{ antialias: true, alpha: true }} style={{ touchAction: "none" }}>
+    <Canvas onCreated={fastShaders} key={mode} camera={{ position: [0, 6.5, 6.5], fov: 40 }} dpr={[1, 2]} gl={{ antialias: true, alpha: true }} style={{ touchAction: "pan-y" }}>
       <ambientLight intensity={0.8} />
       <directionalLight position={[3, 8, 4]} intensity={0.9} />
       {mode === "open" && <OpenField t={treated} u={untreated} day={day} />}
       {mode === "maze" && <Maze t={treated} u={untreated} day={day} />}
       {mode === "home" && <HomeCage t={treated} u={untreated} day={day} hoursPerSec={hoursPerSec} />}
-      <OrbitControls makeDefault enableDamping target={[0, 0, 0]} minDistance={3} maxDistance={16} maxPolarAngle={Math.PI * 0.49} />
+      <NativeArenaScroll/>
+      <OrbitControls enableZoom={false} makeDefault enabled={mode !== "open"} enableDamping target={[0, 0, 0]} minDistance={3} maxDistance={16} maxPolarAngle={Math.PI * 0.49} />
     </Canvas>
   );
 }
