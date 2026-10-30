@@ -1,3 +1,6 @@
+import { OralAdministration, OrganBridge, BehaviorEntry, type BridgeOrgan } from "./StoryDetails";
+import CinematicHero from "./CinematicHero";
+import { OpenField } from "../three/ArenaScene";
 import { MolecularAura, HumanHologram, PedestalTicks, AdministrationPortal } from "./ScientificStage";
 import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
@@ -32,6 +35,9 @@ export interface StorySceneProps {
   posRef: React.MutableRefObject<StoryPos>;
   chapter: number;
   targetOrgan?: Organ;
+  bridgeOrgan?: BridgeOrgan;
+  doseReplay?:number;
+  onBridgeOrgan?: (organ:BridgeOrgan)=>void;
   treated: AnimalBundle | null;
   untreated: AnimalBundle | null;
   /** the day shown during "damage unfolds" */
@@ -153,14 +159,20 @@ function TwinRats({ splitRef, treated, untreated, day, palette, quality }: { spl
   );
 }
 
-function Turntable({ chapter, reduceMotion, children }: { chapter: number; reduceMotion: boolean; children: React.ReactNode }) {
+function Turntable({ chapter, reduceMotion, children, posRef }: { chapter: number; reduceMotion: boolean; children: React.ReactNode; posRef: React.MutableRefObject<StoryPos> }) {
   const root=useRef<THREE.Group>(null),phase=useRef(0),manualUntil=useRef(0),time=useRef(0);
-  useFrame((_,dt)=>{time.current+=Math.min(dt,.1);const active=chapter===1||chapter===11;if(active&&!reduceMotion&&time.current>manualUntil.current)phase.current+=Math.min(dt,.1)*.35;if(root.current)root.current.rotation.y=THREE.MathUtils.damp(root.current.rotation.y,active?phase.current:0,5,Math.min(dt,.1));});
+  useFrame((_,dt)=>{
+    const delta=Math.min(dt,.1);time.current+=delta;
+    const active=chapter===1||chapter===11;
+    if(active&&!reduceMotion&&time.current>manualUntil.current)phase.current=(phase.current+delta*.15)%(Math.PI*2);
+    const target=chapter===2?posRef.current.progress*Math.PI*2:active?phase.current:0;
+    if(root.current){const current=root.current.rotation.y;const shortest=current+Math.atan2(Math.sin(target-current),Math.cos(target-current));const damped=THREE.MathUtils.damp(current,shortest,4,delta);root.current.rotation.y=current+THREE.MathUtils.clamp(damped-current,-1.2*delta,1.2*delta);}
+  });
   return <group ref={root} onPointerMove={e=>{if(e.buttons===1&&(chapter===1||chapter===11)){phase.current+=e.movementX*.01;manualUntil.current=time.current+8;}}}>{children}</group>;
 }
 
-function SweepRat({ posRef, v, layers, palette, quality, chapter, exposure, tempo, reduceMotion }: {
-  posRef: React.MutableRefObject<StoryPos>; v: ReturnType<typeof ratVisualState>; layers: Layers; palette: "standard" | "cb"; quality: Quality; chapter: number; exposure: Partial<Record<Organ, number>>; tempo: number; reduceMotion: boolean;
+function SweepRat({ posRef, v, layers, palette, quality, chapter, exposure, tempo, reduceMotion, onSelect, selected, onLungSelect }: {
+  posRef: React.MutableRefObject<StoryPos>; v: ReturnType<typeof ratVisualState>; layers: Layers; palette: "standard" | "cb"; quality: Quality; chapter: number; exposure: Partial<Record<Organ, number>>; tempo: number; reduceMotion: boolean; onSelect?: (organ:Organ)=>void; selected?: Organ; onLungSelect?:()=>void;
 }) {
   // fur below the sweep line, X-ray above it; the line runs head to tail as the reader scrolls chapter 1
   const sweepRef = useRef(99);
@@ -174,9 +186,9 @@ function SweepRat({ posRef, v, layers, palette, quality, chapter, exposure, temp
     const { chapter: c, progress } = posRef.current;
     const reveal = THREE.MathUtils.smoothstep(progress, 0, .7);
     if (entrance.current) { entrance.current.scale.setScalar(c === 1 ? .94 + .06 * reveal : 1); entrance.current.position.y = c === 1 ? .1 * (1-reveal) : 0; }
-    sweepRef.current = c === 1 ? slice : c >= 3 ? -99 : 99;
+    sweepRef.current = c === 1 ? slice : c >= 2 ? -99 : 99;
   });
-  return <group ref={entrance}>{chapter===1&&<mesh ref={scanPlane} position={[3.1,1,0]}><boxGeometry args={[.018,2.4,1.5]}/><meshBasicMaterial color="#79d7ef" transparent opacity={.15} depthWrite={false}/></mesh>}<RatModel v={v} layers={layers} surfacePhysical={true} animate={!reduceMotion} palette={palette} quality={quality} sweepRef={sweepRef} labelMode={chapter === 1 ? "names" : "grade"} exposure={exposure} tempo={tempo} /></group>;
+  return <group ref={entrance}>{chapter===1&&<mesh ref={scanPlane} position={[3.1,1,0]}><boxGeometry args={[.018,2.4,1.5]}/><meshBasicMaterial color="#79d7ef" transparent opacity={.15} depthWrite={false}/></mesh>}<RatModel v={v} layers={layers} surfacePhysical={true} onLungSelect={onLungSelect} onSelect={onSelect} selected={selected??null} animate={!reduceMotion} palette={palette} quality={quality} sweepRef={sweepRef} labelMode={chapter === 1 ? "names" : "grade"} exposure={exposure} tempo={tempo} /></group>;
 }
 
 /** A fixed studio backdrop: stable lighting and a subtle illuminated stage at every quality. */
@@ -197,17 +209,17 @@ function AnatomyStudio() {
   </group>;
 }
 
-export function StoryScene(p: StorySceneProps) {
+function StudioContent(p: StorySceneProps) {
   const momentBundle = p.moment?.who === "untreated" ? p.untreated : p.treated;
   const bundle = p.chapter === 5 && p.moment ? momentBundle : p.treated;
   const day = p.chapter === 5 && p.moment ? p.moment.day : p.chapter === 4 ? p.day : p.chapter >= 3 ? 0 : 0;
   const v = useMemo(() => (bundle ? ratVisualState(bundle, day) : null), [bundle, day]);
-  const layers: Layers = { ...DEFAULT_LAYERS, xray: p.chapter >= 3 && p.chapter <= 5, labels: (p.chapter === 1 && p.posRef.current.progress > .28) || p.chapter === 4, vessels: p.chapter >= 1, tumor: p.chapter >= 4 && p.chapter <= 6 };
+  const layers: Layers = { ...DEFAULT_LAYERS, xray: p.chapter >= 2 && p.chapter <= 5, labels: p.chapter===2 || (p.chapter === 1 && p.posRef.current.progress > .28) || p.chapter === 4, vessels: p.chapter >= 1, tumor: p.chapter >= 4 && p.chapter <= 6 };
   const split = p.chapter === 6 && p.treated && p.untreated;
   const tempo = p.chapter === 5 ? 0.25 : 1;
   const background = "#07121e";
   return (
-    <Canvas onCreated={fastShaders} frameloop={p.paused ? "demand" : "always"} camera={{ position: SHOTS[0]!.pos, fov: 34, near: 0.05, far: 100 }} dpr={p.quality === "high" ? [1, 2] : [1, 1.25]} gl={{ antialias: true, powerPreference: "high-performance" }} style={{ touchAction: "pan-y" }}>
+    <>
       <color attach="background" args={[background]} />
       <fog attach="fog" args={[background, 12, 26]} />
       <hemisphereLight args={["#dfefff", "#2a2420", 0.55]} />
@@ -219,13 +231,13 @@ export function StoryScene(p: StorySceneProps) {
       </Environment>
       <AnatomyStudio />
       {p.chapter === 2 && <MolecularAura />}
-      {p.chapter === 9 && <HumanHologram />}
-      {p.chapter === 3 && <AdministrationPortal />}
+      {p.chapter === 9 && <><HumanHologram selected={p.bridgeOrgan} onSelect={p.onBridgeOrgan}/><OrganBridge organ={p.bridgeOrgan??"heart"}/></>}
+      {p.chapter === 3 && <OralAdministration key={p.doseReplay} posRef={p.posRef}/>}
       <CameraChoreo posRef={p.posRef} reduceMotion={p.reduceMotion} />
       {split && p.treated && p.untreated && <TwinRats splitRef={p.splitRef} treated={p.treated} untreated={p.untreated} day={p.twinDay} palette={p.palette} quality={p.quality} />}
-      {v && !split && (
-        <group position={p.chapter===9?[-2,0,0]:[0,0,0]} scale={p.chapter===9?.55:1}><Turntable chapter={p.chapter} reduceMotion={p.reduceMotion}>
-          <SweepRat posRef={p.posRef} v={v} layers={layers} palette={p.palette} quality={p.quality} chapter={p.chapter} exposure={p.chapter === 3 ? p.exposure : p.chapter === 2 && p.targetOrgan ? {[p.targetOrgan]:.65} : {}} tempo={tempo} reduceMotion={p.reduceMotion} />
+      {v && !split && p.chapter!==7 && (
+        <group position={p.chapter===9?[-2,0,0]:[0,0,0]} scale={p.chapter===9?.55:1}><Turntable chapter={p.chapter} reduceMotion={p.reduceMotion} posRef={p.posRef}>
+          <SweepRat posRef={p.posRef} v={v} layers={layers} palette={p.palette} quality={p.quality} chapter={p.chapter} exposure={p.chapter === 3 ? p.exposure : p.chapter === 2 && p.targetOrgan ? {[p.targetOrgan]:.65} : {}} tempo={tempo} reduceMotion={p.reduceMotion} onLungSelect={p.chapter===9?()=>p.onBridgeOrgan?.("lungs"):undefined} selected={p.chapter===9&&p.bridgeOrgan!=="lungs"?p.bridgeOrgan:p.targetOrgan} onSelect={p.chapter===9?o=>{if(o!=="gut"&&o!=="marrow")p.onBridgeOrgan?.(o);}:undefined} />
           <DoseFlow plasmaRef={p.plasmaRef} visible={p.chapter === 3} />
 
         </Turntable></group>
@@ -237,6 +249,14 @@ export function StoryScene(p: StorySceneProps) {
           <Vignette eskil={false} offset={0.25} darkness={0.5} />
         </EffectComposer>
       )}
-    </Canvas>
+    </>
   );
+}
+
+function ArenaCamera(){useFrame(({camera},dt)=>{camera.position.lerp(new THREE.Vector3(0,6.5,6.5),1-Math.exp(-dt*5));camera.lookAt(0,0,0);});return null;}
+export function StoryScene(p:StorySceneProps){
+ const heroClock=useRef(0);
+ return <Canvas onCreated={fastShaders} camera={{position:[3,3,10],fov:40,near:.05,far:450}} dpr={[1,1.25]} gl={{antialias:true,powerPreference:"high-performance"}} style={{touchAction:"pan-y"}}>
+  {p.chapter===0&&p.treated?<CinematicHero animal={p.treated} reduced={p.reduceMotion} quality={p.quality} storyExit={THREE.MathUtils.smoothstep(p.posRef.current.progress,.8,1)} embedded clockRef={heroClock}/>:p.chapter===8&&p.treated&&p.untreated?<><color attach="background" args={["#07121e"]}/><ambientLight intensity={.8}/><directionalLight position={[3,8,4]}/><ArenaCamera/><BehaviorEntry posRef={p.posRef} reduced={p.reduceMotion}><OpenField t={p.treated} u={p.untreated} day={p.day}/></BehaviorEntry></>:<StudioContent {...p}/>}
+ </Canvas>;
 }

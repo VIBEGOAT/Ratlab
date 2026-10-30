@@ -1,3 +1,4 @@
+import { PathologyHUD, type BridgeOrgan } from "./StoryDetails";
 /* eslint-disable jsx-a11y/no-noninteractive-tabindex --
    The animals-spared figure is focusable so its assumptions (a tooltip) are available to keyboard users. */
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
@@ -20,7 +21,7 @@ import type { Quality } from "../three/RatModel";
 
 const ArenaScene = lazy(() => import("../three/ArenaScene").then((m) => ({ default: m.ArenaScene })));
 const StoryScene = lazy(() => import("./StoryScene").then((m) => ({ default: m.StoryScene })));
-const CinematicHero = lazy(() => import("./CinematicHero"));
+
 
 /** Conservative example assumptions. Shown on hover and editable in the Pitch view. */
 export const SPARED_ASSUMPTIONS = { studiesPerYear: 20, treatedGroups: 3, animalsPerGroup: 20, screenedOutShare: 0.2, virtualControlShare: 0 };
@@ -113,6 +114,8 @@ function useThemeBackground(): string {
 
 export function StoryPage() {
   const reduce = !!useReducedMotion();
+  const [doseReplay,setDoseReplay]=useState(0);
+  const [bridgeOrgan,setBridgeOrgan]=useState<BridgeOrgan>("heart");
   const { pos, ref: posRef } = useStoryScroll();
   const goLab = useStore((s) => s.goLab);
   const study = useStore((s) => s.study);
@@ -125,17 +128,7 @@ export function StoryPage() {
   // Automatic quality is fixed for the visit: changing materials mid-scroll caused visible flashes.
   const quality: Quality = qualitySetting === "auto" ? "low" : qualitySetting;
   const bg = useThemeBackground();
-  const [entryPhase, setEntryPhase] = useState<"ready" | "fade" | "initialize">("ready");
-  const previousChapter = useRef(0);
-  useEffect(() => {
-    const entering = pos.chapter === 1 && previousChapter.current === 0 && !reduce;
-    previousChapter.current = pos.chapter;
-    if (!entering) { setEntryPhase("ready"); return; }
-    setEntryPhase("fade");
-    const fade = window.setTimeout(() => setEntryPhase("initialize"), 600);
-    const ready = window.setTimeout(() => setEntryPhase("ready"), 2000);
-    return () => { clearTimeout(fade); clearTimeout(ready); };
-  }, [pos.chapter, reduce]);
+  useEffect(()=>{const nav=document.querySelector(".topbar"),story=document.querySelector<HTMLElement>(".story");if(!nav||!story)return;const measure=()=>story.style.setProperty("--story-header-height",`${nav.getBoundingClientRect().height}px`);const observer=new ResizeObserver(measure);observer.observe(nav);measure();return()=>observer.disconnect();},[]);
   const [glOk, setGlOk] = useState(false);
   // paint the page with the poster first, then bring the live 3D scene up when the browser is idle
   const [sceneReady, setSceneReady] = useState(false);
@@ -251,7 +244,7 @@ export function StoryPage() {
             </div>
           </section>
 
-</div><div className="story-hero-viewport">{gl && t ? <SceneBoundary fallback={<div className="poster"><RatPoster /></div>}><Suspense fallback={<div className="poster"><RatPoster /></div>}><CinematicHero animal={t} reduced={reduce} quality={quality} /></Suspense></SceneBoundary> : <div className="poster"><RatPoster /></div>}</div></div>
+</div></div>
       <div className="story-grid">
         <div className="story-text">
           {/* 2 · meet the rat */}
@@ -289,6 +282,7 @@ export function StoryPage() {
             <span className="n">04</span>
             <h2 id="c3">Dose day.</h2>
             <p className="lede">Follow the first dose from the stomach, through the liver, into the blood.</p>
+            <button onClick={()=>setDoseReplay(n=>n+1)}>Replay oral administration</button>
             {t && (
               <div className="readout" aria-live="polite">
                 <div><span className="eyebrow">Hour</span><b>{hour}</b></div>
@@ -353,7 +347,7 @@ export function StoryPage() {
           </section>
 
           {/* 10 · humans */}
-          <section data-chapter={9} className="chapter-sec tall" aria-labelledby="c9">
+          <section data-chapter={9} className="chapter-sec" aria-labelledby="c9">
             <div className="sticky-block">
               <span className="n">10</span>
               <h2 id="c9">Toward humans.</h2>
@@ -376,15 +370,15 @@ export function StoryPage() {
           </section>
         </div>
 
-        <div className="story-stage" data-entry={entryPhase} ref={stageRef} aria-hidden={pos.chapter === 5 ? true : undefined}>
+        <div className="story-stage" ref={stageRef} aria-hidden={pos.chapter === 5 ? true : undefined}>
           {gl ? (
             <Suspense fallback={<div className="poster"><RatPoster /></div>}>
-              <StoryScene posRef={posRef as React.MutableRefObject<StoryPos>} chapter={pos.chapter} targetOrgan={setup.compoundKey.includes("hepato")?"liver":setup.compoundKey.includes("nephro")?"kidney":setup.compoundKey.includes("neuro")?"brain":setup.compoundKey.includes("marrow")?"marrow":"heart"} treated={t} untreated={u} day={damageDay} moment={moment} exposure={exposure} plasmaRef={plasmaRef}
-                reduceMotion={reduce} palette={cb ? "cb" : "standard"} quality={quality} background={bg} paused={paused || pos.chapter === 0} splitRef={splitRef} twinDay={twinDay} />
+              <StoryScene posRef={posRef as React.MutableRefObject<StoryPos>} chapter={pos.chapter} doseReplay={doseReplay} bridgeOrgan={bridgeOrgan} onBridgeOrgan={setBridgeOrgan} targetOrgan={setup.compoundKey.includes("hepato")?"liver":setup.compoundKey.includes("nephro")?"kidney":setup.compoundKey.includes("neuro")?"brain":setup.compoundKey.includes("myelo")?"marrow":"heart"} treated={t} untreated={u} day={damageDay} moment={moment} exposure={exposure} plasmaRef={plasmaRef}
+                reduceMotion={reduce} palette={cb ? "cb" : "standard"} quality={quality} background={bg} paused={paused} splitRef={splitRef} twinDay={twinDay} />
 
             </Suspense>
           ) : <div className="poster"><RatPoster /></div>}
-          {entryPhase !== "ready" && <div className="story-initialize" role="status"><span>VAST / LIVING SYSTEMS</span><strong>A living system.<br/>Ready to explore.</strong><small>Initializing the anatomy studio</small></div>}
+
           {glOk && software && (
             <div className="gl-note" role="status">
               <span>Software graphics detected, so live 3D is paused to keep the page responsive.</span>
@@ -394,11 +388,13 @@ export function StoryPage() {
           {pos.chapter === 1 && <div className="meet-frame" aria-hidden="true"><div className="meet-frame-top"><span>VAST / ANATOMY STUDIO</span><span>02 — EXPLORE</span></div><div className="meet-frame-bottom"><span>A living system.<br/><strong>Revealed, layer by layer.</strong></span><small>SCROLL TO LOOK INSIDE ↓</small></div></div>}
           {pos.chapter === 2 && <div className="stage-scientific-note">Illustrative binding motif · target highlighting · not a real molecular structure</div>}
           {pos.chapter === 3 && <div className="stage-scientific-note">Oral route → gut → portal liver → circulation → renal clearance<br/>Bio-tracers illustrate model transport; glow is normalized to each tissue’s peak.</div>}
+          {pos.chapter===4&&t&&<PathologyHUD day={damageDay} days={days} volume={t.daily.tumorVolume[damageDay]??0}/>}
+          {pos.chapter===2&&<div className="target-organ-callout"><strong>{setup.compoundKey.includes("hepato")?"Liver / hepatic lobes":setup.compoundKey.includes("nephro")?"Kidneys / renal tissue":setup.compoundKey.includes("neuro")?"Brain / CNS":setup.compoundKey.includes("myelo")?"Bone marrow":"Heart / myocardium"}</strong><p>{ref.description}</p></div>}
           {pos.chapter === 6 && t && u && <div className="comparison-heatmap">{(["heart","liver","kidney"] as Organ[]).map(o=><span key={o}>{ORGAN_LABEL[o]} <b style={{color:gradeVar(ratVisualState(t,twinDay).organs[o].grade)}}>{GRADE_WORD[ratVisualState(t,twinDay).organs[o].grade]}</b><b style={{color:gradeVar(ratVisualState(u,twinDay).organs[o].grade)}}>{GRADE_WORD[ratVisualState(u,twinDay).organs[o].grade]}</b></span>)}</div>}
           {pos.chapter === 6 && t && u && <SplitDivider split={split} onChange={setSplit} stage={stageRef} />}
-          {pos.chapter === 7 && <div className="stage-overlay"><ForecastField outcomes={popMode === "treated" ? population.treated : population.untreated} total={population.total / 2 || 1000} mode={popMode} palette={cb ? "cb" : "standard"} sorted={sorted && population.status === "done"} /></div>}
-          {pos.chapter === 8 && t && u && gl && <div className="stage-overlay"><SceneBoundary fallback={<div className="poster"><RatPoster /></div>}><Suspense fallback={null}><ArenaScene mode="open" treated={t} untreated={u} day={days} hoursPerSec={1} /></Suspense></SceneBoundary></div>}
-          {pos.chapter === 9 && <div className="translation-overlay"><HumanScale progress={humanP} ratDose={noael} hedDose={scaled.hed} ratLabel="rat dose, no adverse effect" /></div>}
+          {pos.chapter === 7 && <div className="stage-overlay"><ForecastField strain={setup.strain} onStrain={strain=>setSetup({strain})} outcomes={popMode === "treated" ? population.treated : population.untreated} total={population.total / 2 || 1000} mode={popMode} palette={cb ? "cb" : "standard"} sorted={sorted && population.status === "done"} /></div>}
+
+          {pos.chapter === 9 && <div className="translation-overlay"><HumanScale progress={humanP} ratDose={noael} hedDose={scaled.hed} ratLabel="rat dose, no adverse effect" selected={bridgeOrgan} onSelect={setBridgeOrgan} inputDose={setup.highDose} clearance={ref.clIntLPerHPerKg*1000/60} /></div>}
           {!t && study.status === "error" ? (
             <div className="stage-status" role="alert">
               <span>We couldn’t prepare this virtual study.</span>

@@ -1,3 +1,4 @@
+import type { BridgeOrgan } from "./StoryDetails";
 import { tween, useReducedMotion } from "../lib/motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { RatOutcome } from "@eliminate/sim-core";
@@ -42,24 +43,27 @@ export function outcomeCounts(o: RatOutcome[]): number[] {
  * One dot per virtual rat, drawn on a canvas. Colour is the worst organ injury grade the rat reached;
  * a white ring marks a rat that reached a humane endpoint. Rats not yet simulated show as faint dots.
  */
-export function ForecastField({ outcomes, total, mode, palette, sorted }: { outcomes: RatOutcome[]; total: number; mode: "treated" | "untreated"; palette: "standard" | "cb"; sorted: boolean }) {
-  const [selected,setSelected]=useState<number | null>(null);
-  const counts=outcomeCounts(outcomes),order=counts.map((_,i)=>i);
-  if(!sorted)order.sort((a,b)=>counts[b]!-counts[a]!);
-  return <div className="cohort-telemetry"><span className="eyebrow">Virtual cohort · {mode}</span><h3>{outcomes.length.toLocaleString()} / {total.toLocaleString()} simulated</h3><p>Worst organ injury over the study. Each bar summarizes virtual animals, not biological particles.</p><div className="cohort-bars">{order.map(g=><button key={g} aria-pressed={selected===g} onClick={()=>setSelected(selected===g?null:g)}><span>{GRADE_WORD[g]}</span><i><em style={{transform:`scaleX(${counts[g]!/Math.max(1,outcomes.length)})`,background:GRADE_HEX[palette][g]}}/></i><strong>{counts[g]}</strong></button>)}</div><div role="status">{selected===null?"Select a severity band to inspect its outcomes.":`${counts[selected]} virtual rats in this band; ${outcomes.filter(o=>o.worstGrade===selected&&o.humaneDay!==null).length} reached a humane endpoint.`}</div></div>;
+export function ForecastField({ outcomes, total, mode, palette, sorted, strain, onStrain }: { strain?:string;onStrain?:(strain:"SD"|"WI")=>void; outcomes: RatOutcome[]; total: number; mode: "treated" | "untreated"; palette: "standard" | "cb"; sorted: boolean }) {
+  const [sex,setSex]=useState<"all"|"M"|"F">("all"),[grade,setGrade]=useState<number|null>(null),[selected,setSelected]=useState<number|null>(null);
+  const filtered=outcomes.filter(o=>(sex==="all"||o.sex===sex)&&(grade===null||(o.humaneDay!==null||o.worstGrade>=3?2:o.worstGrade===0?0:1)===grade));
+  if(sorted)filtered.sort((a,b)=>a.worstGrade-b.worstGrade);
+  const chosen=outcomes.find(o=>o.index===selected),colors=["#68dfc4","#e8bc69","#eb7187"];
+  return <div className="population-matrix"><span className="eyebrow">{mode} · {outcomes.length} / {total} virtual animals</span><div className="matrix-filters" role="group" aria-label="Re-simulate population strain">{(["SD","WI"] as const).map(s=><button key={s} aria-pressed={strain===s} onClick={()=>onStrain?.(s)}>{s==="SD"?"Sprague-Dawley":"Wistar"}</button>)}</div><div className="matrix-filters" role="group" aria-label="Population sex filter">{(["all","M","F"] as const).map(s=><button key={s} aria-pressed={sex===s} onClick={()=>setSex(s)}>{s==="all"?"All":s} {s==="all"?outcomes.length:outcomes.filter(o=>o.sex===s).length}</button>)}</div><svg viewBox="0 0 560 350" role="img" aria-label={`${filtered.length} virtual rats match the current filters. Colors show modelled injury categories.`}><defs><symbol id="cohort-rat" viewBox="0 0 14 12"><path d="M3 7Q0 6 0 10M3 7C2 2 10 1 11 5L14 7L10 9H4Z" fill="currentColor" stroke="currentColor" strokeWidth=".7"/><circle cx="10" cy="4" r="1.2" fill="currentColor"/></symbol></defs>{Array.from({length:total},(_,i)=>{const o=filtered[i],g=o?(o.humaneDay!==null||o.worstGrade>=3?2:o.worstGrade===0?0:1):0;return <use key={i} href="#cohort-rat" x={(i%40)*14} y={Math.floor(i/40)*14} width="12" height="11" style={{color:o?colors[g]:"#38515f",opacity:o?1:.18,cursor:o?"pointer":"default"}} onClick={()=>o&&setSelected(o.index)}/>;})}</svg><div className="matrix-filters" role="group" aria-label="Cohort outcome filter">{["No injury","Subclinical / mild","Severe / endpoint"].map((label,g)=><button key={g} aria-pressed={grade===g} onClick={()=>setGrade(grade===g?null:g)} style={{color:colors[g]}}>{label}</button>)}</div><p role="status">{chosen?`Rat ${chosen.index+1} · ${chosen.sex} · ${GRADE_WORD[chosen.worstGrade]} · endpoint ${chosen.humaneDay??"not reached"}`:`${filtered.length} animals match. Select a silhouette to inspect.`}</p><small>Strain: {strain??"configured cohort"}. Metabolic phenotypes and multi-dose ED50/TD50 distributions are not recorded in these results.</small></div>;
+
 }
 
 /** Rat to human scale-up. The number moves from the rat dose to the human equivalent dose as the reader scrolls. */
-export function HumanScale({ progress, ratDose, hedDose, ratLabel }: { progress: number; ratDose: number | null; hedDose: number | null; ratLabel: string }) {
+export function HumanScale({ progress, ratDose, hedDose, ratLabel,selected,onSelect,inputDose,clearance }: { selected?:BridgeOrgan;onSelect?:(o:BridgeOrgan)=>void;inputDose?:number;clearance?:number;progress: number; ratDose: number | null; hedDose: number | null; ratLabel: string }) {
+  const effectiveHed=inputDose===undefined?hedDose:inputDose*6/37;
   const reduced=useReducedMotion();
-  const [shown,setShown]=useState(hedDose);
-  const previous=useRef(hedDose??0);
+  const [shown,setShown]=useState(effectiveHed);
+  const previous=useRef(effectiveHed??0);
   useEffect(()=>{
-    if(hedDose===null){setShown(null);return;}
-    if(reduced){setShown(hedDose);previous.current=hedDose;return;}
-    return tween(previous.current,hedDose,.65,v=>{setShown(v);previous.current=v;});
-  },[hedDose,reduced]);
-  return <div className="translation-telemetry"><span className="eyebrow">Allometric translation · illustrative</span><strong>{hedDose===null?'Unavailable':(shown??hedDose).toFixed(2)} <small>mg/kg HED</small></strong><div className="translation-bridges"><span>Body surface normalization <b>Km 6 / 37</b></span><span>Hepatic clearance bridge <b>Not validated</b></span><span>Organ concordance <b>No human outcome data</b></span><span>Safety divisor <b>10× assumption · not therapeutic index</b></span></div></div>;
+    if(effectiveHed===null){setShown(null);return;}
+    if(reduced){setShown(effectiveHed);previous.current=effectiveHed;return;}
+    return tween(previous.current,effectiveHed,.65,v=>{setShown(v);previous.current=v;});
+  },[effectiveHed,reduced]);
+  return <div className="translation-telemetry"><span className="eyebrow">Allometric translation · illustrative</span><strong>{effectiveHed===null?'No scaling input':(shown??effectiveHed).toFixed(2)} <small>mg/kg · selected-dose BSA equivalent</small></strong><div className="translation-bridges"><span>Body surface normalization <b>Km 6 / 37</b></span><span>Rat intrinsic clearance input <b>{clearance?.toFixed(2)} mL/min/kg · model parameter</b></span><span>Human clearance extrapolation <b>{((clearance??0)*Math.pow(.3/60,.25)).toFixed(2)} mL/min/kg · 0.75 exponent assumed</b></span><span>NOAEL-based HED <b>{hedDose===null?"No non-adverse dose found":hedDose.toFixed(2)+" mg/kg"} · not a therapeutic index</b></span></div><div className="organ-bridge-controls" role="group" aria-label="Organ translation bridge">{(["heart","liver","brain","kidney","lungs"] as BridgeOrgan[]).map(o=><button key={o} aria-pressed={selected===o} onClick={()=>onSelect?.(o)}>{o}</button>)}</div><small>{selected} anatomical bridge · human risk, homology, affinity and clearance require compound-specific calibration; no clinical validation is implied.</small></div>;
 
 }
 

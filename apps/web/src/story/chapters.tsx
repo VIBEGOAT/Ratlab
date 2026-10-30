@@ -69,14 +69,14 @@ export function ChapterForecast({ pop, days, progress, doseMgPerKg, mode, setMod
       {mode === "treated" && (
         <div className="legend" aria-label="Colour key">{GRADE_WORD.map((w, g) => <span key={w}><i style={{ background: GRADE_VAR[g] }} />{w} {counts[g]}</span>)}<span><i style={{ background: "transparent", border: "2px solid var(--ink)", height: 8, width: 8, borderRadius: 4 }} />humane endpoint</span></div>
       )}
-      <div className="forecast-stats">
+      <details><summary>Endpoint intervals and survival</summary><div className="forecast-stats">
         <div><span className="eyebrow">Humane endpoint, treated</span><b>{T.length ? fmtPct(wT.p, 1) : "…"}</b><span className="small muted">{T.length ? `95% range ${fmtPct(wT.low, 1)} to ${fmtPct(wT.high, 1)}${T.length < n ? ` (so far, ${fmtInt(T.length)} rats)` : ""}` : "waiting for the first rats"}</span></div>
         <div><span className="eyebrow">Humane endpoint, untreated</span><b>{U.length ? fmtPct(wU.p, 1) : "…"}</b><span className="small muted">{U.length ? `95% range ${fmtPct(wU.low, 1)} to ${fmtPct(wU.high, 1)}${U.length < n ? ` (so far, ${fmtInt(U.length)} rats)` : ""}` : "waiting for the first rats"}</span></div>
       </div>
       <LineChart label="Survival without a humane endpoint" height={190} xLabel="Study day" yLabel="Rats without a humane endpoint" xMin={0} xMax={days} yMin={0} yMax={1} fmtY={(v) => `${Math.round(v * 100)}%`}
         series={[{ name: "Treated", x: ct.x, y: ct.y, color: "var(--c1)", step: true }, { name: "Untreated", x: cu.x, y: cu.y, color: "var(--c6)", step: true }]} />
       <div className="legend"><span><i style={{ background: "var(--c1)" }} />Treated</span><span><i style={{ background: "var(--c6)" }} />Untreated</span></div>
-      <p className="small muted">Ranges show how much chance alone can move these figures with {fmtInt(n)} rats. They do not include uncertainty in the model's parameters, which are still unverified.</p>
+      <p className="small muted">Ranges show how much chance alone can move these figures with {fmtInt(n)} rats. They do not include uncertainty in the model's parameters, which are still unverified.</p></details>
     </>
   );
 }

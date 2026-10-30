@@ -1,3 +1,4 @@
+import { HUMAN_ORGANS, type BridgeOrgan } from "./StoryDetails";
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -7,10 +8,11 @@ export function MolecularAura(){
  const nodes=useMemo(()=>Array.from({length:12},(_,i)=>new THREE.Vector3(Math.cos(i*Math.PI/6)*3.9,.7+Math.sin(i*1.7)*.35,Math.sin(i*Math.PI/6)*3.9)),[]);
  return <group ref={group}>{nodes.map((p,i)=><group key={i}><mesh position={p} scale={.055}><sphereGeometry args={[1,10,8]}/><meshBasicMaterial color={i%3?'#79bdd5':'#eac994'}/></mesh><mesh position={p.clone().add(nodes[(i+1)%12]!).multiplyScalar(.5)} quaternion={new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),nodes[(i+1)%12]!.clone().sub(p).normalize())}><cylinderGeometry args={[.007,.007,p.distanceTo(nodes[(i+1)%12]!),5]}/><meshBasicMaterial color="#466c80" transparent opacity={.45}/></mesh></group>)}</group>;
 }
-export function HumanHologram(){
+export function HumanHologram({selected="heart",onSelect}:{selected?:BridgeOrgan;onSelect?:(organ:BridgeOrgan)=>void}){
  const material=useMemo(()=>new THREE.MeshBasicMaterial({color:'#80cddd',wireframe:true,transparent:true,opacity:.32}),[]);
  useEffect(()=>()=>material.dispose(),[material]);
  return <group position={[2.1,0,0]} scale={1.1}>
+  {Object.entries(HUMAN_ORGANS).map(([name,p])=><mesh key={name} position={p} onClick={e=>{e.stopPropagation();onSelect?.(name as BridgeOrgan);}} scale={name==='brain'?.17:.11}><sphereGeometry args={[1,16,12]}/><meshBasicMaterial color={selected===name?'#b9fff3':'#467d8c'} transparent opacity={selected===name?.95:.4}/></mesh>)}
   <mesh position={[0,3.2,0]} material={material}><sphereGeometry args={[.24,20,14]}/></mesh>
   <mesh position={[0,2.25,0]} material={material}><cylinderGeometry args={[.42,.25,1.3,20,12]}/></mesh>
   {[-1,1].map(s=><group key={s}><mesh position={[s*.6,2.2,0]} rotation={[0,0,s*.17]} material={material}><capsuleGeometry args={[.1,1.05,6,12]}/></mesh><mesh position={[s*.2,.85,0]} rotation={[0,0,s*.04]} material={material}><capsuleGeometry args={[.13,1.3,6,12]}/></mesh></group>)}

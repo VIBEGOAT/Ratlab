@@ -14,6 +14,7 @@ export interface BodyUniforms {
   uTime: { value: number };
   uAgility: { value: number };
   uFlex: { value: number };
+  uStride: { value: number };
   uDissolve: { value: number };
   uBreath: { value: number };
   uHunch: { value: number };
@@ -28,13 +29,13 @@ export interface BodyUniforms {
 
 export function makeBodyUniforms(): BodyUniforms {
   return {
-    uAgility: { value: 0 }, uFlex: { value: 0 }, uDissolve: { value: -1 }, uTime: { value: 0 }, uBreath: { value: 1.4 }, uHunch: { value: 0 }, uWaste: { value: 0 }, uWalk: { value: 0 },
+    uStride: { value: -1 }, uAgility: { value: 0 }, uFlex: { value: 0 }, uDissolve: { value: -1 }, uTime: { value: 0 }, uBreath: { value: 1.4 }, uHunch: { value: 0 }, uWaste: { value: 0 }, uWalk: { value: 0 },
     uTremor: { value: 0 }, uRuffle: { value: 0 }, uSkinColor: { value: new THREE.Color("#e8a9a2") }, uSweep: { value: 99 },
   };
 }
 
 export const DEFORM_GLSL = /* glsl */ `
-uniform float uAgility; uniform float uFlex; uniform float uTime; uniform float uBreath; uniform float uHunch; uniform float uWaste; uniform float uWalk; uniform float uTremor;
+uniform float uStride; uniform float uAgility; uniform float uFlex; uniform float uTime; uniform float uBreath; uniform float uHunch; uniform float uWaste; uniform float uWalk; uniform float uTremor;
 vec3 ratDeform(vec3 p) {
   float trunk = smoothstep(-1.75, -1.3, p.x) * (1.0 - smoothstep(1.35, 1.75, p.x));
   float lower = 1.0 - smoothstep(0.28, 0.55, p.y);
@@ -48,7 +49,7 @@ vec3 ratDeform(vec3 p) {
   // Smooth thoracic, lumbar and pelvic zones retain a continuous coat.
   float lumbar=exp(-pow((p.x+.3)/.65,2.))*trunk;
   float pelvis=exp(-pow((p.x+1.05)/.5,2.))*trunk;
-  p.y += (uAgility*.09+uFlex)*lumbar*(1.-lower);
+  p.y += (uAgility*.0315+uFlex)*lumbar*(1.-lower);
   p.z *= 1.+uAgility*.06*pelvis*(1.-lower);
   p.x += uFlex*.25*(p.x+.3)*trunk;
   p.y -= uFlex*.25*chest;
@@ -58,7 +59,7 @@ vec3 ratDeform(vec3 p) {
   p.xy = piv + vec2(q.x * cos(ang) - q.y * sin(ang), q.x * sin(ang) + q.y * cos(ang));
   float legX = (1.0 - smoothstep(0.22, 0.38, abs(p.x - 1.2))) + (1.0 - smoothstep(0.3, 0.46, abs(p.x + 1.0)));
   float front = step(0.3, p.x);
-  float phase = uTime * mix(7.0,69.115,uAgility) + front * 3.14159 + step(0.0, p.z) * 3.14159;
+  float phase = (uStride>=0.?uStride:uTime*7.0) + front * 3.14159 + step(0.0, p.z) * 3.14159;
   float foot = clamp((0.55 - p.y) / 0.55, 0.0, 1.0);
   p.x += legX * uWalk * 0.1 * sin(phase) * foot;
   p.y += legX * uWalk * 0.04 * max(0.0, cos(phase)) * foot;

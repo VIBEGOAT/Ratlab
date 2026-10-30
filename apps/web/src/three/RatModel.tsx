@@ -46,6 +46,8 @@ export interface RatModelProps {
   gaitSpeed?: number;
   /** Cinematic hero only: fade organ anatomy while revealing neural paths. */
   organOpacity?: React.MutableRefObject<number>;
+  onLungSelect?:()=>void;
+  stridePhase?: React.MutableRefObject<number>;
   agility?: React.MutableRefObject<number>;
   spineFlex?: React.MutableRefObject<number>;
   surfacePhysical?: boolean;
@@ -157,7 +159,7 @@ function Vessels() {
   return <group>{geo.map(({ v, g }) => <mesh key={v.id} geometry={g}><meshStandardMaterial color={v.kind === "artery" ? "#c8323c" : v.kind === "portal" ? "#8a4fb0" : "#4a6fc8"} roughness={0.5} emissive={v.kind === "artery" ? "#4a0c10" : "#101a40"} /></mesh>)}</group>;
 }
 
-export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale = 1, animate = true, quality = "high", exposure = {}, palette = "standard", sweep, sweepRef, labelMode = "grade", tempo = 1, gaitSpeed = 1, organOpacity, cinematicFocus, animationClock, xrayProgress, surfacePhysical = false, agility, spineFlex }: RatModelProps) {
+export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale = 1, animate = true, quality = "high", exposure = {}, palette = "standard", sweep, sweepRef, labelMode = "grade", tempo = 1, gaitSpeed = 1, organOpacity, cinematicFocus, animationClock, xrayProgress, surfacePhysical = false, agility, spineFlex, stridePhase, onLungSelect }: RatModelProps) {
   const surfaceOpacity = useMemo(() => new Map<THREE.Material, { opacity: number; transparent: boolean }>(), []);
   const whiskerRef = useRef<THREE.LineSegments>(null);
   const ears = useRef<Array<THREE.Group | null>>([]);
@@ -252,6 +254,7 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
       surfaceOpacity.clear();
     }
     uniforms.uDissolve.value = xrayProgress ? 1-xrayProgress.current : -1;
+    uniforms.uStride.value = stridePhase?.current ?? -1;
     uniforms.uAgility.value = agility?.current ?? 0;
     uniforms.uFlex.value = spineFlex?.current ?? 0;
     uniforms.uTime.value = t * gaitSpeed;
@@ -339,7 +342,7 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
         {layers.skeleton && <Skeleton quality={quality} />}
         {layers.vessels && <Vessels />}
         {layers.brain && <OrganPart {...common("brain")} shapes={ORGAN_SHAPES.brain} label="Brain" />}
-        {layers.lungs && <group name="lungs" ref={lungsRef} position={[.98, .98, 0]}>{ORGAN_SHAPES.lungs.map((s, i) => <mesh key={i} geometry={SPHERE} position={[s.center[0] - .98, s.center[1] - .98, s.center[2]]} scale={s.radii}><meshStandardMaterial color="#efb0b6" roughness={0.6} transparent opacity={0.6} depthWrite={false} /></mesh>)}</group>}
+        {layers.lungs && <group name="lungs" onClick={e=>{if(onLungSelect){e.stopPropagation();onLungSelect();}}} ref={lungsRef} position={[.98, .98, 0]}>{ORGAN_SHAPES.lungs.map((s, i) => <mesh key={i} geometry={SPHERE} position={[s.center[0] - .98, s.center[1] - .98, s.center[2]]} scale={s.radii}><meshStandardMaterial color="#efb0b6" roughness={0.6} transparent opacity={0.6} depthWrite={false} /></mesh>)}</group>}
         {layers.heart && <OrganPart {...common("heart")} shapes={ORGAN_SHAPES.heart} label="Heart" meshRef={heartRef} />}
         {layers.liver && <OrganPart {...common("liver")} shapes={ORGAN_SHAPES.liver} label="Liver" />}
         {layers.kidneys && <OrganPart {...common("kidney")} shapes={ORGAN_SHAPES.kidney} label="Kidneys" />}

@@ -679,3 +679,43 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
 @media(max-width:900px) { .arena-readout { left: 8px; right: 8px; bottom: 8px; padding: 8px; } .arena-kpis { margin: 6px 0; } .arena-readout small { display: none; } .arena-kpis strong { font-size: 11px; } }
 .chapter-sec:not(.hero-sec) > * { opacity: calc(.55 + var(--chapter-presence,1) * .45); translate: 0 calc((1 - var(--chapter-presence,1)) * 12px); }
 @media(prefers-reduced-motion:reduce) { .chapter-sec:not(.hero-sec) > * { opacity: 1; translate: none; } }
+/* One persistent WebGL viewport, with the document as its only scroll source. */
+.story { position: relative; background: #07121e; }
+.story-grid,.story-hero-grid { display: block; background: transparent; border: 0; }
+.story-text { width: 42.5%; position: relative; z-index: 10; box-sizing: border-box; }
+.story-hero-grid { min-height: 100dvh; }
+.story-stage { position: fixed; inset: 69px 0 0 42.5%; width: auto; height: auto; z-index: 1; background: transparent; border: 0; border-radius: 0; }
+.story-stage canvas { border: 0; }
+.cinematic-controls-only { background: transparent; pointer-events: none; }
+.cinematic-controls-only .cinematic-controls { pointer-events: auto; }
+.cinematic-controls-only::after { display: none; }
+.chapter-sec { min-height: 100dvh; }
+.chapter-sec[aria-labelledby=c9],.chapter-sec[aria-labelledby=c10] { min-height: 100dvh; padding-top: 60px; }
+.meet-frame { border: 0; }
+@media(max-width:900px) { .story-stage { inset: 53px 0 auto; height: 40dvh; z-index: 11; } .story-text { width: 100%; padding-top: 40dvh; } .story-grid .story-text { padding-top: 0; } .chapter-sec { padding-top: calc(40dvh + 45px); min-height: 100dvh; } .story-text .hero-sec { padding-top: 45px; } }
+.pathology-hud,.target-organ-callout { position: absolute; left: 24px; right: 24px; bottom: 24px; padding: 18px; border: 1px solid #7ba6bc33; border-radius: 16px; background: #07121eea; color: #cbe3eb; z-index: 4; }
+.pathology-hud strong,.target-organ-callout strong { display: block; margin: 8px 0; font-size: 20px; font-weight: 500; }
+.pathology-hud p,.target-organ-callout p { font-size: 12px; line-height: 1.5; }
+.pathology-hud small { font-size: 10px; color: #99b1bc; }
+.pathology-hud progress { display: block; width: 100%; height: 3px; margin: 12px 0; accent-color: #7bddcf; }
+.target-organ-callout { bottom: 86px; }
+.organ-bridge-controls { display: flex; gap: 5px; margin: 12px 0; pointer-events: auto; flex-wrap: wrap; }
+.organ-bridge-controls button { font-size: 11px; padding: 7px 12px; color: #bfdae3; background: #17323e; border: 1px solid #6f9eb44a; }
+.organ-bridge-controls button[aria-pressed=true] { background: #96d9dc; color: #07121e; }
+@media(max-width:900px) { .pathology-hud,.target-organ-callout { left: 8px; right: 8px; bottom: 8px; padding: 10px; } .pathology-hud small { display: none; } .pathology-hud strong { font-size: 14px; } .organ-bridge-controls button { padding: 5px 8px; } }
+.population-matrix { height: 100%; padding: clamp(12px,3vw,32px); box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; gap: 12px; color: #c8e5ed; background: transparent; }
+.population-matrix svg { width: 100%; max-height: 55dvh; min-height: 0; flex: 0 1 auto; }
+.matrix-filters { display: flex; gap: 5px; flex-wrap: wrap; }
+.matrix-filters button { padding: 7px 10px; font-size: 10px; background: #18333e; color: #c7e2ec; border: 1px solid #638ba244; }
+.matrix-filters button[aria-pressed=true] { border-color: #a9edf0; background: #285160; }
+.population-matrix p,.population-matrix small { font-size: 11px; color: #a0b9c5; }
+.stage-overlay { background: transparent; }
+@media(max-width:900px) { .population-matrix { padding: 8px; gap: 5px; } .population-matrix small { display: none; } .population-matrix svg { max-height: 22dvh; } .matrix-filters button { padding: 4px 8px; } }
+.story { --ink:#e8f0f4; --ink-2:#b5c6d0; --muted:#8da6b5; --surface:#112632; --surface-solid:#112632; --bg:#07121e; --line:#577e9633; --grid:#2c4858; --accent:#77c9ff; }
+.pathology-hud::before { content:""; position:absolute; left:20%; bottom:100%; height:35px; width:1px; background:linear-gradient(transparent,#75acba80); }
+.story { color: var(--ink); }
+.story .primary { color: #07121e; }
+.cinematic-hero.cinematic-controls-only { background: transparent; }
+.cinematic-hero.cinematic-controls-only::after { display: none; }
+.story-stage { top: var(--story-header-height,63px); }
+@media(max-width:900px) { .story-stage { top: var(--story-header-height,53px); } }

@@ -93,7 +93,7 @@ function RecentTrail({bundle,color,size}:{bundle:AnimalBundle;color:string;size:
  return <lineSegments ref={ref} geometry={geometry} frustumCulled={false}><lineBasicMaterial vertexColors transparent opacity={.7}/></lineSegments>;
 }
 
-function OpenField({ t, u, day }: { t: AnimalBundle; u: AnimalBundle; day: number }) {
+export function OpenField({ t, u, day }: { t: AnimalBundle; u: AnimalBundle; day: number }) {
   const S = 5.6;
   const treatedPose = useMemo(()=>trackPose(t,4,S-.6),[t]);
   const controlPose = useMemo(()=>trackPose(u,4,S-.6),[u]);
@@ -108,7 +108,7 @@ function OpenField({ t, u, day }: { t: AnimalBundle; u: AnimalBundle; day: numbe
       <group visible={control}><RecentTrail bundle={u} color="#91adcd" size={S-.6}/></group>
       <group visible={!control}><ArenaRat bundle={t} day={day} pose={treatedPose} color="#3fd0b8" label="Dosed" labelVisible={!control} /></group>
       <group visible={control}><ArenaRat bundle={u} day={day} pose={controlPose} color="#8a9bad" label="Control" labelVisible={control} /></group>
-      <Html fullscreen style={{pointerEvents:"none"}}><div className="arena-readout"><div role="group" aria-label="Open field comparison"><button aria-pressed={!control} onClick={()=>setControl(false)}>Dosed</button><button aria-pressed={control} onClick={()=>setControl(true)}>Control</button></div><div className="arena-kpis"><span>Velocity<strong>{telemetry.velocity.toFixed(1)} cm/s</strong></span><span>Exploration<strong>{telemetry.exploration.toFixed(1)} entries/min</strong></span><span>Rest<strong>{(telemetry.rest*100).toFixed(0)}%</strong></span></div><small>50 cm arena calibration · center-entry proxy · rearing not modelled</small></div></Html>
+      <Html fullscreen calculatePosition={(_,__,size)=>[size.width/2,size.height/2]} style={{pointerEvents:"none"}}><div className="arena-readout"><div role="group" aria-label="Open field comparison"><button aria-pressed={!control} onClick={()=>setControl(false)}>Dosed</button><button aria-pressed={control} onClick={()=>setControl(true)}>Control</button></div><div className="arena-kpis"><span>Velocity<strong>{telemetry.velocity.toFixed(1)} cm/s</strong></span><span>Exploration<strong>{telemetry.exploration.toFixed(1)} entries/min</strong></span><span>Rest<strong>{(telemetry.rest*100).toFixed(0)}%</strong></span></div><small>50 cm arena calibration · center-entry proxy · rearing not modelled</small></div></Html>
     </>
   );
 }

@@ -1,3 +1,5 @@
+import { Html } from "@react-three/drei";
+import { advanceStride, getTerrainHeight } from "./locomotion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { ContactShadows } from "@react-three/drei";
@@ -95,10 +97,12 @@ function Signals({ clock, opacity }: { clock: Clock; opacity: Clock }) {
   </group>;
 }
 
-function Scene({ animal, clock, playing, reduced, quality, manual, onStage, onShot, onReady }: {
-  animal: AnimalBundle; clock: Clock; manual: number | null; playing: boolean; reduced: boolean; quality: Quality; onStage: (stage: number) => void; onShot: (shot: number) => void; onReady: () => void;
+function Scene({ animal, clock, playing, reduced, quality, manual, exitProgress, onStage, onShot, onReady }: {
+  animal: AnimalBundle; clock: Clock; manual: number | null; exitProgress:number; playing: boolean; reduced: boolean; quality: Quality; onStage: (stage: number) => void; onShot: (shot: number) => void; onReady: () => void;
 }) {
+  const environment=useRef(1);
   const motionClock = useRef(0);
+  const stride=useRef(0),lastX=useRef<number | null>(null),walkAmount=useRef(0);
   const walk = useRef(2);
   const natural = useRef(1), nerves = useRef(0), organs = useRef(0), sweep = useRef(99);
   const cinematicFocus = useRef<string | null>(null);
@@ -129,12 +133,17 @@ function Scene({ animal, clock, playing, reduced, quality, manual, onStage, onSh
     if (playing && !reduced) motionClock.current += Math.min(dt,.15) * (1 - .65 * (1-state.natural));
     const pose = ratAgility(motionClock.current);
     agility.current = reduced ? 0 : state.natural;
-    spineFlex.current = pose.flex * state.natural;
-    walk.current = pose.walk * state.natural;
+    spineFlex.current = pose.flex * state.natural * .35;
+    const distanceMoved=lastX.current===null?0:Math.abs(pose.x-lastX.current);
+    lastX.current=pose.x;
+    if(playing&&!reduced)stride.current=advanceStride(stride.current,distanceMoved,Math.min(dt,.15));
+    walkAmount.current=THREE.MathUtils.damp(walkAmount.current,pose.state==="scurry"?Math.min(1,distanceMoved/Math.max(dt,.001)):0,12,Math.min(dt,.15));
+    walk.current=walkAmount.current*state.natural;
+    environment.current=state.natural*(1-exitProgress);
     natural.current = state.natural; nerves.current = state.nerves; organs.current = state.organs;
     sweep.current = state.natural >= .999 ? 99 : state.natural <= .001 ? -99 : -1.9 + state.natural * 5.1;
     if (previous.current !== state.stage) { previous.current = state.stage; onStage(state.stage); }
-    const bg = backdrop.current.copy(backdrop.inside).lerp(backdrop.meadow, state.natural);
+    const bg = backdrop.current.copy(backdrop.inside).lerp(backdrop.meadow, environment.current);
     scene.background = bg;
     if (scene.fog instanceof THREE.Fog) scene.fog.color.copy(bg);
     const shot = state.stage === 1 ? organShot(state.localTime) : { index: -1, zoom: 0 };
@@ -155,7 +164,8 @@ function Scene({ animal, clock, playing, reduced, quality, manual, onStage, onSh
     camera.lookAt(lookAt);
     if (rat.current) {
       const movement = reduced ? 0 : state.natural * state.natural;
-      rat.current.position.set(pose.x * movement, pose.lift * movement, 0);
+      const x=pose.x*movement;
+      rat.current.position.set(x,getTerrainHeight(x,0)+.06+Math.max(0,pose.lift)*movement,0);
       poseEuler.set(0, pose.yaw, pose.pitch);
       poseRotation.setFromEuler(poseEuler).slerp(restRotation, 1-movement);
       rat.current.quaternion.slerp(poseRotation, reduced ? 1 : 1-Math.exp(-dt*14));
@@ -176,11 +186,11 @@ function Scene({ animal, clock, playing, reduced, quality, manual, onStage, onSh
     <directionalLight position={[-6, 2.3, -6.5]} intensity={2.5} color="#fff0d1" />
     <directionalLight position={[2, 4, 6]} intensity={1.2} color="#fff3db" />
     <directionalLight position={[-4, 3, -5]} intensity={1.7} color="#9cceff" />
-    <MeadowAtmosphere clock={motionClock} natural={natural}/>
-    <ShaderMeadow clock={motionClock} natural={natural} quality={quality} ratPosition={ratPosition}/>
-    <MeadowDetails clock={motionClock} natural={natural} quality={quality}/>
+    <MeadowAtmosphere clock={motionClock} natural={environment}/>
+    <ShaderMeadow clock={motionClock} natural={environment} quality={quality} ratPosition={ratPosition}/>
+    <MeadowDetails clock={motionClock} natural={environment} quality={quality}/>
     <group ref={rat} visible={!!body}>
-      <RatModel v={visual} layers={{ ...DEFAULT_LAYERS, xray: false, labels: false, tumor: false }} quality={quality} xrayProgress={natural} walk={reduced ? 0 : walk} gaitSpeed={1} agility={agility} spineFlex={spineFlex} animationClock={motionClock} animate={playing && !reduced} sweepRef={sweep} organOpacity={organs} cinematicFocus={cinematicFocus} />
+      <RatModel v={visual} layers={{ ...DEFAULT_LAYERS, xray: false, labels: false, tumor: false }} quality={quality} xrayProgress={natural} walk={reduced ? 0 : walk} gaitSpeed={1} stridePhase={stride} agility={agility} spineFlex={spineFlex} animationClock={motionClock} animate={playing && !reduced} sweepRef={sweep} organOpacity={organs} cinematicFocus={cinematicFocus} />
       <Signals clock={motionClock} opacity={nerves} />
       <MacroAnatomy clock={motionClock} organs={organs} nerves={nerves} quality={quality} />
       <mesh ref={gutPulse}><sphereGeometry args={[.055, 12, 8]} /><meshBasicMaterial color="#ffc875" toneMapped={false} /></mesh>
@@ -190,11 +200,12 @@ function Scene({ animal, clock, playing, reduced, quality, manual, onStage, onSh
   </>;
 }
 
-export default function CinematicHero({ animal, reduced, quality }: { animal: AnimalBundle; reduced: boolean; quality: Quality }) {
+export default function CinematicHero({ animal, reduced, quality, embedded = false, clockRef, storyExit = 0 }: { animal: AnimalBundle; reduced: boolean; quality: Quality; embedded?: boolean; clockRef?: Clock; storyExit?:number }) {
   // Keep one visual profile for the whole hero. Adaptive quality can change between
   // frames on different GPUs; letting it toggle here makes bloom and rat shading pop.
   const stableQuality = useRef<Quality>(reduced ? "low" : quality).current;
-  const clock = useRef(0);
+  const localClock = useRef(0);
+  const clock=clockRef??localClock;
   const [playing, setPlaying] = useState(true);
   const [manual, setManual] = useState<number | null>(null);
   const [stage, setStage] = useState(0);
@@ -208,12 +219,10 @@ export default function CinematicHero({ animal, reduced, quality }: { animal: An
     document.addEventListener("visibilitychange", update);
     return () => document.removeEventListener("visibilitychange", update);
   }, []);
-  return <div className="cinematic-hero" data-testid="cinematic-hero" data-stage={stage}>
-    <Canvas frameloop={visible ? "always" : "demand"} camera={{ position: [3, 3, 10], fov: 40, near: .05, far: 450 }} dpr={[1, stableQuality === "high" ? 1.5 : 1]} gl={{ antialias: true, powerPreference: "high-performance" }} style={{ touchAction: "pan-y" }}>
-      <Scene animal={animal} clock={clock} playing={playing && visible} reduced={reduced} quality={stableQuality} manual={manual} onStage={setStage} onShot={setShot} onReady={() => setReady(true)} />
+  const sceneContent = <>      <Scene animal={animal} clock={clock} playing={playing && visible} reduced={reduced} quality={stableQuality} manual={manual} exitProgress={storyExit} onStage={setStage} onShot={setShot} onReady={() => setReady(true)} />
       {stableQuality === "high" && <EffectComposer multisampling={0}><Bloom intensity={.4} luminanceThreshold={.85} luminanceSmoothing={.25} mipmapBlur /></EffectComposer>}
-    </Canvas>
-    <div className="cinematic-top"><span>VAST / LIVING SYSTEMS</span><span>0{stage + 1} — 03</span></div>
+</>;
+  const controls = <>    <div className="cinematic-top"><span>VAST / LIVING SYSTEMS</span><span>0{stage + 1} — 03</span></div>
     {!ready && <div className="cinematic-loading" role="status">Growing a little world…</div>}
     <div className="cinematic-caption" data-organ={shot >= 0 ? ORGAN_TOUR[shot]!.name : undefined}><p>{shot >= 0 ? ORGAN_TOUR[shot]!.name : TITLES[stage]}</p><span>{shot >= 0 ? ORGAN_TOUR[shot]!.function : DESCRIPTIONS[stage]}</span>{shot >= 0 && <div className="cinematic-rate"><strong>{rates[shot]}</strong> {ORGAN_TOUR[shot]!.unit}<small>{shot === 1 ? "Illustrative animation rate" : "Simulated baseline · animation stylized"}</small></div>}</div>
     <div className="cinematic-controls" role="group" aria-label="Cinematic rat views">
@@ -222,5 +231,7 @@ export default function CinematicHero({ animal, reduced, quality }: { animal: An
       {!reduced && <button onClick={() => setPlaying(!playing)} aria-label={playing ? "Pause cinematic scene" : "Play cinematic scene"}>{playing ? "Pause" : "Play"}</button>}
     </div>
     <small className="cinematic-note">Illustrative anatomy · simulated physiology</small>
-  </div>;
+  </>;
+  if(embedded)return <>{sceneContent}<Html fullscreen calculatePosition={(_,__,size)=>[size.width/2,size.height/2]} style={{pointerEvents:"none"}}><div className="cinematic-hero cinematic-controls-only" data-testid="cinematic-hero" data-stage={stage}>{controls}</div></Html></>;
+  return <div className="cinematic-hero" data-testid="cinematic-hero" data-stage={stage}><Canvas frameloop={visible?"always":"demand"} camera={{position:[3,3,10],fov:40,near:.05,far:450}} dpr={[1,1.25]}>{sceneContent}</Canvas>{controls}</div>;
 }
