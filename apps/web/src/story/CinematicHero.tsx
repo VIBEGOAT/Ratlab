@@ -11,7 +11,9 @@ import { HERO_STARTS, heroCycle, organShot } from "./heroCycle";
 import { useBodyGeometry } from "../three/bodyGeometry";
 import "./cinematic.css";
 import { MacroAnatomy } from "./MacroAnatomy";
-import { ShaderMeadow } from "./ShaderMeadow";
+import { ShaderMeadow, MeadowDetails } from "./ShaderMeadow";
+import { MeadowAtmosphere } from "./MeadowAtmosphere";
+import { ratAgility } from "./ratAgility";
 
 const TITLES = ["Life in motion", "Beneath the surface", "A network of signals"];
 const DESCRIPTIONS = ["A running rat in a sunlit meadow", "Cardiac & pulmonary physiology · illustrative animation", "Central nervous system · illustrative signal propagation"];
@@ -93,20 +95,6 @@ function Signals({ clock, opacity }: { clock: Clock; opacity: Clock }) {
   </group>;
 }
 
-const FLOOR_FRAGMENT = `
-uniform float natural; uniform float time; varying vec2 p;
-void main(){
- vec2 q=p+vec2(time*4.8,0.);
- vec2 cell=abs(fract(q)-.5); vec2 aa=fwidth(q);
- float line=1.-min(smoothstep(.012,.012+aa.x,cell.x),smoothstep(.012,.012+aa.y,cell.y));
- float noise=.5+.25*sin(q.x*2.1+sin(q.y*1.3))+.25*cos(q.y*2.7+sin(q.x));
- vec3 meadow=mix(vec3(.06,.085,.025),vec3(.12,.16,.05),noise);
- meadow=mix(meadow,vec3(.125,.168,.089),smoothstep(8.,20.,length(p)));
- float halo=exp(-length(p)*.08);
- vec3 lab=vec3(.0006,.0015,.0037);
- gl_FragColor=vec4(mix(lab,meadow,natural),1.);
-}`;
-
 function Scene({ animal, clock, playing, reduced, quality, manual, onStage, onShot, onReady }: {
   animal: AnimalBundle; clock: Clock; manual: number | null; playing: boolean; reduced: boolean; quality: Quality; onStage: (stage: number) => void; onShot: (shot: number) => void; onReady: () => void;
 }) {
@@ -115,17 +103,20 @@ function Scene({ animal, clock, playing, reduced, quality, manual, onStage, onSh
   const natural = useRef(1), nerves = useRef(0), organs = useRef(0), sweep = useRef(99);
   const cinematicFocus = useRef<string | null>(null);
   const rat = useRef<THREE.Group>(null), scan = useRef<THREE.Mesh>(null), gutPulse = useRef<THREE.Mesh>(null);
-  const ground = useRef<THREE.ShaderMaterial>(null);
+  const ratPosition = useRef(new THREE.Vector3());
+  const poseRotation = useMemo(() => new THREE.Quaternion(), []);
+  const poseEuler = useMemo(() => new THREE.Euler(), []);
+  const restRotation = useMemo(() => new THREE.Quaternion(), []);
+  const agility = useRef(0), spineFlex = useRef(0);
   const body = useBodyGeometry();
   const visual = useMemo(() => ({ ...ratVisualState(animal, 0), size: 1, tumorRadius: 0, hunch: 0, wasting: 0, ataxia: 0 }), [animal]);
-  const floorUniforms = useMemo(() => ({ natural: { value: 1 }, time: { value: 0 } }), []);
   const gutCurve = useMemo(() => new THREE.CatmullRomCurve3(gutPath().map((p) => new THREE.Vector3(...p))), []);
   const previous = useRef(-1);
   const previousShot = useRef(-1);
   const lookAt = useMemo(() => new THREE.Vector3(), []);
   const focusPoint = useMemo(() => new THREE.Vector3(), []);
   const closePosition = useMemo(() => new THREE.Vector3(), []);
-  const backdrop = useMemo(() => ({ current: new THREE.Color(), meadow: new THREE.Color("#637254"), inside: new THREE.Color("#02050c") }), []);
+  const backdrop = useMemo(() => ({ current: new THREE.Color(), meadow: new THREE.Color("#e8dec3"), inside: new THREE.Color("#02050c") }), []);
   const resumed = useRef(true);
   useEffect(() => { resumed.current = true; }, [playing]);
   useEffect(() => { if (body) onReady(); }, [body, onReady]);
@@ -135,16 +126,17 @@ function Scene({ animal, clock, playing, reduced, quality, manual, onStage, onSh
     const targetState = heroCycle(manual === null ? clock.current : HERO_STARTS[manual]! + .5);
     const blend = reduced ? 1 : 1 - Math.exp(-Math.min(dt,.5) * 3);
     const state = { ...targetState, natural: THREE.MathUtils.lerp(natural.current,targetState.natural,blend), organs: THREE.MathUtils.lerp(organs.current,targetState.organs,blend), nerves: THREE.MathUtils.lerp(nerves.current,targetState.nerves,blend) };
-    if (playing && !reduced) motionClock.current += Math.min(dt,.05) * (1 - .65 * (1-state.natural));
-    const behavior = motionClock.current % 7;
-    walk.current = behavior < 4.5 ? 2.2 : .12;
+    if (playing && !reduced) motionClock.current += Math.min(dt,.15) * (1 - .65 * (1-state.natural));
+    const pose = ratAgility(motionClock.current);
+    agility.current = reduced ? 0 : state.natural;
+    spineFlex.current = pose.flex * state.natural;
+    walk.current = pose.walk * state.natural;
     natural.current = state.natural; nerves.current = state.nerves; organs.current = state.organs;
     sweep.current = state.natural >= .999 ? 99 : state.natural <= .001 ? -99 : -1.9 + state.natural * 5.1;
     if (previous.current !== state.stage) { previous.current = state.stage; onStage(state.stage); }
     const bg = backdrop.current.copy(backdrop.inside).lerp(backdrop.meadow, state.natural);
     scene.background = bg;
     if (scene.fog instanceof THREE.Fog) scene.fog.color.copy(bg);
-    if (ground.current) { ground.current.uniforms.natural!.value = state.natural; ground.current.uniforms.time!.value = clock.current; }
     const shot = state.stage === 1 ? organShot(state.localTime) : { index: -1, zoom: 0 };
     cinematicFocus.current = "macro";
     if (previousShot.current !== shot.index) { previousShot.current = shot.index; onShot(shot.index); }
@@ -161,7 +153,14 @@ function Scene({ animal, clock, playing, reduced, quality, manual, onStage, onSh
       lookAt.lerp(focusPoint, interior);
     }
     camera.lookAt(lookAt);
-    if (rat.current) { const movement = state.natural; rat.current.position.y = reduced ? 0 : (behavior < 4.5 ? .035 + Math.abs(Math.sin(motionClock.current * 12)) * .07 : behavior > 6 ? Math.pow(Math.sin((behavior-6)*Math.PI),2)*.18 : .015) * movement; rat.current.rotation.z = reduced ? 0 : Math.sin(motionClock.current * 12) * .02 * movement; }
+    if (rat.current) {
+      const movement = reduced ? 0 : state.natural * state.natural;
+      rat.current.position.set(pose.x * movement, pose.lift * movement, 0);
+      poseEuler.set(0, pose.yaw, pose.pitch);
+      poseRotation.setFromEuler(poseEuler).slerp(restRotation, 1-movement);
+      rat.current.quaternion.slerp(poseRotation, reduced ? 1 : 1-Math.exp(-dt*14));
+      ratPosition.current.copy(rat.current.position);
+    }
     if (scan.current) {
       scan.current.visible = state.progress > 0;
       scan.current.position.set(state.stage === 0 ? 3.2 - state.progress * 8.3 : -.4, state.stage === 2 ? .08 : .85, 0);
@@ -172,14 +171,16 @@ function Scene({ animal, clock, playing, reduced, quality, manual, onStage, onSh
     if (gutPulse.current) { gutPulse.current.visible = state.organs > .1; gutPulse.current.position.copy(gutCurve.getPointAt((clock.current * .17) % 1)); }
   });
   return <>
-    <fog attach="fog" args={["#637254", 13, 32]} />
+    <fog attach="fog" args={["#e8dec3", 20, 90]} />
     <hemisphereLight args={["#fff8e6", "#35492e", 1.8]} />
-    <directionalLight position={[4, 7, 3]} intensity={2.5} color="#fff0d1" />
+    <directionalLight position={[-6, 2.3, -6.5]} intensity={2.5} color="#fff0d1" />
+    <directionalLight position={[2, 4, 6]} intensity={1.2} color="#fff3db" />
     <directionalLight position={[-4, 3, -5]} intensity={1.7} color="#9cceff" />
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -.04, 0]}><planeGeometry args={[100, 100]} /><shaderMaterial ref={ground} uniforms={floorUniforms} vertexShader="varying vec2 p; void main(){p=position.xy; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}" fragmentShader={FLOOR_FRAGMENT} /></mesh>
-    <ShaderMeadow clock={motionClock} natural={natural} quality={quality} />
+    <MeadowAtmosphere clock={motionClock} natural={natural}/>
+    <ShaderMeadow clock={motionClock} natural={natural} quality={quality} ratPosition={ratPosition}/>
+    <MeadowDetails clock={motionClock} natural={natural} quality={quality}/>
     <group ref={rat} visible={!!body}>
-      <RatModel v={visual} layers={{ ...DEFAULT_LAYERS, xray: false, labels: false, tumor: false }} quality={quality} xrayProgress={natural} walk={reduced ? 0 : walk} gaitSpeed={1} animationClock={motionClock} animate={playing && !reduced} sweepRef={sweep} organOpacity={organs} cinematicFocus={cinematicFocus} />
+      <RatModel v={visual} layers={{ ...DEFAULT_LAYERS, xray: false, labels: false, tumor: false }} quality={quality} xrayProgress={natural} walk={reduced ? 0 : walk} gaitSpeed={1} agility={agility} spineFlex={spineFlex} animationClock={motionClock} animate={playing && !reduced} sweepRef={sweep} organOpacity={organs} cinematicFocus={cinematicFocus} />
       <Signals clock={motionClock} opacity={nerves} />
       <MacroAnatomy clock={motionClock} organs={organs} nerves={nerves} quality={quality} />
       <mesh ref={gutPulse}><sphereGeometry args={[.055, 12, 8]} /><meshBasicMaterial color="#ffc875" toneMapped={false} /></mesh>
@@ -208,7 +209,7 @@ export default function CinematicHero({ animal, reduced, quality }: { animal: An
     return () => document.removeEventListener("visibilitychange", update);
   }, []);
   return <div className="cinematic-hero" data-testid="cinematic-hero" data-stage={stage}>
-    <Canvas frameloop={visible ? "always" : "demand"} camera={{ position: [3, 3, 10], fov: 40, near: .05, far: 110 }} dpr={[1, stableQuality === "high" ? 1.5 : 1]} gl={{ antialias: true, powerPreference: "high-performance" }} style={{ touchAction: "pan-y" }}>
+    <Canvas frameloop={visible ? "always" : "demand"} camera={{ position: [3, 3, 10], fov: 40, near: .05, far: 450 }} dpr={[1, stableQuality === "high" ? 1.5 : 1]} gl={{ antialias: true, powerPreference: "high-performance" }} style={{ touchAction: "pan-y" }}>
       <Scene animal={animal} clock={clock} playing={playing && visible} reduced={reduced} quality={stableQuality} manual={manual} onStage={setStage} onShot={setShot} onReady={() => setReady(true)} />
       {stableQuality === "high" && <EffectComposer multisampling={0}><Bloom intensity={.4} luminanceThreshold={.85} luminanceSmoothing={.25} mipmapBlur /></EffectComposer>}
     </Canvas>

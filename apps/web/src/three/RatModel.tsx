@@ -45,6 +45,8 @@ export interface RatModelProps {
   gaitSpeed?: number;
   /** Cinematic hero only: fade organ anatomy while revealing neural paths. */
   organOpacity?: React.MutableRefObject<number>;
+  agility?: React.MutableRefObject<number>;
+  spineFlex?: React.MutableRefObject<number>;
   surfacePhysical?: boolean;
   xrayProgress?: React.MutableRefObject<number>;
   animationClock?: React.MutableRefObject<number>;
@@ -154,7 +156,7 @@ function Vessels() {
   return <group>{geo.map(({ v, g }) => <mesh key={v.id} geometry={g}><meshStandardMaterial color={v.kind === "artery" ? "#c8323c" : v.kind === "portal" ? "#8a4fb0" : "#4a6fc8"} roughness={0.5} emissive={v.kind === "artery" ? "#4a0c10" : "#101a40"} /></mesh>)}</group>;
 }
 
-export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale = 1, animate = true, quality = "high", exposure = {}, palette = "standard", sweep, sweepRef, labelMode = "grade", tempo = 1, gaitSpeed = 1, organOpacity, cinematicFocus, animationClock, xrayProgress, surfacePhysical = false }: RatModelProps) {
+export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale = 1, animate = true, quality = "high", exposure = {}, palette = "standard", sweep, sweepRef, labelMode = "grade", tempo = 1, gaitSpeed = 1, organOpacity, cinematicFocus, animationClock, xrayProgress, surfacePhysical = false, agility, spineFlex }: RatModelProps) {
   const surfaceOpacity = useMemo(() => new Map<THREE.Material, { opacity: number; transparent: boolean }>(), []);
   const whiskerRef = useRef<THREE.LineSegments>(null);
   const ears = useRef<Array<THREE.Group | null>>([]);
@@ -211,7 +213,7 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
     if (animate) clockT.current += Math.min(dt, 0.1) * tempo;
     const t = animationClock ? animationClock.current : clockT.current;
     if (animationClock) {
-      if (whiskerRef.current) whiskerRef.current.scale.z = 1 + .16 * Math.sin(t*Math.PI*20);
+      if (whiskerRef.current) whiskerRef.current.scale.z = 1 + .16 * Math.sin(t*Math.PI*28);
       if (noseRef.current) noseRef.current.scale.y = .055*(1+.12*Math.sin(t*50));
       ears.current.forEach((ear,i)=>{ if(ear) ear.rotation.z=.1 + .14*Math.pow(Math.max(0,Math.sin(t*2.7+i*2)),10); });
       if (tailRef.current) tailRef.current.rotation.y=.055*Math.sin(t*5)+.025*Math.sin(t*9-.7);
@@ -249,6 +251,8 @@ export function RatModel({ v, layers, selected = null, onSelect, walk = 0, scale
       surfaceOpacity.clear();
     }
     uniforms.uDissolve.value = xrayProgress ? 1-xrayProgress.current : -1;
+    uniforms.uAgility.value = agility?.current ?? 0;
+    uniforms.uFlex.value = spineFlex?.current ?? 0;
     uniforms.uTime.value = t * gaitSpeed;
     uniforms.uSweep.value = sweepRef ? sweepRef.current : sweep !== undefined ? sweep : layers.xray ? -99 : 99;
     uniforms.uBreath.value = (v.respirationBpm / 60) * 0.45 * (1 - 0.4 * v.lethargy);

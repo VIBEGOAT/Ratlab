@@ -12,6 +12,8 @@ import * as THREE from "three";
 
 export interface BodyUniforms {
   uTime: { value: number };
+  uAgility: { value: number };
+  uFlex: { value: number };
   uDissolve: { value: number };
   uBreath: { value: number };
   uHunch: { value: number };
@@ -26,13 +28,13 @@ export interface BodyUniforms {
 
 export function makeBodyUniforms(): BodyUniforms {
   return {
-    uDissolve: { value: -1 }, uTime: { value: 0 }, uBreath: { value: 1.4 }, uHunch: { value: 0 }, uWaste: { value: 0 }, uWalk: { value: 0 },
+    uAgility: { value: 0 }, uFlex: { value: 0 }, uDissolve: { value: -1 }, uTime: { value: 0 }, uBreath: { value: 1.4 }, uHunch: { value: 0 }, uWaste: { value: 0 }, uWalk: { value: 0 },
     uTremor: { value: 0 }, uRuffle: { value: 0 }, uSkinColor: { value: new THREE.Color("#e8a9a2") }, uSweep: { value: 99 },
   };
 }
 
 export const DEFORM_GLSL = /* glsl */ `
-uniform float uTime; uniform float uBreath; uniform float uHunch; uniform float uWaste; uniform float uWalk; uniform float uTremor;
+uniform float uAgility; uniform float uFlex; uniform float uTime; uniform float uBreath; uniform float uHunch; uniform float uWaste; uniform float uWalk; uniform float uTremor;
 vec3 ratDeform(vec3 p) {
   float trunk = smoothstep(-1.75, -1.3, p.x) * (1.0 - smoothstep(1.35, 1.75, p.x));
   float lower = 1.0 - smoothstep(0.28, 0.55, p.y);
@@ -43,13 +45,20 @@ vec3 ratDeform(vec3 p) {
   p.y = 0.92 + (p.y - 0.92) * br; p.z *= br;
   float arch = exp(-pow((p.x + 0.2) / 0.9, 2.0)) * smoothstep(0.7, 1.3, p.y);
   p.y += uHunch * 0.18 * arch;
+  // Smooth thoracic, lumbar and pelvic zones retain a continuous coat.
+  float lumbar=exp(-pow((p.x+.3)/.65,2.))*trunk;
+  float pelvis=exp(-pow((p.x+1.05)/.5,2.))*trunk;
+  p.y += (uAgility*.09+uFlex)*lumbar*(1.-lower);
+  p.z *= 1.+uAgility*.06*pelvis*(1.-lower);
+  p.x += uFlex*.25*(p.x+.3)*trunk;
+  p.y -= uFlex*.25*chest;
   float headW = smoothstep(1.35, 1.75, p.x);
   float ang = -0.32 * uHunch * headW;
   vec2 piv = vec2(1.45, 0.95); vec2 q = p.xy - piv;
   p.xy = piv + vec2(q.x * cos(ang) - q.y * sin(ang), q.x * sin(ang) + q.y * cos(ang));
   float legX = (1.0 - smoothstep(0.22, 0.38, abs(p.x - 1.2))) + (1.0 - smoothstep(0.3, 0.46, abs(p.x + 1.0)));
   float front = step(0.3, p.x);
-  float phase = uTime * 7.0 + front * 3.14159 + step(0.0, p.z) * 3.14159;
+  float phase = uTime * mix(7.0,69.115,uAgility) + front * 3.14159 + step(0.0, p.z) * 3.14159;
   float foot = clamp((0.55 - p.y) / 0.55, 0.0, 1.0);
   p.x += legX * uWalk * 0.1 * sin(phase) * foot;
   p.y += legX * uWalk * 0.04 * max(0.0, cos(phase)) * foot;
