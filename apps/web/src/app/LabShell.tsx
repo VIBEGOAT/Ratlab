@@ -4,7 +4,6 @@ import { AnimalPicker, SetupPanel } from "./SetupPanel";
 import { SECTIONS, type ViewId } from "../lib/nav";
 import { Icon } from "../components/icons";
 import { useSlidingPill } from "../components/motion";
-import { SoundToggle } from "../audio/SoundToggle";
 
 const views = {
   overview: lazy(() => import("../tabs/OverviewTab")),
@@ -72,9 +71,6 @@ export function LabShell() {
           <div className="lab-tools">
             {sec.picker && <AnimalPicker />}
             <DetailSwitch />
-            <SoundToggle className="sound-chip" offText="Rat sounds" onText="Rat sounds on" hint="Synthesised sniffing, a chirp when you click the rat, footsteps and the heartbeat. Real rats make most of their calls above the range of human hearing.">
-              <Icon name="sound" size={16} />
-            </SoundToggle>
           </div>
         </div>
         {sec.id === "design" && <SetupPanel />}

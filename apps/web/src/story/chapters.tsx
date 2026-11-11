@@ -13,20 +13,10 @@ import { outcomeCounts } from "./overlays";
 export function ChapterTwin({ tw, day, split }: { tw: TwinBundle | null; day: number; split: number }) {
   if (!tw) return null;
   const t = tw.treated, u = tw.untreated;
-  const rows: Array<[string, string, string]> = [
-    ["Tumour", t.daily.tumorVolume[day]! > 0 ? `${fmtInt(t.daily.tumorVolume[day]!)} mm³` : "none", u.daily.tumorVolume[day]! > 0 ? `${fmtInt(u.daily.tumorVolume[day]!)} mm³` : "none"],
-    ["Body weight", `${fmtInt(t.daily.bodyWeightG[day]!)} g`, `${fmtInt(u.daily.bodyWeightG[day]!)} g`],
-    ["Sickness index", fmt(t.daily.sickness[day]!, 2), fmt(u.daily.sickness[day]!, 2)],
-    ["Heart injury", GRADE_WORD[Math.min(5, Math.round(t.daily.damage.heart[day]! * 6))]!, GRADE_WORD[Math.min(5, Math.round(u.daily.damage.heart[day]! * 6))]!],
-  ];
   return (
     <>
       <p className="lede">The same rat, with and without treatment. A real animal can only ever be one of these.</p>
-      <p className="small muted">Drag the divider, or use the arrow keys. Day {day}.</p>
-      <div className="compare" role="table" aria-label="Treated against untreated twin">
-        <div role="row" className="compare-head"><span role="columnheader"><span className="sr-only">Measure</span></span><b role="columnheader">Untreated</b><b role="columnheader">Dosed</b></div>
-        {rows.map(([k, a, b]) => <div role="row" key={k}><span role="rowheader" className="muted">{k}</span><b role="cell">{b}</b><b role="cell">{a}</b></div>)}
-      </div>
+      <p className="small muted">Drag the divider, or use the arrow keys. The live readouts stay with each animal at day {day}.</p>
       {u.humane && <p className="small">Without treatment this rat reaches a humane endpoint on day {u.humane.day}. {t.humane ? `With treatment, on day ${t.humane.day}.` : "With treatment, it does not."}</p>}
       <span className="sr-only">Divider at {Math.round(split * 100)} percent.</span>
     </>
