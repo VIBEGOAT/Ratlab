@@ -26,6 +26,10 @@ const views = {
   pitch: lazy(() => import("../tabs/PitchTab")),
 } satisfies Record<ViewId, LazyExoticComponent<() => JSX.Element>>;
 
+/** Toolbar controls are contextual: group-level analyses should not imply that one animal drives them. */
+const ANIMAL_VIEWS = new Set<ViewId>(["overview", "rat", "behaviour", "clinobs", "pkpd", "clinpath", "disease", "twin"]);
+const EXPERT_VIEWS = new Set<ViewId>(["design", "rat", "behaviour", "stats", "population", "fidelity"]);
+
 function DetailSwitch() {
   const detail = useStore((s) => s.detail);
   const setDetail = useStore((s) => s.setDetail);
@@ -69,8 +73,8 @@ export function LabShell() {
             </div>
           ) : <span className="lab-crumb">{sec.label}</span>}
           <div className="lab-tools">
-            {sec.picker && <AnimalPicker />}
-            <DetailSwitch />
+            {sec.picker && ANIMAL_VIEWS.has(viewId) && <AnimalPicker />}
+            {EXPERT_VIEWS.has(viewId) && <DetailSwitch />}
           </div>
         </div>
         {sec.id === "design" && <SetupPanel />}
