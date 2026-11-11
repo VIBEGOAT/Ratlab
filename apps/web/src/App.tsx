@@ -8,7 +8,6 @@ import { NotesWindow } from "./presenter/NotesWindow";
 import { isNotesWindow } from "./presenter/channel";
 import { SoundToggle } from "./audio/SoundToggle";
 import { CommandPalette, openPalette } from "./palette/CommandPalette";
-import { MouseCursor } from "./components/MouseCursor";
 
 const ToxicityPage = lazy(() => import("./toxicity/ToxicityPage").then((m) => ({ default: m.ToxicityPage })));
 const LearnPage = lazy(() => import("./learn/LearnPage").then((m) => ({ default: m.LearnPage })));
@@ -144,7 +143,6 @@ function MainApp() {
       <Footer />
       <Presenter />
       <CommandPalette />
-      <MouseCursor />
     </div>
   );
 }

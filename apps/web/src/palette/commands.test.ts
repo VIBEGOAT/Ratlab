@@ -62,6 +62,7 @@ describe("matching", () => {
     expect(top("present 8")).toBe("present-8");
     expect(top("csv")).toBe("export-csv");
     expect(top("twin")).toBeDefined();
+    expect(top("calculator")).toBe("lab-calculator");
   });
 
   it("requires every word to match, ignores case and accents, and returns nothing for nonsense", () => {
