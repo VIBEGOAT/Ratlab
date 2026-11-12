@@ -3,6 +3,7 @@
 import { ARCHETYPES } from "@eliminate/sim-core";
 import { useStore, useResultsStale } from "../store";
 import { COMPOUNDS, designProblems, type DiseaseChoice } from "../lib/setup";
+import { REFERENCE_CASES, referenceCaseForCompound } from "../lib/referenceStudies";
 import { fmtInt } from "../design/format";
 
 /** Study setup with progressive disclosure: four primary choices, everything else under Advanced. */
@@ -13,6 +14,7 @@ export function SetupPanel() {
   const stale = useResultsStale();
   const problems = designProblems(setup);
   const compoundName = COMPOUNDS.find((c) => c.key === setup.compoundKey)?.name ?? setup.custom.name;
+  const referenceCase = referenceCaseForCompound(setup.compoundKey);
   const routeName = setup.route === "oral" ? "oral gavage" : setup.route === "iv" ? "intravenous dosing" : "dietary dosing";
   const pickCompound = (key: string) => set({ compoundKey: key, highDose: key === "custom" ? setup.custom.defaultDoseMgPerKg : ARCHETYPES[key]!.defaultDoseMgPerKg });
 
@@ -22,16 +24,39 @@ export function SetupPanel() {
         <h2 id="setup-title">Set up the experiment</h2>
       </div>
 
-      <div className="field"><b>1. Choose a compound archetype</b> <span className="small">Fictional teaching compounds model different organ-toxicity patterns; they are not real medicines.</span></div>
-      <div className="cards" role="group" aria-label="Test compound">
-        {COMPOUNDS.map((c) => (
-          <button key={c.key} type="button" className="ccard" aria-pressed={setup.compoundKey === c.key} onClick={() => pickCompound(c.key)}>
-            <b>{c.name}</b><span>{c.sub}</span>
+      <div className="study-route" aria-label="Study design workflow">
+        <span className="active"><b>01</b> Organ challenge</span><span><b>02</b> Reference drug</span><span><b>03</b> Protocol</span><span><b>04</b> Readout</span>
+      </div>
+
+      <div className="field"><b>1. Choose the biological question</b> <span className="small">Each case begins with a known drug–organ relationship, then asks you to design the study that would reveal it.</span></div>
+      <div className="reference-cases" role="group" aria-label="Published reference cases">
+        {REFERENCE_CASES.map((item) => (
+          <button key={item.id} type="button" className="reference-case" aria-pressed={setup.compoundKey === item.compoundKey} onClick={() => pickCompound(item.compoundKey)}>
+            <span className="reference-organ">{item.organShort}</span>
+            <strong>{item.drug}</strong>
+            <span>{item.teachingQuestion}</span>
+            <small>{item.evidenceState === "curating" ? "Evidence package in curation" : "Source mapped · data import next"}</small>
           </button>
         ))}
       </div>
 
-      <div className="field"><b>2. Choose the dosing plan</b> <span className="small">The simulator automatically creates a control, low-, mid- and high-dose group.</span></div>
+      {referenceCase && <div className="case-dossier" aria-live="polite">
+        <div>
+          <span className="eyebrow">Reference case · {referenceCase.organ}</span>
+          <h3>{referenceCase.drug}</h3>
+          <p>{referenceCase.mechanism}</p>
+        </div>
+        <div className="endpoint-list" aria-label="Endpoints taught in this case">
+          {referenceCase.endpoints.map((endpoint) => <span key={endpoint}>{endpoint}</span>)}
+        </div>
+        <div className="evidence-contract">
+          <b>Evidence contract</b>
+          <p><span className="evidence-dot observed" /> Published observations appear only after their numerical tables and units are checked. <span className="evidence-dot predicted" /> Until then, results use the fictional <b>{compoundName.toLowerCase()}</b> model as a labelled prediction proxy.</p>
+          <a href={referenceCase.source.url} target="_blank" rel="noreferrer">{referenceCase.source.label} · {referenceCase.source.citation} ↗</a>
+        </div>
+      </div>}
+
+      <div className="field"><b>2. Design the dosing protocol</b> <span className="small">The simulator creates a control, low-, mid- and high-dose group. Current dose values are model-proxy settings—not published doses.</span></div>
       <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
         <label className="field" htmlFor="top-dose">
           <span className="row"><span>Highest dose</span><b>{fmtInt(setup.highDose)} mg/kg/day</b></span>
@@ -57,7 +82,7 @@ export function SetupPanel() {
 
       <div className="study-sentence" aria-live="polite">
         <span className="eyebrow">Study in plain language</span>
-        <p>Give virtual rats <b>{compoundName}</b> by <b>{routeName}</b>, up to <b>{fmtInt(setup.highDose)} mg/kg/day</b>, for <b>{setup.durationDays} days</b>—then compare exposure, organ injury and recovery with the untreated control.</p>
+        <p>{referenceCase ? <>Explore the <b>{referenceCase.drug}</b> reference case using the labelled <b>{compoundName.toLowerCase()} model proxy</b></> : <>Give virtual rats <b>{compoundName}</b></>} by <b>{routeName}</b>, up to <b>{fmtInt(setup.highDose)} mg/kg/day</b>, for <b>{setup.durationDays} days</b>—then compare exposure, organ injury and recovery with the untreated control.</p>
       </div>
 
       <details className="more">

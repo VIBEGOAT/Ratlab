@@ -1,9 +1,9 @@
-import { lazy, Suspense, useRef, useState, type LazyExoticComponent } from "react";
-import { DoseLesson } from "./DoseLesson";
+import { lazy, Suspense, useRef, type LazyExoticComponent } from "react";
 import { useStore } from "../store";
 import { AnimalPicker, RunStatus, SetupPanel } from "./SetupPanel";
 import { SECTIONS, type SectionDef, type ViewId } from "../lib/nav";
 import { COMPOUNDS } from "../lib/setup";
+import { referenceCaseForCompound } from "../lib/referenceStudies";
 import { Icon } from "../components/icons";
 import { useSlidingPill } from "../components/motion";
 import { SoundToggle } from "../audio/SoundToggle";
@@ -46,7 +46,6 @@ function DetailSwitch({ sec, viewId }: { sec: SectionDef; viewId: ViewId }) {
 }
 
 export function LabShell() {
-  const [lesson, setLesson] = useState(true);
   const section = useStore((s) => s.labSection);
   const view = useStore((s) => s.labView);
   const detail = useStore((s) => s.detail);
@@ -57,14 +56,15 @@ export function LabShell() {
   const viewId = (visibleViews.find(([v]) => v === view)?.[0] ?? visibleViews[0]![0]) as ViewId;
   const View = views[viewId];
   const step = SECTIONS.findIndex((s) => s.id === sec.id);
-  const compound = COMPOUNDS.find((c) => c.key === setup.compoundKey)?.name ?? setup.custom.name;
+  const modelCompound = COMPOUNDS.find((c) => c.key === setup.compoundKey)?.name ?? setup.custom.name;
+  const referenceCase = referenceCaseForCompound(setup.compoundKey);
+  const compound = referenceCase ? `${referenceCase.drug} · model proxy` : modelCompound;
   const animalViews: ViewId[] = ["rat", "behaviour", "clinobs", "pkpd", "clinpath", "disease"];
   const soundViews: ViewId[] = ["rat", "behaviour"];
   const navRef = useRef<HTMLElement>(null);
   const tabsRef = useRef<HTMLDivElement>(null);
   const navPill = useSlidingPill(navRef, '[aria-current="page"]', [sec.id]);
   const tabPill = useSlidingPill(tabsRef, '[aria-selected="true"]', [sec.id, viewId]);
-  if (lesson && section === "design") return <DoseLesson onWorkbench={() => setLesson(false)} />;
   return (
     <div className="lab">
       <nav className="lab-nav" aria-label="Lab sections" ref={navRef}>
