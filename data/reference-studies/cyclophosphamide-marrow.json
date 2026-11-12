@@ -1,29 +1,22 @@
 {
   "schemaVersion": 2,
   "id": "cyclophosphamide-marrow",
-  "status": "source-mapped",
+  "status": "curating",
   "drug": { "genericName": "cyclophosphamide", "synonyms": [], "targetLesson": "marrow suppression and recovery" },
   "source": {
-    "dataset": "Open TG-GATEs", "datasetRecord": "ArrayExpress E-MTAB-799 and E-MTAB-800, Rat / in vivo / liver transcriptomics",
-    "citation": "Igarashi Y et al. Open TG-GATEs: a large-scale toxicogenomics database. Nucleic Acids Research. 2015;43(D1):D921-D927.",
-    "doi": "10.1093/nar/gku955", "primaryProtocolCitation": "E-MTAB-799 and E-MTAB-800 SDRF metadata mirrored in bhklab/TGGATES",
-    "stableIdentifiers": ["E-MTAB-799", "E-MTAB-800", "CHEMBL88"], "licenceChecked": false
+    "dataset": "Europe PMC open full text", "datasetRecord": "PMC13478552; cyclophosphamide-induced hematopoietic suppression in female Sprague–Dawley rats",
+    "citation": "Ten A et al. Hematopoietic and T-lymphopoiesis-stimulating effects of a fluorinated pyrazolopiperidine beta-cyclodextrin complex in cyclophosphamide-induced hematopoietic suppression. Frontiers in Pharmacology. 2026;17:1852779.",
+    "doi": "10.3389/fphar.2026.1852779", "primaryProtocolCitation": "Ten et al. 2026, Rat hemostimulating activity methods; Table 2 and Results", "stableIdentifiers": ["PMC13478552", "PMID:42609633", "DOI:10.3389/fphar.2026.1852779"], "licenceChecked": true, "licence": "CC BY 4.0", "sourceUrl": "https://europepmc.org/articles/PMC13478552"
   },
   "protocol": {
-    "species": "Rattus norvegicus", "strain": "Crj:CD(SD)IGS", "sex": "male", "ageWeeks": 6, "bodyWeightG": null,
-    "route": "gavage", "formulation": null, "doseUnit": "mg/kg", "doseGroups": [0, 15, 50, 150],
-    "frequency": null, "durationDays": null, "groupSize": null,
-    "control": "Control arm recorded at every sacrifice time; vehicle formulation is not stated in the SDRF metadata",
-    "studyArms": [
-      { "type": "single-dose", "accession": "E-MTAB-799", "sacrificeTimes": [3, 6, 9, 24], "sacrificeUnit": "hour" },
-      { "type": "repeat-dose", "accession": "E-MTAB-800", "doseGroups": [0, 1.5, 5, 15], "sacrificeTimes": [4, 8, 15, 29], "sacrificeUnit": "day" }
-    ]
+    "species": "Rattus norvegicus", "strain": "Sprague Dawley", "sex": "female", "ageWeeks": "8–9", "bodyWeightG": "180–220", "route": "intramuscular injection", "formulation": "3% cyclophosphamide solution in isotonic sodium chloride", "doseUnit": "mg/kg", "doseGroups": [0, 90], "frequency": "30 mg/kg on study days 1, 3 and 5", "durationDays": 15, "groupSize": 6, "control": "Untreated intact group; cyclophosphamide placebo arm received saline after cyclophosphamide dosing", "studyArms": [{ "type": "untreated intact", "n": 6, "doseMgPerKg": 0, "time": 15, "unit": "day" }, { "type": "cyclophosphamide suppression arm", "n": 6, "cumulativeDoseMgPerKg": 90, "time": 15, "unit": "day" }]
   },
-  "observations": { "pk": [], "clinicalChemistry": [], "organWeights": [], "histopathology": [], "transcriptomics": [] },
+  "observations": { "pk": [], "clinicalChemistry": [], "organWeights": [], "histopathology": [], "hematology": [{ "evidence": "observed", "sourceRow": "Table 2", "studyArm": "cyclophosphamide suppression arm", "doseMgPerKg": 90, "time": 15, "unit": "day", "endpoint": "WBC", "value": 3.8, "variability": "SD 0.9", "n": 6, "valueUnit": "10^9/L" }, { "evidence": "observed", "sourceRow": "Table 2", "studyArm": "untreated intact", "doseMgPerKg": 0, "time": 15, "unit": "day", "endpoint": "WBC", "value": 10.7, "variability": "SD 1.1", "n": 6, "valueUnit": "10^9/L" }, { "evidence": "observed", "sourceRow": "Results", "studyArm": "cyclophosphamide suppression arm", "doseMgPerKg": 90, "time": 15, "unit": "day", "finding": "marked reduction in circulating leukocytes and lymphocytes" }] },
   "doseConclusion": { "sourceStatementChecked": false, "sourceReportedNoaelMgPerKgDay": null, "sourceReportedLoaelMgPerKgDay": null, "basis": null },
   "review": { "transcribedBy": null, "checkedBy": null, "checkedOn": null, "blockingIssues": [
-    "The mapped ArrayExpress records describe liver transcriptomics, not a bone-marrow toxicity endpoint package",
-    "Blood counts, marrow histopathology and recovery observations are not yet imported",
-    "Formulation, dosing frequency, group size and reuse terms require verification"
+    "This published rat study includes a recovery intervention; VAST currently imports only untreated and cyclophosphamide-suppressed reference observations",
+    "Bone marrow and thymic-cell observations need a second transcription pass",
+    "No source-reported NOAEL/LOAEL has been extracted",
+    "A second reviewer has not yet checked the transcription"
   ] }
 }

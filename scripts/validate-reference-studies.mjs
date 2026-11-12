@@ -42,7 +42,7 @@ for (const name of files) {
       errors.push(`${where} lacks row-level provenance`);
     }
     if (typeof row?.value === "number") {
-      if (empty(row.unit)) errors.push(`${where} numeric value lacks unit`);
+      if (empty(row.valueUnit) && empty(row.unit)) errors.push(`${where} numeric value lacks unit`);
       if (empty(row.n)) missing.push(`${where} sample size`);
       if (empty(row.variability)) missing.push(`${where} variability`);
     }
