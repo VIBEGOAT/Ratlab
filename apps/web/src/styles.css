@@ -498,11 +498,19 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
 .simple-study legend { margin-bottom: 12px; font-weight: 650; }
 .simple-study legend span, .simple-study-controls label > span b i { display: inline-grid; width: 24px; height: 24px; margin-right: 8px; place-items: center; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font: 700 10px var(--f-mono); font-style: normal; }
 .simple-study-models > div { display: grid; grid-template-columns: repeat(5, 1fr); gap: 9px; }
-.simple-study-models button { min-width: 0; min-height: 142px; padding: 14px; display: flex; flex-direction: column; align-items: flex-start; text-align: left; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.simple-study-models button { position: relative; min-width: 0; min-height: 184px; padding: 15px; display: flex; flex-direction: column; align-items: flex-start; text-align: left; overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: linear-gradient(145deg, color-mix(in srgb, white 5%, var(--surface)), color-mix(in srgb, var(--accent) 3%, var(--surface-solid))); box-shadow: inset 0 1px rgba(255,255,255,.08), 0 12px 28px -24px rgba(0,0,0,.55); backdrop-filter: blur(12px); transition: transform .35s var(--ease), border-color .3s var(--ease), box-shadow .35s var(--ease); }
+.simple-study-models button::after, .glass-action::after { content: ""; position: absolute; inset: -80% auto -80% -55%; width: 42%; pointer-events: none; background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent); transform: rotate(18deg); transition: left .65s var(--ease); }
+.simple-study-models button:hover { transform: translateY(-5px); border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); box-shadow: inset 0 1px rgba(255,255,255,.14), 0 22px 36px -25px color-mix(in srgb, var(--accent) 45%, #000); }
+.simple-study-models button:hover::after, .glass-action:hover::after { left: 125%; }
 .simple-study-models button small { color: var(--muted); font-size: 10px; }
-.simple-study-models button b { margin-top: auto; font-size: 14px; overflow-wrap: anywhere; }
-.simple-study-models button p { margin: 6px 0 0; color: var(--muted); font-size: 10px; line-height: 1.35; }
-.simple-study-models button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 -3px var(--accent); }
+.model-card-top { width: 100%; display: flex; align-items: center; justify-content: space-between; }
+.model-card-top i { width: 8px; height: 8px; border: 1px solid var(--line-strong); border-radius: 50%; transition: background .25s var(--ease), box-shadow .25s var(--ease); }
+.simple-study-models button b { margin-top: auto; font: 680 clamp(14px, 1.1vw, 16px) var(--f-display); overflow-wrap: anywhere; }
+.simple-study-models button em { margin-top: 3px; color: var(--ink-2); font-size: 10px; font-style: normal; }
+.simple-study-models button p { margin: 8px 0 0; color: var(--muted); font-size: 10px; line-height: 1.4; }
+.simple-study-models button[aria-pressed="true"] { border-color: var(--accent); background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 13%, var(--surface)), color-mix(in srgb, var(--accent) 4%, var(--surface-solid))); box-shadow: inset 0 -3px var(--accent), 0 22px 38px -28px var(--accent); transform: translateY(-3px); }
+.simple-study-models button[aria-pressed="true"] .model-card-top i { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 13%, transparent), 0 0 18px var(--accent); animation: model-pulse 2s ease-in-out infinite; }
+@keyframes model-pulse { 50% { box-shadow: 0 0 0 9px transparent, 0 0 22px var(--accent); } }
 .simple-study-controls { display: grid; grid-template-columns: 1.25fr .75fr; gap: 26px; padding-block: 28px; border-block: 1px solid var(--line); }
 .simple-study-controls > label { display: flex; flex-direction: column; gap: 12px; }
 .simple-study-controls label > span { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
@@ -513,7 +521,8 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
 .simple-study-controls .segmented button { padding-inline: 8px; }
 .simple-study-controls fieldset > small { display: block; margin-top: 12px; color: var(--muted); font-size: 10px; }
 .simple-study-guide { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.simple-study-guide article { padding: 16px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface); }
+.simple-study-guide article { position: relative; padding: 16px; overflow: hidden; border: 1px solid var(--line); border-radius: 13px; background: linear-gradient(145deg, color-mix(in srgb, white 4%, var(--surface)), var(--surface-solid)); box-shadow: inset 0 1px rgba(255,255,255,.07); transition: transform .3s var(--ease), border-color .3s var(--ease); }
+.simple-study-guide article:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
 .simple-study-guide article > span { color: var(--accent); font: 650 9px var(--f-mono); text-transform: uppercase; letter-spacing: .08em; }
 .simple-study-guide b { display: block; margin: 7px 0 5px; font-size: 13px; }
 .simple-study-guide p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.45; }
@@ -521,6 +530,9 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
 .simple-study-summary p { margin: 5px 0; max-width: 65ch; font-size: 15px; line-height: 1.5; }
 .simple-study-summary small { color: var(--muted); }
 .simple-study-summary button { flex: none; }
+.glass-action { position: relative; display: inline-flex; align-items: center; gap: 15px; overflow: hidden; box-shadow: inset 0 1px rgba(255,255,255,.25), 0 14px 26px -18px var(--accent); }
+.glass-action i { display: grid; width: 24px; height: 24px; place-items: center; border-radius: 50%; background: rgba(255,255,255,.14); font-style: normal; transition: transform .3s var(--ease); }
+.glass-action:hover i { transform: translateX(3px); }
 .simple-advanced { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding-top: 14px; }
 .simple-advanced label { display: flex; flex-direction: column; gap: 6px; color: var(--muted); font-size: 11px; }
 .study-route { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--surface-solid); }
@@ -751,6 +763,12 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
   .simple-study-guide { grid-template-columns: 1fr; }
   .simple-study-summary { align-items: stretch; flex-direction: column; }
   .simple-advanced { grid-template-columns: 1fr 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .simple-study-models button, .simple-study-guide article, .glass-action i { transition: none; transform: none !important; }
+  .simple-study-models button::after, .glass-action::after { display: none; }
+  .simple-study-models button[aria-pressed="true"] .model-card-top i { animation: none; }
 }
 
 /* every view arrives with a short fade-and-rise, its blocks one after another */

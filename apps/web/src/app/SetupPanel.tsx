@@ -6,6 +6,13 @@ import { fmtInt } from "../design/format";
 const ORGAN: Record<string, string> = {
   hepatotoxin: "Liver", nephrotoxin: "Kidneys", cardiotoxin: "Heart", neurotoxin: "Nervous system", myelotoxin: "Bone marrow", reference: "Low toxicity",
 };
+const DRUG: Record<string, { name: string; model: string; note: string }> = {
+  hepatotoxin: { name: "Acetaminophen", model: "Liver injury model", note: "Explore reactive-metabolite stress in the liver." },
+  nephrotoxin: { name: "Cisplatin", model: "Kidney injury model", note: "Explore drug accumulation and tubular injury." },
+  cardiotoxin: { name: "Doxorubicin", model: "Cardiac injury model", note: "Balance anticancer activity with heart stress." },
+  neurotoxin: { name: "Paclitaxel", model: "Nerve injury model", note: "Explore exposure-related peripheral nerve effects." },
+  myelotoxin: { name: "Cyclophosphamide", model: "Marrow suppression model", note: "Explore reduced blood-cell production and recovery." },
+};
 
 /** The Lab starts with only the decisions needed to run a teaching simulation. */
 export function SetupPanel() {
@@ -17,6 +24,7 @@ export function SetupPanel() {
   const stale = useResultsStale();
   const problems = designProblems(setup);
   const selected = COMPOUNDS.find((item) => item.key === setup.compoundKey);
+  const referenceDrug = DRUG[setup.compoundKey];
   const pick = (key: string) => set({
     studyMode: "sandbox",
     compoundKey: key,
@@ -28,7 +36,7 @@ export function SetupPanel() {
     <header><span className="eyebrow">New simulation</span><h2 id="setup-title">Design a study</h2><p>Choose an organ response to investigate. The Lab will compare an untreated control with three increasing dose groups.</p></header>
 
     <fieldset className="simple-study-models"><legend><span>1</span> Choose a toxicity model</legend><div>
-      {COMPOUNDS.filter((item) => item.key !== "reference").map((item) => <button key={item.key} type="button" aria-pressed={setup.compoundKey === item.key} onClick={() => pick(item.key)}><small>{ORGAN[item.key]}</small><b>{item.name}</b><p>{item.sub}</p></button>)}
+      {COMPOUNDS.filter((item) => item.key !== "reference").map((item) => { const drug = DRUG[item.key]!; return <button key={item.key} type="button" aria-pressed={setup.compoundKey === item.key} onClick={() => pick(item.key)}><span className="model-card-top"><small>{ORGAN[item.key]}</small><i aria-hidden="true" /></span><b>{drug.name}</b><em>{drug.model}</em><p>{drug.note}</p></button>; })}
     </div></fieldset>
 
     <div className="simple-study-controls">
@@ -38,7 +46,7 @@ export function SetupPanel() {
 
     <div className="simple-study-guide" aria-label="How the virtual study works"><article><span>Control</span><b>What is normal?</b><p>Untreated virtual rats provide the baseline for every comparison.</p></article><article><span>Dose groups</span><b>Does exposure matter?</b><p>Low, mid and high doses reveal whether effects increase with dose.</p></article><article><span>Readout</span><b>What changed?</b><p>Results connect exposure with organ response, signs and recovery.</p></article></div>
 
-    <div className="simple-study-summary"><div><span className="eyebrow">Your study</span><p>Test the <b>{ORGAN[setup.compoundKey]?.toLowerCase() ?? "custom"}</b> model for <b>{setup.durationDays} days</b>, comparing untreated rats with doses up to <b>{fmtInt(setup.highDose)} mg/kg/day</b>.</p><small>Educational simulation—not observed drug data.</small></div><button type="button" className="primary" onClick={() => goLab("overview")}>Run and view results →</button></div>
+    <div className="simple-study-summary"><div><span className="eyebrow">Your study</span><p>Test a <b>{referenceDrug?.name ?? "custom compound"}-inspired {ORGAN[setup.compoundKey]?.toLowerCase() ?? "organ"} model</b> for <b>{setup.durationDays} days</b>, comparing untreated rats with doses up to <b>{fmtInt(setup.highDose)} mg/kg/day</b>.</p><small>Educational model inspired by a known toxicity pattern—not observed results for this drug.</small></div><button type="button" className="primary glass-action" onClick={() => goLab("overview")}><span>Run simulation</span><i aria-hidden="true">→</i></button></div>
 
     {detail === "expert" && <details className="more"><summary>Advanced study settings</summary><div className="simple-advanced">
       <label htmlFor="nsex">Animals per sex<input id="nsex" type="number" min={2} max={20} value={setup.nPerSex} onChange={(event) => set({ nPerSex: +event.target.value })} /></label>
