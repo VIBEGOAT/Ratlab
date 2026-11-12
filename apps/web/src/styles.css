@@ -583,6 +583,11 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
 .evidence-lab { display: flex; flex-direction: column; gap: 16px; padding: 22px; border: 1px solid var(--line-strong); border-radius: 18px; background: var(--surface); }
 .evidence-lab-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
 .evidence-lab-head h3 { margin: 4px 0 0; font: 650 24px/1.1 var(--f-display); letter-spacing: -.025em; }
+.evidence-guard { display: flex; align-items: baseline; gap: 10px; padding: 11px 13px; border: 1px solid var(--line); border-radius: 10px; font-size: 11px; line-height: 1.45; background: var(--surface-solid); }
+.evidence-guard b { flex: 0 0 auto; }
+.evidence-guard span { color: var(--muted); }
+.evidence-guard.protocol-aligned { border-color: color-mix(in srgb, var(--good) 55%, var(--line)); }
+.evidence-guard.related-question { border-color: color-mix(in srgb, var(--warn) 55%, var(--line)); }
 .evidence-rule { flex: none; padding: 6px 9px; border: 1px solid var(--warn); border-radius: 999px; color: var(--warn); font: 600 9px var(--f-mono); text-transform: uppercase; }
 .evidence-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .evidence-column { min-width: 0; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-solid); }
@@ -597,6 +602,9 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
 .evidence-column li strong { font: 600 11px var(--f-mono); }
 .evidence-column li span { color: var(--muted); text-align: right; font-size: 10px; }
 .evidence-column li p { grid-column: 1 / -1; margin: 2px 0 0; font-size: 11px; }
+.evidence-scope { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; padding: 12px 14px; border-radius: 10px; background: color-mix(in srgb, var(--surface-solid) 75%, transparent); color: var(--muted); font-size: 11px; line-height: 1.45; }
+.evidence-scope b { color: var(--ink-2); }
+.evidence-scope span { grid-column: 1 / -1; }
 .model-evidence-card { display: grid; gap: 5px; margin-top: 18px; padding: 16px; border-radius: 12px; background: color-mix(in srgb, var(--warn) 7%, var(--surface)); }
 .model-evidence-card span { color: var(--muted); font-size: 10px; }
 .model-evidence-card strong { margin-bottom: 8px; font-size: 15px; }

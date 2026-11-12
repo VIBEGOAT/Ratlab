@@ -11,7 +11,7 @@ import { AnimatedNumber } from "../components/motion";
 import { Icon } from "../components/icons";
 import { Empty, NeedsStudy } from "../components/ui";
 import type { ViewId } from "../lib/nav";
-import { referenceCaseForCompound } from "../lib/referenceStudies";
+import { assessSandboxEvidence, referenceCaseForCompound } from "../lib/referenceStudies";
 
 const USES: Array<[keyof typeof CONTEXT_PRESETS, string]> = [["education", "Teaching"], ["screening", "Screening compounds"], ["designAid", "Designing a study"], ["replacement", "Replacing an animal study"]];
 
@@ -59,7 +59,12 @@ export default function OverviewTab() {
           const end = t ? ratVisualState(t, t.days) : null;
           const cmax = t ? (t.pkIntervals?.first.cmax ?? Math.max(...t.plasma)) : null;
           const highGroup = p.study.design.groups.filter((g) => g.kind === "main").sort((a, b) => b.doseMgPerKg - a.doseMgPerKg)[0];
-          const modelLiver = highGroup ? p.histo.find((row) => row.groupId === highGroup.id && row.organ === "liver" && row.sex === "M") : undefined;
+          const modelEndpoint = referenceCase && highGroup
+            ? p.histo.find((row) => row.groupId === highGroup.id && row.organ === referenceCase.sandboxOrgan && row.sex === "M")
+            : undefined;
+          const evidenceGuard = referenceCase && highGroup
+            ? assessSandboxEvidence(referenceCase, { route: setup.route, durationDays: setup.durationDays, highDose: highGroup.doseMgPerKg })
+            : null;
           return (
             <div className="overview">
               <section className={`verdict ${verdict.tone}`} aria-labelledby="verdict-title">
@@ -113,10 +118,11 @@ export default function OverviewTab() {
               </div>
 
               {referenceCase?.publishedFindings && <section className="evidence-lab" aria-labelledby="evidence-lab-title">
-                <div className="evidence-lab-head">
+                  <div className="evidence-lab-head">
                   <div><span className="eyebrow">Evidence comparison · {referenceCase.drug}</span><h3 id="evidence-lab-title">Same biological question. Different evidence.</h3></div>
                   <span className="evidence-rule">Do not merge these columns</span>
                 </div>
+                  {evidenceGuard && <div className={`evidence-guard ${evidenceGuard.verdict}`} role="status"><b>{evidenceGuard.title}</b><span>{evidenceGuard.detail}</span></div>}
                 <div className="evidence-columns">
                   <article className="evidence-column observed">
                     <div className="evidence-column-title"><span>Published observation</span><b>{referenceCase.source.label}</b></div>
@@ -126,9 +132,10 @@ export default function OverviewTab() {
                   <article className="evidence-column predicted">
                     <div className="evidence-column-title"><span>Predicted</span><b>VAST model sandbox</b></div>
                     <p>A fictional organ-toxicity proxy at your selected design—not a fitted {referenceCase.drug} model.</p>
-                    {modelLiver && highGroup ? <div className="model-evidence-card"><span>Model top dose</span><strong>{fmtInt(highGroup.doseMgPerKg)} mg/kg/day</strong><span>Predicted liver pathology</span><strong>{GRADE_SEVERITY[modelLiver.maxGrade as 0 | 1 | 2 | 3 | 4 | 5]} · {FINDINGS.liver[modelLiver.maxGrade as 0 | 1 | 2 | 3 | 4 | 5]}</strong><small>Mean model grade {modelLiver.meanGrade.toFixed(2)} · males</small></div> : <p>Model pathology is still calculating.</p>}
+                    {modelEndpoint && highGroup ? <div className="model-evidence-card"><span>Model top dose</span><strong>{fmtInt(highGroup.doseMgPerKg)} mg/kg/day</strong><span>Predicted {ORGAN_LABEL[referenceCase.sandboxOrgan]} state</span><strong>{GRADE_SEVERITY[modelEndpoint.maxGrade as 0 | 1 | 2 | 3 | 4 | 5]} · {FINDINGS[referenceCase.sandboxOrgan][modelEndpoint.maxGrade as 0 | 1 | 2 | 3 | 4 | 5]}</strong><small>Mean model grade {modelEndpoint.meanGrade.toFixed(2)} · males</small></div> : <p>Model endpoint is still calculating.</p>}
                   </article>
                 </div>
+                <div className="evidence-scope"><b>Source supports:</b> {referenceCase.evidenceScope}<span><b>Not available in this source:</b> {referenceCase.comparison.unavailable.join(" · ")}</span></div>
                 <div className="evidence-question">
                   <h4>What can you conclude?</h4>
                   <div role="group" aria-label="Evidence interpretation question">

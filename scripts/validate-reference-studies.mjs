@@ -21,6 +21,19 @@ for (const name of files) {
   need(item.source?.datasetRecord, "stable dataset record");
   need(item.source?.primaryProtocolCitation, "primary protocol citation");
   need(item.source?.stableIdentifiers, "stable source identifiers");
+  const catalogue = item.source?.catalogueVerification;
+  need(catalogue?.service, "catalogue-verification service");
+  need(catalogue?.checkedOn, "catalogue-verification date");
+  need(catalogue?.verifiedIdentifiers, "catalogue-verified identifier");
+  if (catalogue?.service && catalogue.service !== "Europe PMC") errors.push("catalogue-verification service must be Europe PMC");
+  if (catalogue?.checkedOn && !/^\d{4}-\d{2}-\d{2}$/.test(catalogue.checkedOn)) errors.push("catalogue-verification date must be ISO YYYY-MM-DD");
+  const knownIdentifiers = new Set([
+    ...(item.source?.stableIdentifiers ?? []),
+    ...(item.source?.supportingSources ?? []).flatMap((source) => source.stableIdentifiers ?? []),
+  ]);
+  for (const identifier of catalogue?.verifiedIdentifiers ?? []) {
+    if (!knownIdentifiers.has(identifier)) errors.push(`catalogue-verified identifier ${identifier} is not declared by a source`);
+  }
 
   for (const [key, label] of [
     ["species", "species"], ["strain", "strain"], ["sex", "sex"], ["route", "route"],

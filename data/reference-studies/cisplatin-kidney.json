@@ -13,7 +13,8 @@
     "licenceChecked": true,
     "licence": "CC BY 4.0",
     "sourceUrl": "https://europepmc.org/articles/PMC13403953",
-    "supportingSources": [{ "citation": "Khallaf EK et al. Scientific Reports. 2026;16:15227.", "doi": "10.1038/s41598-026-50755-0", "role": "previously mapped single-dose renal injury protocol" }]
+    "supportingSources": [{ "citation": "Khallaf EK et al. Scientific Reports. 2026;16:15227.", "doi": "10.1038/s41598-026-50755-0", "role": "previously mapped single-dose renal injury protocol" }],
+    "catalogueVerification": { "service": "Europe PMC", "checkedOn": "2026-11-12", "verifiedIdentifiers": ["PMC13403953"], "note": "Identifier and bibliographic-record check only; not a transcription review." }
   },
   "protocol": {
     "species": "Rattus norvegicus", "strain": "Wistar albino", "sex": "male", "ageWeeks": "8–12", "bodyWeightG": null,

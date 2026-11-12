@@ -9,7 +9,8 @@
     "doi": "10.3390/medsci14030342", "primaryProtocolCitation": "Goje et al. 2026, Methods: Animal Model of Doxorubicin-Induced Cardiotoxicity; Results: ECG Findings and Figure 11",
     "stableIdentifiers": ["PMC13413517", "PMID:42506311", "DOI:10.3390/medsci14030342"], "licenceChecked": true,
     "licence": "CC BY 4.0", "sourceUrl": "https://europepmc.org/articles/PMC13413517",
-    "supportingSources": [{ "id": "frontiers-2025-dox18", "citation": "Alghamdi SA et al. Dual therapy with allicin and metformin provides superior cardioprotection against doxorubicin-induced cardiotoxicity in rats compared to monotherapy. Frontiers in Pharmacology. 2025;16:1725943.", "doi": "10.3389/fphar.2025.1725943", "stableIdentifiers": ["PMC12827077", "PMID:41585873"], "licence": "CC BY 4.0", "sourceUrl": "https://europepmc.org/articles/PMC12827077", "role": "independent 18 mg/kg cumulative doxorubicin rat pathology and biomarker evidence" }]
+    "supportingSources": [{ "id": "frontiers-2025-dox18", "citation": "Alghamdi SA et al. Dual therapy with allicin and metformin provides superior cardioprotection against doxorubicin-induced cardiotoxicity in rats compared to monotherapy. Frontiers in Pharmacology. 2025;16:1725943.", "doi": "10.3389/fphar.2025.1725943", "stableIdentifiers": ["PMC12827077", "PMID:41585873"], "licence": "CC BY 4.0", "sourceUrl": "https://europepmc.org/articles/PMC12827077", "role": "independent 18 mg/kg cumulative doxorubicin rat pathology and biomarker evidence" }],
+    "catalogueVerification": { "service": "Europe PMC", "checkedOn": "2026-11-12", "verifiedIdentifiers": ["PMC13413517", "PMC12827077"], "note": "Identifier and bibliographic-record check only; not a transcription review." }
   },
   "protocol": {
     "species": "Rattus norvegicus", "strain": "Sprague Dawley", "sex": "male", "ageWeeks": null, "bodyWeightG": "400–450",
