@@ -8,7 +8,8 @@
     "citation": "Goje ID et al. Empagliflozin Protects Against Doxorubicin Cardiotoxicity: Integrative Assessment of Cardiac Kinetics and Electrophysiology Using Machine Learning in a Rat Model. Medical Sciences. 2026;14:342.",
     "doi": "10.3390/medsci14030342", "primaryProtocolCitation": "Goje et al. 2026, Methods: Animal Model of Doxorubicin-Induced Cardiotoxicity; Results: ECG Findings and Figure 11",
     "stableIdentifiers": ["PMC13413517", "PMID:42506311", "DOI:10.3390/medsci14030342"], "licenceChecked": true,
-    "licence": "CC BY 4.0", "sourceUrl": "https://europepmc.org/articles/PMC13413517"
+    "licence": "CC BY 4.0", "sourceUrl": "https://europepmc.org/articles/PMC13413517",
+    "supportingSources": [{ "id": "frontiers-2025-dox18", "citation": "Alghamdi SA et al. Dual therapy with allicin and metformin provides superior cardioprotection against doxorubicin-induced cardiotoxicity in rats compared to monotherapy. Frontiers in Pharmacology. 2025;16:1725943.", "doi": "10.3389/fphar.2025.1725943", "stableIdentifiers": ["PMC12827077", "PMID:41585873"], "licence": "CC BY 4.0", "sourceUrl": "https://europepmc.org/articles/PMC12827077", "role": "independent 18 mg/kg cumulative doxorubicin rat pathology and biomarker evidence" }]
   },
   "protocol": {
     "species": "Rattus norvegicus", "strain": "Sprague Dawley", "sex": "male", "ageWeeks": null, "bodyWeightG": "400–450",
@@ -21,7 +22,11 @@
     ]
   },
   "observations": {
-    "pk": [], "clinicalChemistry": [], "organWeights": [], "histopathology": [],
+    "pk": [], "clinicalChemistry": [], "organWeights": [], "histopathology": [
+      { "evidence": "observed", "sourceId": "frontiers-2025-dox18", "sourceRow": "Table 1", "studyArm": "doxorubicin-only", "cumulativeDoseMgPerKg": 18, "time": 22, "unit": "day", "n": 10, "finding": "Cardiac histopathology total score 10/15: degeneration, pyknosis, cell infiltration, necrosis and fibre fragmentation each scored 2/3" },
+      { "evidence": "observed", "sourceId": "frontiers-2025-dox18", "sourceRow": "Results 3.2; Figure 2", "studyArm": "doxorubicin-only", "cumulativeDoseMgPerKg": 18, "time": 22, "unit": "day", "n": 10, "finding": "CK-MB, LDH and cardiac troponin-I were elevated versus control (all p < 0.0001)" },
+      { "evidence": "observed", "sourceId": "frontiers-2025-dox18", "sourceRow": "Results 3.3–3.5", "studyArm": "doxorubicin-only", "cumulativeDoseMgPerKg": 18, "time": 22, "unit": "day", "n": 10, "finding": "GSH, GPx, SOD, CAT and nitric oxide were reduced; MDA increased versus control (all reported p < 0.0001)" }
+    ],
     "cardiacFunction": [
       { "evidence": "observed", "sourceRow": "Results 3.1; Figure 6", "studyArm": "doxorubicin injury arm", "doseMgPerKg": 15, "time": 14, "unit": "day", "finding": "lower heart rate with prolonged QRS, PR, QT and QTc intervals" },
       { "evidence": "observed", "sourceRow": "Results 3.1; Figure 6", "studyArm": "doxorubicin injury arm", "doseMgPerKg": 15, "time": 14, "unit": "day", "finding": "reduced R-wave amplitude and negative T-wave morphology" },
@@ -30,8 +35,8 @@
   },
   "doseConclusion": { "sourceStatementChecked": false, "sourceReportedNoaelMgPerKgDay": null, "sourceReportedLoaelMgPerKgDay": null, "basis": null },
   "review": { "transcribedBy": null, "checkedBy": null, "checkedOn": null, "blockingIssues": [
-    "ECG values are presented graphically and have not been digitized or independently checked",
-    "The optical 1–10 cardiotoxicity score is cohort-relative and is not a universal threshold",
+    "ECG and serum biomarker magnitudes are presented graphically and have not been digitized or independently checked",
+    "The optical 1–10 cardiotoxicity score is cohort-relative; the supporting pathology score is a distinct 0–15 study-specific score",
     "No source-reported NOAEL/LOAEL has been extracted",
     "A second reviewer has not yet checked the transcription"
   ] }
