@@ -67,12 +67,14 @@ function HeartListen({ bpm }: { bpm: number }) {
 
 function RatLab({ tw }: { tw: TwinBundle }) {
   const t = tw.treated;
+  const compoundKey = useStore((s) => s.setup.compoundKey);
+  const target = ({ hepatotoxin: "liver", nephrotoxin: "kidney", cardiotoxin: "heart", neurotoxin: "brain", myelotoxin: "marrow" } as const)[compoundKey as "hepatotoxin" | "nephrotoxin" | "cardiotoxin" | "neurotoxin" | "myelotoxin"] ?? "liver";
   const [day, setDay] = useState(t.days);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
   const [layers, setLayers] = useState<Layers>(DEFAULT_LAYERS);
-  const [selected, setSelected] = useState<Organ | null>(null);
-  const [twins, setTwins] = useState(true);
+  const [selected, setSelected] = useState<Organ | null>(target);
+  const [twins, setTwins] = useState(false);
   const [reset, setReset] = useState(0);
   const quality = useStore((s) => s.quality);
   const setQuality = useStore((s) => s.setQuality);
@@ -82,7 +84,7 @@ function RatLab({ tw }: { tw: TwinBundle }) {
   useKickResize(reset);
   const d = Math.min(t.days, Math.round(day));
 
-  useEffect(() => { setDay(t.days); setPlaying(false); }, [t]);
+  useEffect(() => { setDay(t.days); setPlaying(false); setSelected(target); }, [t, target]);
   useEffect(() => {
     if (!playing) return;
     const id = setInterval(() => setDay((x) => { const n = x + speed * 0.1; if (n >= t.days) { setPlaying(false); return t.days; } return n; }), 100);
@@ -112,6 +114,7 @@ function RatLab({ tw }: { tw: TwinBundle }) {
             </SceneBoundary>
           ) : <Empty>This browser does not offer WebGL, so the 3D rat cannot be drawn. The readouts below still work.</Empty>}
           <div className="small muted" style={{ position: "absolute", right: 10, top: 8, pointerEvents: "none" }}>drag to rotate · scroll to zoom · click an organ</div>
+          <div className="organ-response-hud" aria-live="polite"><span>Target organ</span><b>{ORGAN_LABEL[target]}</b><i className="gdot" style={{ background: gradeVar(v.organs[target].grade) }} aria-hidden="true" /><small>{GRADE_WORD[v.organs[target].grade]} · animated tissue response</small></div>
         </div>
         <div style={{ padding: "10px 14px", display: "flex", flexDirection: "column", gap: 10, borderTop: "1px solid var(--line)" }}>
           <div className="slider-row">

@@ -101,11 +101,24 @@ function OrganPart({ organ, shapes, damage, grade, selected, hovered, setHovered
   onSelect?: (o: Organ) => void; showLabel: boolean; label: string; exposure: number; palette: "standard" | "cb"; quality: Quality; meshRef?: React.MutableRefObject<THREE.Group | null>;
 }) {
   const mats = useRef<THREE.MeshStandardMaterial[]>([]);
+  const meshes = useRef<THREE.Mesh[]>([]);
   const color = useMemo(() => organColour(organ, damage), [organ, damage]);
   const gradeColor = useMemo(() => new THREE.Color(GRADE_HEX[palette][Math.min(5, grade)]!), [grade, palette]);
   const teal=useMemo(()=>new THREE.Color(highlightColor),[highlightColor]);
   useFrame(({ clock },dt) => {
     const t=clock.elapsedTime;
+    const injuryWave = damage > .04 ? Math.sin(t * (1.8 + damage * 2.4)) * damage : 0;
+    meshes.current.forEach((mesh, index) => {
+      if (!mesh) return;
+      const shape = shapes[index]!;
+      const focusPulse = selected ? .035 * Math.sin(t * 4.2) : 0;
+      const swell = organ === "kidney" ? .16 : organ === "heart" ? .12 : organ === "brain" ? .1 : .2;
+      const sx = 1 + damage * swell + focusPulse + injuryWave * .025;
+      const sy = 1 + damage * (swell * .35) - injuryWave * .045 + focusPulse;
+      const sz = 1 + damage * (swell * .7) + injuryWave * .035 + focusPulse;
+      mesh.scale.set(shape.radii[0] * sx, shape.radii[1] * sy, shape.radii[2] * sz);
+      mesh.rotation.z = (shape.rot?.[2] ?? 0) + injuryWave * .035 * (index % 2 ? -1 : 1);
+    });
     for(const m of mats.current){
       if(!m)continue;
       const active=selected||hovered||exposure>.02;
@@ -117,14 +130,23 @@ function OrganPart({ organ, shapes, damage, grade, selected, hovered, setHovered
   });
   return (
     <group name={organ} ref={meshRef ?? undefined} position={meshRef ? shapes[0]!.center : undefined}>
-      {shapes.map((s, i) => (
-        <mesh key={i} geometry={quality === "high" ? SPHERE : SPHERE_LO} position={meshRef ? [s.center[0] - shapes[0]!.center[0], s.center[1] - shapes[0]!.center[1], s.center[2] - shapes[0]!.center[2]] : s.center} scale={s.radii} rotation={s.rot ?? [0, 0, 0]}
+      {shapes.map((s, i) => {
+        const p: [number, number, number] = meshRef ? [s.center[0] - shapes[0]!.center[0], s.center[1] - shapes[0]!.center[1], s.center[2] - shapes[0]!.center[2]] : s.center;
+        return <group key={i}>
+        <mesh ref={(node) => { if (node) meshes.current[i] = node; }} geometry={quality === "high" ? SPHERE : SPHERE_LO} position={p} scale={s.radii} rotation={s.rot ?? [0, 0, 0]}
           onClick={(e) => { e.stopPropagation(); onSelect?.(organ); }}
           onPointerOver={(e) => { e.stopPropagation(); setHovered(organ); document.body.style.cursor = "pointer"; }}
           onPointerOut={() => { setHovered(null); document.body.style.cursor = ""; }}>
           <meshStandardMaterial ref={(m) => { if (m) mats.current[i] = m; }} color={color} roughness={0.42} metalness={0.02} />
         </mesh>
-      ))}
+        {grade >= 2 && Array.from({ length: Math.min(4, grade) }, (_, lesion) => {
+          const a = lesion * 2.31 + i;
+          return <mesh key={`lesion-${lesion}`} position={[p[0] + Math.cos(a) * s.radii[0] * .72, p[1] + (.18 + lesion * .13) * s.radii[1], p[2] + Math.sin(a) * s.radii[2] * .78]} scale={(.025 + grade * .006) * (lesion % 2 ? .8 : 1)} geometry={SPHERE_LO}>
+            <meshStandardMaterial color={grade >= 4 ? "#3b0810" : "#c43b32"} emissive={grade >= 4 ? "#5d0710" : "#7d160f"} emissiveIntensity={.55} roughness={.7} />
+          </mesh>;
+        })}
+        </group>;
+      })}
       {showLabel && label && (grade >= 1 || labelMode === "names") && (
         <Html center position={meshRef ? [0, shapes[0]!.radii[1] + .12, 0] : [shapes[0]!.center[0], shapes[0]!.center[1] + shapes[0]!.radii[1] + 0.12, shapes[0]!.center[2]]} zIndexRange={[10, 0]} style={{ pointerEvents: "none" }}>
           <div style={{ font: "600 11px 'Geist Mono', monospace", padding: "2px 7px", borderRadius: 999, background: "rgba(8,12,13,0.82)", color: GRADE_HEX[palette][Math.min(5, grade)], border: "1px solid currentColor", whiteSpace: "nowrap", backdropFilter: "blur(4px)" }}>{grade >= 1 ? `${label} · G${grade}` : label}</div>
