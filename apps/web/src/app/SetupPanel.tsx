@@ -75,18 +75,6 @@ export function SetupPanel() {
         </div>
       </div>}
 
-      {referenceCase && <div className="evidence-mode" role="group" aria-label="Evidence mode">
-        <button type="button" className={setup.studyMode === "published" ? "active" : ""} disabled={referenceCase.id !== "acetaminophen-liver"} aria-pressed={setup.studyMode === "published"} onClick={() => set({ studyMode: "published" })}>
-          <span><b>Published protocol</b><small>Observed dose groups and endpoints</small></span>
-          <em>{referenceCase.id === "acetaminophen-liver" ? "Available · limited evidence" : "Locked · data checking"}</em>
-        </button>
-        <button type="button" className={setup.studyMode === "sandbox" ? "active" : ""} aria-pressed={setup.studyMode === "sandbox"} onClick={() => set({ studyMode: "sandbox" })}>
-          <span><b>Model sandbox</b><small>Change dose and duration to explore</small></span>
-          <em>Prediction</em>
-        </button>
-        <p>{setup.studyMode === "published" ? <><b>Published mode never fills gaps with simulated values.</b> This package currently supports protocol metadata and processed pathology findings only.</> : <><b>You are not editing the published experiment.</b> The controls below change a teaching model.</>}</p>
-      </div>}
-
       {referenceCase?.publishedDoseGroups && <div className="protocol-compare" aria-label="Published and model dose comparison">
         <div><span className="eyebrow">Published design</span><strong>{referenceCase.publishedDoseGroups.map(fmtInt).join(" · ")}</strong><small>mg/kg · observed protocol arms</small></div>
         <span className="protocol-arrow" aria-hidden="true">→</span>

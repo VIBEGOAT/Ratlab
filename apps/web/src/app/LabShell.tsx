@@ -70,7 +70,7 @@ export function LabShell() {
   const step = SECTIONS.findIndex((s) => s.id === sec.id);
   const modelCompound = COMPOUNDS.find((c) => c.key === setup.compoundKey)?.name ?? setup.custom.name;
   const referenceCase = referenceCaseForCompound(setup.compoundKey);
-  const compound = referenceCase ? `${referenceCase.drug} · ${setup.studyMode === "published" ? "published protocol" : "model proxy"}` : modelCompound;
+  const compound = referenceCase ? `${referenceCase.drug} · ${setup.studyMode === "published" ? "guided practical" : "model proxy"}` : modelCompound;
   const publishedTopDose = referenceCase?.publishedDoseGroups?.at(-1);
   const animalViews: ViewId[] = ["rat", "behaviour", "clinobs", "pkpd", "clinpath", "disease"];
   const soundViews: ViewId[] = ["rat", "behaviour"];
