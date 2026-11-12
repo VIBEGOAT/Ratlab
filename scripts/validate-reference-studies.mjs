@@ -49,6 +49,10 @@ for (const name of files) {
   }
 
   if (item.doseConclusion?.sourceStatementChecked !== true) missing.push("source NOAEL/LOAEL statement check");
+  need(item.websiteUse?.scope, "website-use scope");
+  need(item.websiteUse?.approvedClaims, "approved website claims");
+  need(item.websiteUse?.prohibitedClaims, "prohibited website claims");
+  need(item.websiteUse?.displayRequirements, "website display requirements");
   need(item.review?.transcribedBy, "transcriber");
   need(item.review?.checkedBy, "second reviewer");
   need(item.review?.checkedOn, "review date");

@@ -41,6 +41,7 @@
     }
   },
   "doseConclusion": { "sourceStatementChecked": false, "sourceReportedNoaelMgPerKgDay": null, "sourceReportedLoaelMgPerKgDay": null, "basis": null },
+  "websiteUse": { "scope": "Rat cumulative doxorubicin myocardial injury: ECG, biomarkers and histopathology teaching.", "approvedClaims": ["Observed myocardial pathology score", "Reported cardiac biomarker and ECG changes"], "prohibitedClaims": ["Universal cardiotoxicity score", "Validated ejection-fraction prediction", "Clinical dose translation"], "displayRequirements": ["Keep score scale study-specific", "Show cumulative dose and study arm", "Label graph-only biomarker magnitudes as unavailable"] },
   "review": { "transcribedBy": null, "checkedBy": null, "checkedOn": null, "blockingIssues": [
     "ECG and serum biomarker magnitudes are presented graphically and have not been digitized or independently checked",
     "The optical 1–10 cardiotoxicity score is cohort-relative; the supporting pathology score is a distinct 0–15 study-specific score",

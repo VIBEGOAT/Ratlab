@@ -25,6 +25,7 @@
     }
   },
   "doseConclusion": { "sourceStatementChecked": false, "sourceReportedNoaelMgPerKgDay": null, "sourceReportedLoaelMgPerKgDay": null, "basis": null },
+  "websiteUse": { "scope": "Rat cyclophosphamide-induced haematological suppression at day 15.", "approvedClaims": ["Observed white-cell, red-cell and platelet comparisons", "Observed untreated versus cyclophosphamide-suppressed control contrast"], "prohibitedClaims": ["Complete marrow histology", "Clinical recovery prediction", "Source-reported NOAEL"], "displayRequirements": ["Show group identity", "Keep recovery-intervention groups separate", "Label values mean ± SD, n = 6"] },
   "review": { "transcribedBy": null, "checkedBy": null, "checkedOn": null, "blockingIssues": [
     "This published rat study includes a recovery intervention; VAST currently imports only untreated and cyclophosphamide-suppressed reference observations",
     "Bone marrow and thymic-cell observations need a second transcription pass",

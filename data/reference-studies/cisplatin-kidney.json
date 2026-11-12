@@ -63,6 +63,7 @@
     }
   },
   "doseConclusion": { "sourceStatementChecked": false, "sourceReportedNoaelMgPerKgDay": null, "sourceReportedLoaelMgPerKgDay": null, "basis": null },
+  "websiteUse": { "scope": "Acute rat cisplatin renal injury dose-response at day 3.", "approvedClaims": ["Observed dose-linked renal pathology scores", "Reported urea and creatinine elevation direction"], "prohibitedClaims": ["Long-term renal recovery", "Validated plasma PK", "Human renal risk quantification"], "displayRequirements": ["Show score scale and n", "Keep day-3 assessment visible", "Label graph-only chemistry as qualitative"] },
   "review": { "transcribedBy": null, "checkedBy": null, "checkedOn": null, "blockingIssues": [
     "Plasma urea and creatinine values are presented graphically and have not been digitized or independently checked",
     "The source measures acute injury at day 3; it does not establish longer-term recovery",

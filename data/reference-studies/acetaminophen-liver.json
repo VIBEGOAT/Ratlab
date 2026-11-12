@@ -83,6 +83,12 @@
     "sourceReportedLoaelMgPerKgDay": null,
     "basis": null
   },
+  "websiteUse": {
+    "scope": "Rat acetaminophen hepatotoxicity: acute serum chemistry, chronic hepatorenal chemistry and source-linked pathology teaching.",
+    "approvedClaims": ["Observed rat ALT, AST and albumin comparisons", "Observed rat chronic hepatorenal chemistry", "Open TG-GATEs pathology/transcriptomic context"],
+    "prohibitedClaims": ["Human safety prediction", "Source-validated PK/ADME profile", "Universal APAP dose threshold"],
+    "displayRequirements": ["Show source, dose, route and timepoint", "Label model values as predictions", "Do not merge acute and chronic protocols"]
+  },
   "review": {
     "transcribedBy": null,
     "checkedBy": null,
