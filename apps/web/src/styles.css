@@ -539,6 +539,12 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
 .organ-response-hud > span { grid-column: 1 / -1; color: rgba(244,240,234,.62); font: 650 8px var(--f-mono); letter-spacing: .1em; text-transform: uppercase; }
 .organ-response-hud b { font-size: 14px; }
 .organ-response-hud small { grid-column: 1 / -1; color: rgba(244,240,234,.66); font-size: 9px; }
+.organ-response-hud em { grid-column: 1 / -1; max-width: 240px; color: #ffb070; font-size: 10px; font-style: normal; }
+.toxicity-cue { display: flex; align-items: center; gap: 8px; padding: 9px 11px; border: 1px solid color-mix(in srgb, var(--bad) 30%, var(--line)); border-radius: 10px; background: color-mix(in srgb, var(--bad) 6%, var(--surface)); }
+.toxicity-cue > span { color: var(--bad); animation: toxicity-blink 1.5s ease-in-out infinite; }
+.toxicity-cue b { font-size: 11px; }
+.toxicity-cue small { color: var(--muted); font-size: 10px; }
+@keyframes toxicity-blink { 50% { opacity: .3; transform: scale(.7); } }
 .study-route { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--surface-solid); }
 .study-route span { display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 10px 14px; color: var(--muted); font-size: 12px; border-right: 1px solid var(--line); }
 .study-route span:last-child { border-right: 0; }
@@ -773,6 +779,7 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
   .simple-study-models button, .simple-study-guide article, .glass-action i { transition: none; transform: none !important; }
   .simple-study-models button::after, .glass-action::after { display: none; }
   .simple-study-models button[aria-pressed="true"] .model-card-top i { animation: none; }
+  .toxicity-cue > span { animation: none; }
 }
 
 /* every view arrives with a short fade-and-rise, its blocks one after another */

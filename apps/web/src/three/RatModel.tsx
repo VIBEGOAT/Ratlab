@@ -92,7 +92,39 @@ function organColour(organ: Organ, damage: number): THREE.Color {
     brain: ["#e1b3bd", "#f08aa6"], gut: ["#d6ab92", "#7a3b37"], marrow: ["#c96a6a", "#f0e6d8"],
   };
   const [a, b] = base[organ];
-  return new THREE.Color(a).lerp(new THREE.Color(b), Math.min(1, damage * 1.1));
+  const anatomical = new THREE.Color(a).lerp(new THREE.Color(b), Math.min(1, damage * 1.1));
+  return anatomical.lerp(new THREE.Color(damage > .65 ? "#ff3f2f" : "#e86b32"), Math.pow(damage, 1.2) * .58);
+}
+
+function ToxicityAura({ position, radius, damage, grade }: { position: Vec3; radius: number; damage: number; grade: number }) {
+  const group = useRef<THREE.Group>(null);
+  const particles = useRef<Array<THREE.Mesh | null>>([]);
+  useFrame(({ clock }, dt) => {
+    const t = clock.elapsedTime;
+    if (group.current) {
+      group.current.rotation.x += dt * (.18 + damage * .35);
+      group.current.rotation.y -= dt * (.25 + damage * .45);
+      const pulse = 1 + Math.sin(t * (2.4 + damage * 2)) * (.05 + damage * .06);
+      group.current.scale.setScalar(pulse);
+    }
+    particles.current.forEach((particle, index) => {
+      if (!particle) return;
+      const phase = t * (.7 + damage) + index * 1.7;
+      particle.position.y = Math.sin(phase) * radius * .65;
+      particle.position.x = Math.cos(phase * .83) * radius * (.7 + (index % 3) * .15);
+      particle.position.z = Math.sin(phase * 1.13) * radius * (.65 + (index % 2) * .2);
+    });
+  });
+  return <group ref={group} position={position}>
+    {[0, 1, 2].map((ring) => <mesh key={ring} rotation={[ring * .8, ring * .55, ring * 1.1]} scale={radius * (1.15 + ring * .16)}>
+      <torusGeometry args={[1, .018 + damage * .018, 8, 64]} />
+      <meshBasicMaterial color={grade >= 4 ? "#ff2748" : "#ff7938"} transparent opacity={.32 + damage * .28} blending={THREE.AdditiveBlending} depthWrite={false} />
+    </mesh>)}
+    {Array.from({ length: 7 }, (_, index) => <mesh key={index} ref={(node) => { particles.current[index] = node; }} scale={.018 + damage * .022}>
+      <sphereGeometry args={[1, 8, 6]} /><meshBasicMaterial color={index % 2 ? "#ffb13b" : "#ff3f4e"} transparent opacity={.65} blending={THREE.AdditiveBlending} depthWrite={false} />
+    </mesh>)}
+    <pointLight color={grade >= 4 ? "#ff2448" : "#ff6a32"} intensity={.35 + damage * 1.25} distance={radius * 5} decay={2} />
+  </group>;
 }
 
 function OrganPart({ organ, shapes, damage, grade, selected, hovered, setHovered, onSelect, showLabel, label, exposure, palette, quality, meshRef, highlightColor = "#78c679", labelMode = "grade" }: {
@@ -105,6 +137,8 @@ function OrganPart({ organ, shapes, damage, grade, selected, hovered, setHovered
   const color = useMemo(() => organColour(organ, damage), [organ, damage]);
   const gradeColor = useMemo(() => new THREE.Color(GRADE_HEX[palette][Math.min(5, grade)]!), [grade, palette]);
   const teal=useMemo(()=>new THREE.Color(highlightColor),[highlightColor]);
+  const focusPosition = (meshRef ? [0, 0, 0] : shapes[0]!.center) as Vec3;
+  const focusRadius = Math.max(...shapes[0]!.radii) * 1.7;
   useFrame(({ clock },dt) => {
     const t=clock.elapsedTime;
     const injuryWave = damage > .04 ? Math.sin(t * (1.8 + damage * 2.4)) * damage : 0;
@@ -147,6 +181,7 @@ function OrganPart({ organ, shapes, damage, grade, selected, hovered, setHovered
         })}
         </group>;
       })}
+      {selected && grade >= 1 && <ToxicityAura position={focusPosition} radius={focusRadius} damage={damage} grade={grade} />}
       {showLabel && label && (grade >= 1 || labelMode === "names") && (
         <Html center position={meshRef ? [0, shapes[0]!.radii[1] + .12, 0] : [shapes[0]!.center[0], shapes[0]!.center[1] + shapes[0]!.radii[1] + 0.12, shapes[0]!.center[2]]} zIndexRange={[10, 0]} style={{ pointerEvents: "none" }}>
           <div style={{ font: "600 11px 'Geist Mono', monospace", padding: "2px 7px", borderRadius: 999, background: "rgba(8,12,13,0.82)", color: GRADE_HEX[palette][Math.min(5, grade)], border: "1px solid currentColor", whiteSpace: "nowrap", backdropFilter: "blur(4px)" }}>{grade >= 1 ? `${label} · G${grade}` : label}</div>

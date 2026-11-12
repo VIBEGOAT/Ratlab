@@ -20,6 +20,7 @@ const SIGN_LABEL: Record<string, string> = {
   jaundice: "Jaundice", tremor: "Tremor", ataxia: "Ataxia", convulsions: "Convulsions", dyspnoea: "Dyspnoea", diarrhoea: "Diarrhoea", dehydration: "Dehydration", tumour: "Palpable tumour", cataract: "Cataract",
 };
 const LAYER_LABEL: Array<[keyof Layers, string]> = [["xray", "X-ray body"], ["skeleton", "Skeleton"], ["vessels", "Blood vessels"], ["brain", "Brain"], ["heart", "Heart"], ["lungs", "Lungs"], ["liver", "Liver"], ["kidneys", "Kidneys"], ["gut", "Gut"], ["marrow", "Bone marrow"], ["tumor", "Tumor"], ["labels", "Grade labels"]];
+const TOXICITY_CUE: Record<Organ, string> = { liver: "Inflammation and loss of healthy tissue", kidney: "Tubular stress and impaired filtration", heart: "Irregular contraction and myocardial stress", brain: "Neural stress and altered signalling", gut: "Mucosal injury and impaired absorption", marrow: "Suppressed blood-cell production" };
 
 function OrganDetail({ organ, b, day }: { organ: Organ; b: AnimalBundle; day: number }) {
   const det = ORGAN_DETAIL[organ];
@@ -114,7 +115,7 @@ function RatLab({ tw }: { tw: TwinBundle }) {
             </SceneBoundary>
           ) : <Empty>This browser does not offer WebGL, so the 3D rat cannot be drawn. The readouts below still work.</Empty>}
           <div className="small muted" style={{ position: "absolute", right: 10, top: 8, pointerEvents: "none" }}>drag to rotate · scroll to zoom · click an organ</div>
-          <div className="organ-response-hud" aria-live="polite"><span>Target organ</span><b>{ORGAN_LABEL[target]}</b><i className="gdot" style={{ background: gradeVar(v.organs[target].grade) }} aria-hidden="true" /><small>{GRADE_WORD[v.organs[target].grade]} · animated tissue response</small></div>
+          <div className="organ-response-hud" aria-live="polite"><span>Target organ</span><b>{ORGAN_LABEL[target]}</b><i className="gdot" style={{ background: gradeVar(v.organs[target].grade) }} aria-hidden="true" /><small>{GRADE_WORD[v.organs[target].grade]} toxicity</small><em>{TOXICITY_CUE[target]}</em></div>
         </div>
         <div style={{ padding: "10px 14px", display: "flex", flexDirection: "column", gap: 10, borderTop: "1px solid var(--line)" }}>
           <div className="slider-row">
@@ -122,6 +123,7 @@ function RatLab({ tw }: { tw: TwinBundle }) {
             <input type="range" min={0} max={t.days} step={0.1} value={day} onChange={(e) => { setPlaying(false); setDay(+e.target.value); }} aria-label="Study day" />
             <b className="mono">Day {d} / {t.days}</b>
           </div>
+          <div className="toxicity-cue"><span aria-hidden="true">●</span><b>Watch the toxicity develop</b><small>Press Play to move from healthy tissue to the final organ response.</small></div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
             <div className="segmented" role="group" aria-label="View">
               <button type="button" aria-pressed={!xrayOn} onClick={() => setLayers({ ...layers, xray: false })}>Outside</button>
