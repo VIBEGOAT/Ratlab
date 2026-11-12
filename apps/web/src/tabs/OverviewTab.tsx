@@ -114,18 +114,18 @@ export default function OverviewTab() {
 
               {referenceCase?.publishedFindings && <section className="evidence-lab" aria-labelledby="evidence-lab-title">
                 <div className="evidence-lab-head">
-                  <div><span className="eyebrow">Evidence comparison · acetaminophen</span><h3 id="evidence-lab-title">Same biological question. Different evidence.</h3></div>
+                  <div><span className="eyebrow">Evidence comparison · {referenceCase.drug}</span><h3 id="evidence-lab-title">Same biological question. Different evidence.</h3></div>
                   <span className="evidence-rule">Do not merge these columns</span>
                 </div>
                 <div className="evidence-columns">
                   <article className="evidence-column observed">
-                    <div className="evidence-column-title"><span>Observed-derived</span><b>Open TG-GATEs pathology</b></div>
-                    <p>Discretized pathology hits from the published protocol. These are not raw incidence or severity values.</p>
+                    <div className="evidence-column-title"><span>Published observation</span><b>{referenceCase.source.label}</b></div>
+                    <p>Findings imported from the cited protocol. Read the source limits before treating them as a general dose-response rule.</p>
                     <ul>{referenceCase.publishedFindings.map((finding) => <li key={`${finding.dose}-${finding.time}`}><strong>{fmtInt(finding.dose)} mg/kg</strong><span>{finding.time}</span><p>{finding.finding}</p></li>)}</ul>
                   </article>
                   <article className="evidence-column predicted">
                     <div className="evidence-column-title"><span>Predicted</span><b>VAST model sandbox</b></div>
-                    <p>A fictional hepatotoxicity proxy at your selected design—not a fitted acetaminophen model.</p>
+                    <p>A fictional organ-toxicity proxy at your selected design—not a fitted {referenceCase.drug} model.</p>
                     {modelLiver && highGroup ? <div className="model-evidence-card"><span>Model top dose</span><strong>{fmtInt(highGroup.doseMgPerKg)} mg/kg/day</strong><span>Predicted liver pathology</span><strong>{GRADE_SEVERITY[modelLiver.maxGrade as 0 | 1 | 2 | 3 | 4 | 5]} · {FINDINGS.liver[modelLiver.maxGrade as 0 | 1 | 2 | 3 | 4 | 5]}</strong><small>Mean model grade {modelLiver.meanGrade.toFixed(2)} · males</small></div> : <p>Model pathology is still calculating.</p>}
                   </article>
                 </div>
