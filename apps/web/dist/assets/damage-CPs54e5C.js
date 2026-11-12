@@ -1,0 +1,2 @@
+const r=["var(--g0)","var(--g1)","var(--g2)","var(--g3)","var(--g4)","var(--g5)"],d=["Healthy","Minimal","Mild","Moderate","Marked","Severe"],e={standard:["#78c679","#a5d65a","#f7d24a","#ff7a45","#ff3d5a","#d63fd1"],cb:["#4aa3df","#8fc1e3","#f5c26b","#ef8a17","#d55e00","#8c2d04"]};function t(a){return r[Math.max(0,Math.min(5,Math.round(a)))]}export{d as G,r as a,e as b,t as g};
+//# sourceMappingURL=damage-CPs54e5C.js.map

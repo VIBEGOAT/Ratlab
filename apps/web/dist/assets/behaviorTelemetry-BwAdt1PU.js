@@ -1,0 +1,2 @@
+function x(l){const{x:e,y:n,hz:a}=l.track;let o=0,s=0,r=0;const h=t=>Math.abs(e[t]-.5)<.25&&Math.abs(n[t]-.5)<.25;for(let t=1;t<e.length;t++){const i=Math.hypot(e[t]-e[t-1],n[t]-n[t-1]);o+=i,i*a<.005&&s++,h(t)&&!h(t-1)&&r++}const c=Math.max(1,(e.length-1)/a);return{velocity:o*50/c,exploration:r*60/c,rest:s/Math.max(1,e.length-1)}}export{x as b};
+//# sourceMappingURL=behaviorTelemetry-BwAdt1PU.js.map
