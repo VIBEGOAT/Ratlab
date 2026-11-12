@@ -1,23 +1,24 @@
 {
   "schemaVersion": 2,
   "id": "paclitaxel-nerves",
-  "status": "source-needed",
+  "status": "curating",
   "drug": { "genericName": "paclitaxel", "synonyms": ["Taxol"], "targetLesson": "cumulative peripheral neuropathy" },
   "source": {
-    "dataset": null, "datasetRecord": null, "citation": null, "doi": null, "primaryProtocolCitation": null,
-    "stableIdentifiers": [], "licenceChecked": false,
-    "discoveryNote": "Paclitaxel was not found in the rat in-vivo E-MTAB-799 or E-MTAB-800 SDRF records. A suitable primary rat neuropathy study still needs to be selected."
+    "dataset": "Europe PMC open full text", "datasetRecord": "PMC13191044; paclitaxel-induced peripheral neuropathy behavioural study in Sprague–Dawley rats",
+    "citation": "Kim SJ et al. Gender-Specific Behavior Reductions in Spontaneous Locomotive and Rearing in a Rat Model of Paclitaxel-Induced Peripheral Neuropathy: A Pilot Study. Journal of Pain Research. 2026;19:565512.", "doi": "10.2147/JPR.S565512", "primaryProtocolCitation": "Kim et al. 2026, Paclitaxel Administration and Results; Figures 4–6",
+    "stableIdentifiers": ["PMC13191044", "PMID:42183037", "DOI:10.2147/JPR.S565512"], "licenceChecked": true, "licence": "CC BY-NC 4.0", "sourceUrl": "https://europepmc.org/articles/PMC13191044"
   },
   "protocol": {
-    "species": "Rattus norvegicus", "strain": null, "sex": null, "ageWeeks": null, "bodyWeightG": null,
-    "route": null, "formulation": null, "doseUnit": null, "doseGroups": [], "frequency": null, "durationDays": null,
-    "groupSize": null, "control": null, "studyArms": []
+    "species": "Rattus norvegicus", "strain": "Sprague Dawley", "sex": "male and female", "ageWeeks": "8–10", "bodyWeightG": null,
+    "route": "intraperitoneal injection", "formulation": "Taxol diluted in saline from 6 mg/mL stock in 1:1 Cremophor EL:ethanol", "doseUnit": "mg/kg", "doseGroups": [0, 24], "frequency": "6 mg/kg every other day for four injections", "durationDays": 8,
+    "groupSize": 6, "control": "Sex-matched vehicle groups received Cremophor EL:ethanol vehicle diluted with saline", "studyArms": [{ "type": "vehicle male", "n": 6, "doseMgPerKg": 0, "time": 8, "unit": "day" }, { "type": "paclitaxel male", "n": 6, "cumulativeDoseMgPerKg": 24, "time": 8, "unit": "day" }, { "type": "vehicle female", "n": 6, "doseMgPerKg": 0, "time": 8, "unit": "day" }, { "type": "paclitaxel female", "n": 6, "cumulativeDoseMgPerKg": 24, "time": 8, "unit": "day" }]
   },
-  "observations": { "pk": [], "clinicalChemistry": [], "organWeights": [], "histopathology": [], "behaviour": [] },
+  "observations": { "pk": [], "clinicalChemistry": [], "organWeights": [], "histopathology": [], "behaviour": [{ "evidence": "observed", "sourceRow": "Results; Figure 4", "studyArm": "paclitaxel male", "doseMgPerKg": 24, "time": 8, "unit": "day", "finding": "Distance travelled decreased from baseline and was lower than vehicle on day 8 (post-hoc p = 0.0022 and p = 0.0050 respectively)" }, { "evidence": "observed", "sourceRow": "Results; Figure 4", "studyArm": "paclitaxel female", "doseMgPerKg": 24, "time": 8, "unit": "day", "finding": "Distance travelled decreased from baseline on day 8 (post-hoc p = 0.0022)" }, { "evidence": "observed", "sourceRow": "Results; Figure 5", "studyArm": "paclitaxel male", "doseMgPerKg": 24, "time": 8, "unit": "day", "finding": "Rearing frequency decreased from baseline and was lower than vehicle on day 8 (post-hoc p = 0.022 and p = 0.00040 respectively)" }, { "evidence": "observed", "sourceRow": "Results; Figure 5", "studyArm": "paclitaxel female", "doseMgPerKg": 24, "time": 8, "unit": "day", "finding": "No statistically significant effect on rearing frequency was reported" }] },
   "doseConclusion": { "sourceStatementChecked": false, "sourceReportedNoaelMgPerKgDay": null, "sourceReportedLoaelMgPerKgDay": null, "basis": null },
   "review": { "transcribedBy": null, "checkedBy": null, "checkedOn": null, "blockingIssues": [
-    "Select a stable primary rat peripheral-neuropathy source before displaying a published protocol",
-    "Import sensory, gait and nerve-histology observations with units and variability",
-    "Record protocol, review and reuse metadata"
+    "This small pilot study provides open-field behavioural endpoints, not plasma PK or nerve histology",
+    "Graph-only distance and rearing magnitudes have not been digitized; only reported statistical findings are imported",
+    "No source-reported NOAEL/LOAEL has been extracted",
+    "A second reviewer has not yet checked the transcription"
   ] }
 }
