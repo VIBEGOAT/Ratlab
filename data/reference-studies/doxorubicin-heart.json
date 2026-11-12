@@ -1,29 +1,38 @@
 {
   "schemaVersion": 2,
   "id": "doxorubicin-heart",
-  "status": "source-mapped",
+  "status": "curating",
   "drug": { "genericName": "doxorubicin", "synonyms": ["adriamycin"], "targetLesson": "cumulative myocardial injury" },
   "source": {
-    "dataset": "Open TG-GATEs", "datasetRecord": "ArrayExpress E-MTAB-799 and E-MTAB-800, Rat / in vivo / liver transcriptomics",
-    "citation": "Igarashi Y et al. Open TG-GATEs: a large-scale toxicogenomics database. Nucleic Acids Research. 2015;43(D1):D921-D927.",
-    "doi": "10.1093/nar/gku955", "primaryProtocolCitation": "E-MTAB-799 and E-MTAB-800 SDRF metadata mirrored in bhklab/TGGATES",
-    "stableIdentifiers": ["E-MTAB-799", "E-MTAB-800", "CHEMBL179"], "licenceChecked": false
+    "dataset": "Europe PMC open full text", "datasetRecord": "PMC13413517; doxorubicin cardiotoxicity in male Sprague–Dawley rats",
+    "citation": "Goje ID et al. Empagliflozin Protects Against Doxorubicin Cardiotoxicity: Integrative Assessment of Cardiac Kinetics and Electrophysiology Using Machine Learning in a Rat Model. Medical Sciences. 2026;14:342.",
+    "doi": "10.3390/medsci14030342", "primaryProtocolCitation": "Goje et al. 2026, Methods: Animal Model of Doxorubicin-Induced Cardiotoxicity; Results: ECG Findings and Figure 11",
+    "stableIdentifiers": ["PMC13413517", "PMID:42506311", "DOI:10.3390/medsci14030342"], "licenceChecked": true,
+    "licence": "CC BY 4.0", "sourceUrl": "https://europepmc.org/articles/PMC13413517"
   },
   "protocol": {
-    "species": "Rattus norvegicus", "strain": "Crj:CD(SD)IGS", "sex": "male", "ageWeeks": 6, "bodyWeightG": null,
-    "route": "intravenous injection", "formulation": null, "doseUnit": "mg/kg", "doseGroups": [0, 1, 3, 10],
-    "frequency": null, "durationDays": null, "groupSize": null,
-    "control": "Control arm recorded at every sacrifice time; vehicle formulation is not stated in the SDRF metadata",
+    "species": "Rattus norvegicus", "strain": "Sprague Dawley", "sex": "male", "ageWeeks": null, "bodyWeightG": "400–450",
+    "route": "intraperitoneal injection", "formulation": null, "doseUnit": "mg/kg", "doseGroups": [0, 15],
+    "frequency": "2.5 mg/kg every 48 hours; cumulative doxorubicin dose 15 mg/kg", "durationDays": 14, "groupSize": 5,
+    "control": "Control received daily water by oral gavage and 0.9% saline intraperitoneally at 48-hour intervals",
     "studyArms": [
-      { "type": "single-dose", "accession": "E-MTAB-799", "sacrificeTimes": [3, 6, 9, 24], "sacrificeUnit": "hour" },
-      { "type": "repeat-dose", "accession": "E-MTAB-800", "doseGroups": [0, 0.1, 0.3, 1], "sacrificeTimes": [4, 8, 15, 29], "sacrificeUnit": "day" }
+      { "type": "vehicle control", "n": 4, "doseMgPerKg": 0, "sacrificeTime": 14, "sacrificeUnit": "day" },
+      { "type": "doxorubicin injury arm", "n": 5, "cumulativeDoseMgPerKg": 15, "doseMgPerKg": 2.5, "frequency": "every 48 hours", "sacrificeTime": 14, "sacrificeUnit": "day" }
     ]
   },
-  "observations": { "pk": [], "clinicalChemistry": [], "organWeights": [], "histopathology": [], "transcriptomics": [] },
+  "observations": {
+    "pk": [], "clinicalChemistry": [], "organWeights": [], "histopathology": [],
+    "cardiacFunction": [
+      { "evidence": "observed", "sourceRow": "Results 3.1; Figure 6", "studyArm": "doxorubicin injury arm", "doseMgPerKg": 15, "time": 14, "unit": "day", "finding": "lower heart rate with prolonged QRS, PR, QT and QTc intervals" },
+      { "evidence": "observed", "sourceRow": "Results 3.1; Figure 6", "studyArm": "doxorubicin injury arm", "doseMgPerKg": 15, "time": 14, "unit": "day", "finding": "reduced R-wave amplitude and negative T-wave morphology" },
+      { "evidence": "observed", "sourceRow": "Figure 11 caption", "studyArm": "doxorubicin injury arm", "doseMgPerKg": 15, "time": 14, "unit": "day", "finding": "all five doxorubicin hearts scored above 7.3 on the cohort-relative optical cardiotoxicity score" }
+    ]
+  },
   "doseConclusion": { "sourceStatementChecked": false, "sourceReportedNoaelMgPerKgDay": null, "sourceReportedLoaelMgPerKgDay": null, "basis": null },
   "review": { "transcribedBy": null, "checkedBy": null, "checkedOn": null, "blockingIssues": [
-    "The mapped ArrayExpress records describe liver transcriptomics, not a cardiotoxicity endpoint package",
-    "Troponin, cardiac function and heart histopathology observations are not yet imported",
-    "Formulation, dosing frequency, group size and reuse terms require verification"
+    "ECG values are presented graphically and have not been digitized or independently checked",
+    "The optical 1–10 cardiotoxicity score is cohort-relative and is not a universal threshold",
+    "No source-reported NOAEL/LOAEL has been extracted",
+    "A second reviewer has not yet checked the transcription"
   ] }
 }
