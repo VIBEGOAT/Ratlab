@@ -4,12 +4,14 @@ import { download } from "../lib/export";
 import { toCsv } from "../lib/csv";
 import { BASE, EXPERIMENTS, MODEL_VERSION, QUESTIONS, simulate, type Prediction, type Regimen } from "./model";
 import { emptyNotebook, parseNotebook, reportHtml, STORAGE_KEY, type Notebook } from "./notebook";
+import { AcetaminophenPractical } from "./AcetaminophenPractical";
 
 function loadNotebook() { try { return parseNotebook(localStorage.getItem(STORAGE_KEY)); } catch { return emptyNotebook(); } }
 const format = (n: number) => n.toFixed(2);
 const regimenText = (r: Regimen) => `${r.dose} mg/kg ${r.repeated ? `every ${r.interval} h` : "once"}; clearance ${r.clearance} L/h/kg`;
 
 export function LearnPage() {
+  const [practical, setPractical] = useState<"pk" | "acetaminophen">("pk");
   const [notebook, setNotebook] = useState<Notebook>(loadNotebook);
   const [index, setIndex] = useState(0);
   const [prediction, setPrediction] = useState<Prediction | "">("");
@@ -29,7 +31,10 @@ export function LearnPage() {
   const run = () => { if (prediction) setNotebook((n) => ({ ...n, entries: { ...n.entries, [exp.id]: { prediction, reflection: "" } } })); };
   const exportCsv = () => download(`vast-${exp.id}-simulated.csv`, toCsv(control.times.map((time, i) => ({ model: MODEL_VERSION, evidence: "simulated-fictional", experiment: exp.id, time_h: time, control_mg_L: control.values[i], changed_mg_L: changed.values[i], control_dose_mg_kg: exp.control.dose, changed_dose_mg_kg: exp.treatment.dose, control_clearance_L_h_kg: exp.control.clearance, changed_clearance_L_h_kg: exp.treatment.clearance, control_interval_h: exp.control.repeated ? exp.control.interval : null, changed_interval_h: exp.treatment.repeated ? exp.treatment.interval : null, bioavailability: 0.8, volume_L_kg: 1, absorption_per_h: 1 }))), "text/csv;charset=utf-8");
 
+  if (practical === "acetaminophen") return <AcetaminophenPractical onExit={() => setPractical("pk")} />;
+
   return <main id="main" className="learn-page">
+    <section className="learn-catalog" aria-labelledby="learn-catalog-title"><div><p className="eyebrow">Choose a practical</p><h2 id="learn-catalog-title">Learn by doing.</h2></div><div className="learn-catalog-cards"><article className="active"><span>Practical 01 · Teaching model</span><h3>Same dose, different exposure</h3><p>Build PK intuition with controlled fictional experiments.</p><b>Currently open</b></article><button type="button" onClick={() => setPractical("acetaminophen")}><span>Practical 02 · Published case</span><h3>Acetaminophen and the rat liver</h3><p>Design, predict and interpret a real study pattern.</p><b>Start 12-minute practical →</b></button></div></section>
     <header className="learn-hero">
       <div><p className="eyebrow">VAST classroom · Practical 01</p><h1>Same dose.<br /><span>Different exposure.</span></h1><p className="learn-intro">Think like an experimental scientist. Make a prediction, change one variable, and use the evidence to explain what happens.</p>
         <div className="learn-tags"><span>35–45 minutes</span><span>Undergraduate biotechnology</span><span>No live animals</span></div>

@@ -89,12 +89,12 @@ const msg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
 export const useStore = create<State>((set, get) => ({
   mode: savedMode,
-  setMode: (m) => { ls.set("mode", m); if (typeof history !== "undefined") history.replaceState(null, "", m === "lab" ? `#lab/${get().labSection}` : m === "learn" ? "#learn" : m === "story" ? "#story" : "#toxicity"); set({ mode: m }); },
+  setMode: (m) => { ls.set("mode", m); if (typeof history !== "undefined") history.replaceState(null, "", m === "lab" ? `#lab/${get().labSection}` : m === "learn" ? "#learn" : m === "story" ? "#story" : "#toxicity"); set((state) => ({ mode: m, setup: m === "lab" ? { ...state.setup, studyMode: "sandbox" } : state.setup })); },
   labSection: "design",
   labView: "",
   detail: ls.get("detail") === "expert" ? "expert" : "simple",
   setDetail: (d) => { ls.set("detail", d); set({ detail: d }); },
-  goLab: (section, view = "") => { ls.set("mode", "lab"); if (typeof history !== "undefined") history.replaceState(null, "", `#lab/${section}`); set({ mode: "lab", labSection: section, labView: view }); },
+  goLab: (section, view = "") => { ls.set("mode", "lab"); if (typeof history !== "undefined") history.replaceState(null, "", `#lab/${section}`); set((state) => ({ mode: "lab", labSection: section, labView: view, setup: { ...state.setup, studyMode: "sandbox" } })); },
 
   theme: savedTheme,
   setTheme: (t) => { ls.set("theme", t); set({ theme: t }); },

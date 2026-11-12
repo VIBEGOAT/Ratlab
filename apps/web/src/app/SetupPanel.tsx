@@ -37,11 +37,6 @@ export function SetupPanel() {
         <h2 id="setup-title">Set up the experiment</h2>
       </div>
 
-      <div className="guided-launch">
-        <div><span className="eyebrow">Recommended first visit</span><h3>Acetaminophen: a guided liver-toxicity practical</h3><p>Learn through prediction, an animated drug journey, published pathology observations and immediate feedback.</p></div>
-        <button type="button" className="primary" onClick={() => set({ studyMode: "published", compoundKey: "hepatotoxin", disease: "none" })}>Start 12-minute practical →</button>
-      </div>
-
       <div className="study-route" aria-label="Study design workflow">
         <span className="active"><b>01</b> Organ challenge</span><span><b>02</b> Reference drug</span><span><b>03</b> Protocol</span><span><b>04</b> Readout</span>
       </div>

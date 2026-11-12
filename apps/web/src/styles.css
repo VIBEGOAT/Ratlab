@@ -490,10 +490,6 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
 
 .study-sentence { padding: 14px 16px; border-left: 3px solid var(--accent); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; background: var(--accent-soft); }
 .study-sentence p { margin: 4px 0 0; max-width: 85ch; color: var(--ink-2); line-height: 1.55; }
-.guided-launch { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px; border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); border-radius: 17px; background: radial-gradient(circle at 90% 0, color-mix(in srgb, var(--accent) 14%, transparent), transparent 42%), var(--surface); }
-.guided-launch h3 { margin: 5px 0; font: 650 23px var(--f-display); letter-spacing: -.025em; }
-.guided-launch p { margin: 0; max-width: 65ch; color: var(--muted); font-size: 11px; }
-.guided-launch button { flex: none; }
 .study-route { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--surface-solid); }
 .study-route span { display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 10px 14px; color: var(--muted); font-size: 12px; border-right: 1px solid var(--line); }
 .study-route span:last-child { border-right: 0; }
@@ -695,7 +691,6 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
   .adme-path, .adme-pulse { display: none; }
 }
 @media (max-width: 520px) {
-  .guided-launch { align-items: stretch; flex-direction: column; }
   .lesson-modebar { align-items: stretch; flex-direction: column; }
   .lesson-heading { padding: 20px; }
   .lesson-number { display: none; }
