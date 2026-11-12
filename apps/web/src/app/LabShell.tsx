@@ -7,6 +7,7 @@ import { referenceCaseForCompound } from "../lib/referenceStudies";
 import { Icon } from "../components/icons";
 import { useSlidingPill } from "../components/motion";
 import { SoundToggle } from "../audio/SoundToggle";
+import { PublishedCaseView } from "./PublishedCaseView";
 
 const views = {
   overview: lazy(() => import("../tabs/OverviewTab")),
@@ -58,7 +59,8 @@ export function LabShell() {
   const step = SECTIONS.findIndex((s) => s.id === sec.id);
   const modelCompound = COMPOUNDS.find((c) => c.key === setup.compoundKey)?.name ?? setup.custom.name;
   const referenceCase = referenceCaseForCompound(setup.compoundKey);
-  const compound = referenceCase ? `${referenceCase.drug} · model proxy` : modelCompound;
+  const compound = referenceCase ? `${referenceCase.drug} · ${setup.studyMode === "published" ? "published protocol" : "model proxy"}` : modelCompound;
+  const publishedTopDose = referenceCase?.publishedDoseGroups?.at(-1);
   const animalViews: ViewId[] = ["rat", "behaviour", "clinobs", "pkpd", "clinpath", "disease"];
   const soundViews: ViewId[] = ["rat", "behaviour"];
   const navRef = useRef<HTMLElement>(null);
@@ -90,9 +92,9 @@ export function LabShell() {
           </div>
           <div className="study-context" aria-label="Current virtual study">
             <span><small>Compound</small><b>{compound}</b></span>
-            <span><small>Top dose</small><b>{setup.highDose} mg/kg/day</b></span>
-            <span><small>Schedule</small><b>{setup.durationDays} days · {setup.route === "oral" ? "oral" : setup.route.toUpperCase()}</b></span>
-            <RunStatus />
+            <span><small>Top dose</small><b>{setup.studyMode === "published" && publishedTopDose !== undefined ? `${publishedTopDose.toLocaleString()} mg/kg` : `${setup.highDose} mg/kg/day`}</b></span>
+            <span><small>Schedule</small><b>{setup.studyMode === "published" ? "Single + repeat · gavage" : `${setup.durationDays} days · ${setup.route === "oral" ? "oral" : setup.route.toUpperCase()}`}</b></span>
+            {setup.studyMode === "published" ? <span className="small muted">Limited observed package</span> : <RunStatus />}
           </div>
           <div className="lab-step-actions">
             <button type="button" className="ghost" disabled={step === 0} onClick={() => step > 0 && goLab(SECTIONS[step - 1]!.id)}>← Previous</button>
@@ -114,8 +116,8 @@ export function LabShell() {
           </div>
         </div>
         {sec.id === "design" && <SetupPanel />}
-        <div className="content view-enter" role="tabpanel" key={`${sec.id}/${viewId}`}>
-          <Suspense fallback={<div className="empty shimmer">Loading…</div>}><View /></Suspense>
+        <div className="content view-enter" role="tabpanel" key={`${sec.id}/${viewId}/${setup.studyMode}`}>
+          {setup.studyMode === "published" ? <PublishedCaseView section={sec.id} /> : <Suspense fallback={<div className="empty shimmer">Loading…</div>}><View /></Suspense>}
         </div>
       </main>
     </div>

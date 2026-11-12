@@ -3,6 +3,7 @@ import { ARCHETYPES, defaultDesign, validateCompound, type Compound, type Diseas
 export type DiseaseChoice = "none" | "cancer" | "diabetes-stz" | "diabetes-type2";
 
 export interface Setup {
+  studyMode: "published" | "sandbox";
   compoundKey: string;
   custom: Compound;
   highDose: number;
@@ -55,7 +56,7 @@ export function newCustomCompound(): Compound {
 export function defaultSetup(): Setup {
   const c = ARCHETYPES.cardiotoxin!;
   return {
-    compoundKey: "cardiotoxin", custom: newCustomCompound(), highDose: c.defaultDoseMgPerKg, fractions: [0.1, 0.3, 1],
+    studyMode: "sandbox", compoundKey: "cardiotoxin", custom: newCustomCompound(), highDose: c.defaultDoseMgPerKg, fractions: [0.1, 0.3, 1],
     durationDays: 28, recoveryDays: 14, nPerSex: 10, sexes: ["M", "F"], strain: "SD", ageWeeks: 8, route: "oral", recovery: false, tk: false,
     disease: "cancer", seed: 42,
   };

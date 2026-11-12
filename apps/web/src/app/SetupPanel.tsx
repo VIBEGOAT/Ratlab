@@ -18,6 +18,7 @@ export function SetupPanel() {
   const referenceCase = referenceCaseForCompound(setup.compoundKey);
   const routeName = setup.route === "oral" ? "oral gavage" : setup.route === "iv" ? "intravenous dosing" : "dietary dosing";
   const pickCompound = (key: string) => set({
+    studyMode: "sandbox",
     compoundKey: key,
     highDose: key === "custom" ? setup.custom.defaultDoseMgPerKg : ARCHETYPES[key]!.defaultDoseMgPerKg,
     disease: key === "cardiotoxin" ? "cancer" : "none",
@@ -64,15 +65,15 @@ export function SetupPanel() {
       </div>}
 
       {referenceCase && <div className="evidence-mode" role="group" aria-label="Evidence mode">
-        <button type="button" disabled aria-pressed="false">
+        <button type="button" disabled={referenceCase.id !== "acetaminophen-liver"} aria-pressed={setup.studyMode === "published"} onClick={() => set({ studyMode: "published" })}>
           <span><b>Published protocol</b><small>Observed dose groups and endpoints</small></span>
-          <em>{referenceCase.id === "acetaminophen-liver" ? "Protocol mapped · observations pending" : "Locked · data checking"}</em>
+          <em>{referenceCase.id === "acetaminophen-liver" ? "Available · limited evidence" : "Locked · data checking"}</em>
         </button>
-        <button type="button" className="active" aria-pressed="true">
+        <button type="button" className={setup.studyMode === "sandbox" ? "active" : ""} aria-pressed={setup.studyMode === "sandbox"} onClick={() => set({ studyMode: "sandbox" })}>
           <span><b>Model sandbox</b><small>Change dose and duration to explore</small></span>
           <em>Prediction</em>
         </button>
-        <p><b>You are not editing the published experiment.</b> The controls below change a teaching model. Published-protocol mode will unlock only after the source tables, units and study metadata have passed the evidence checks.</p>
+        <p>{setup.studyMode === "published" ? <><b>Published mode never fills gaps with simulated values.</b> This package currently supports protocol metadata and processed pathology findings only.</> : <><b>You are not editing the published experiment.</b> The controls below change a teaching model.</>}</p>
       </div>}
 
       {referenceCase?.publishedDoseGroups && <div className="protocol-compare" aria-label="Published and model dose comparison">
@@ -82,6 +83,12 @@ export function SetupPanel() {
         <p><b>Your task:</b> use the model ladder to explore dose–response, then compare its pattern with the published protocol without treating a prediction as an observation.</p>
       </div>}
 
+      {setup.studyMode === "published" && referenceCase?.publishedDoseGroups ? <div className="published-design-lock">
+        <span className="eyebrow">2. Published protocol · read only</span>
+        <h3>{referenceCase.drug} rat liver study</h3>
+        <div><span>Animals<b>Male Crj:CD(SD)IGS · 6 weeks</b></span><span>Administration<b>Gavage</b></span><span>Dose groups<b>{referenceCase.publishedDoseGroups.map(fmtInt).join(" · ")} mg/kg</b></span><span>Study arms<b>Single dose + repeat dose</b></span></div>
+        <p>Continue to “Read the answer” to inspect the available observed-derived pathology. Missing PK, chemistry and NOAEL data stay unavailable.</p>
+      </div> : <>
       <div className="field"><b>2. Design the dosing protocol</b> <span className="small">The simulator creates a control, low-, mid- and high-dose group. Current dose values are model-proxy settings—not published doses.</span></div>
       <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
         <label className="field" htmlFor="top-dose">
@@ -127,6 +134,7 @@ export function SetupPanel() {
           <label className="field" htmlFor="custom-pick"><span>Custom compound</span><button id="custom-pick" type="button" aria-pressed={setup.compoundKey === "custom"} onClick={() => pickCompound("custom")}>Use the custom compound editor</button></label>
         </div>
       </details>
+      </>}
       {problems.length > 0 && <div className="banner warn small" role="alert">{problems[0]}</div>}
       {study.status === "error" && <div className="banner bad small" role="alert">{study.error}</div>}
       {stale && study.status !== "running" && <span className="sr-only">Results are updating.</span>}
