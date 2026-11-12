@@ -1,4 +1,5 @@
-import { lazy, Suspense, useRef, type LazyExoticComponent } from "react";
+import { lazy, Suspense, useRef, useState, type LazyExoticComponent } from "react";
+import { DoseLesson } from "./DoseLesson";
 import { useStore } from "../store";
 import { AnimalPicker, RunStatus, SetupPanel } from "./SetupPanel";
 import { SECTIONS, type SectionDef, type ViewId } from "../lib/nav";
@@ -45,6 +46,7 @@ function DetailSwitch({ sec, viewId }: { sec: SectionDef; viewId: ViewId }) {
 }
 
 export function LabShell() {
+  const [lesson, setLesson] = useState(true);
   const section = useStore((s) => s.labSection);
   const view = useStore((s) => s.labView);
   const detail = useStore((s) => s.detail);
@@ -62,6 +64,7 @@ export function LabShell() {
   const tabsRef = useRef<HTMLDivElement>(null);
   const navPill = useSlidingPill(navRef, '[aria-current="page"]', [sec.id]);
   const tabPill = useSlidingPill(tabsRef, '[aria-selected="true"]', [sec.id, viewId]);
+  if (lesson && section === "design") return <DoseLesson onWorkbench={() => setLesson(false)} />;
   return (
     <div className="lab">
       <nav className="lab-nav" aria-label="Lab sections" ref={navRef}>
