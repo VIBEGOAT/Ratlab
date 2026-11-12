@@ -91,7 +91,7 @@ export function LabShell() {
       </nav>
       <main className="lab-main" id="main">
         <h1 className="sr-only">Lab: {sec.label}</h1>
-        <section className="lab-guide" aria-labelledby="lab-step-title">
+        {sec.id !== "design" && <section className="lab-guide" aria-labelledby="lab-step-title">
           <div className="lab-guide-copy">
             <span className="eyebrow">Step {step + 1} of {SECTIONS.length}</span>
             <h2 id="lab-step-title">{display.label}</h2>
@@ -111,8 +111,8 @@ export function LabShell() {
             <button type="button" className="ghost" disabled={step === 0} onClick={() => step > 0 && goLab(SECTIONS[step - 1]!.id)}>← Previous</button>
             <button type="button" className="primary" disabled={step === SECTIONS.length - 1} onClick={() => step < SECTIONS.length - 1 && goLab(SECTIONS[step + 1]!.id)}>Next step →</button>
           </div>}
-        </section>
-        <div className="lab-toolbar">
+        </section>}
+        {sec.id !== "design" && <div className="lab-toolbar">
           {setup.studyMode === "published" ? <span className="lab-crumb">Published evidence</span> : visibleViews.length > 1 ? (
             <div className="segmented tabs" role="tablist" aria-label={`${sec.label} views`} ref={tabsRef}>
               {tabPill.ready && <span className="seg-pill" style={tabPill.style} aria-hidden="true" />}
@@ -125,11 +125,11 @@ export function LabShell() {
               <Icon name="sound" size={16} />
             </SoundToggle>}
           </div>}
-        </div>
+        </div>}
         {sec.id === "design" && <SetupPanel />}
-        <div className="content view-enter" role="tabpanel" key={`${sec.id}/${viewId}/${setup.studyMode}`}>
+        {sec.id !== "design" && <div className="content view-enter" role="tabpanel" key={`${sec.id}/${viewId}/${setup.studyMode}`}>
           {setup.studyMode === "published" ? <PublishedCaseView section={sec.id} /> : <Suspense fallback={<div className="empty shimmer">Loading…</div>}><View /></Suspense>}
-        </div>
+        </div>}
       </main>
     </div>
   );

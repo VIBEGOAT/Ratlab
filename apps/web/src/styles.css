@@ -490,6 +490,32 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
 
 .study-sentence { padding: 14px 16px; border-left: 3px solid var(--accent); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; background: var(--accent-soft); }
 .study-sentence p { margin: 4px 0 0; max-width: 85ch; color: var(--ink-2); line-height: 1.55; }
+.simple-study { width: min(920px, 100%); margin: 10px auto 50px; display: flex; flex-direction: column; gap: 30px; }
+.simple-study > header { padding: 12px 0 4px; }
+.simple-study > header h2 { margin: 6px 0; font: 680 clamp(38px, 5vw, 62px)/1 var(--f-display); letter-spacing: -.055em; }
+.simple-study > header p { margin: 0; color: var(--muted); font-size: 15px; }
+.simple-study fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+.simple-study legend { margin-bottom: 12px; font-weight: 650; }
+.simple-study legend span, .simple-study-controls label > span b i { display: inline-grid; width: 24px; height: 24px; margin-right: 8px; place-items: center; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font: 700 10px var(--f-mono); font-style: normal; }
+.simple-study-models > div { display: grid; grid-template-columns: repeat(5, 1fr); gap: 9px; }
+.simple-study-models button { min-width: 0; min-height: 92px; padding: 14px; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; text-align: left; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.simple-study-models button small { color: var(--muted); font-size: 10px; }
+.simple-study-models button b { font-size: 14px; overflow-wrap: anywhere; }
+.simple-study-models button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 -3px var(--accent); }
+.simple-study-controls { display: grid; grid-template-columns: 1.25fr .75fr; gap: 26px; padding-block: 28px; border-block: 1px solid var(--line); }
+.simple-study-controls > label { display: flex; flex-direction: column; gap: 12px; }
+.simple-study-controls label > span { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.simple-study-controls label > span b { display: flex; align-items: center; }
+.simple-study-controls strong { font: 650 14px var(--f-mono); }
+.simple-study-controls small { color: var(--muted); font-size: 10px; }
+.simple-study-controls .segmented { display: grid; grid-template-columns: repeat(4, 1fr); }
+.simple-study-controls .segmented button { padding-inline: 8px; }
+.simple-study-summary { display: flex; justify-content: space-between; align-items: center; gap: 22px; padding: 22px; border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line)); border-radius: 17px; background: var(--surface); }
+.simple-study-summary p { margin: 5px 0; max-width: 65ch; font-size: 15px; line-height: 1.5; }
+.simple-study-summary small { color: var(--muted); }
+.simple-study-summary button { flex: none; }
+.simple-advanced { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding-top: 14px; }
+.simple-advanced label { display: flex; flex-direction: column; gap: 6px; color: var(--muted); font-size: 11px; }
 .study-route { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--surface-solid); }
 .study-route span { display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 10px 14px; color: var(--muted); font-size: 12px; border-right: 1px solid var(--line); }
 .study-route span:last-child { border-right: 0; }
@@ -711,6 +737,12 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
   .lab-toolbar { align-items: stretch; }
   .segmented.tabs { width: 100%; overflow-x: auto; justify-content: flex-start; }
   .lab-tools, .lab-tools .field { width: 100%; }
+  .simple-study { gap: 24px; }
+  .simple-study-models > div { display: flex; overflow-x: auto; padding-bottom: 6px; }
+  .simple-study-models button { min-width: 140px; }
+  .simple-study-controls { grid-template-columns: 1fr; }
+  .simple-study-summary { align-items: stretch; flex-direction: column; }
+  .simple-advanced { grid-template-columns: 1fr 1fr; }
 }
 
 /* every view arrives with a short fade-and-rise, its blocks one after another */

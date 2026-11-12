@@ -19,12 +19,12 @@ export interface SectionDef {
 
 /** An overview, then five sections that hold every analysis view. Nothing is lost, only regrouped. */
 export const SECTIONS: SectionDef[] = [
-  { id: "design", icon: "design", label: "Design the study", hint: "Compound, dose and groups", question: "What are you testing, at what dose, and for how long?", views: [["design", "Study groups"]], coreViews: ["design"] },
-  { id: "overview", label: "Read the answer", hint: "Findings at a glance", question: "What happened, and at what dose did harm begin?", icon: "overview", views: [["overview", "Study answer"]], coreViews: ["overview"] },
-  { id: "animal", icon: "animal", label: "Follow one rat", hint: "Organs, signs and behaviour", question: "How did exposure become a change in one animal?", views: [["rat", "Interactive rat"], ["clinobs", "Daily observations"], ["behaviour", "Behaviour (advanced)"]], coreViews: ["rat", "clinobs"] },
-  { id: "data", icon: "data", label: "Compare groups", hint: "Exposure, pathology and NOAEL", question: "Which findings change consistently as dose increases?", views: [["pkpd", "Exposure (PK/PD)"], ["stats", "Dose-response & NOAEL"], ["clinpath", "Clinical pathology"], ["necropsy", "Histopathology"], ["disease", "Disease model"]], coreViews: ["pkpd", "stats"] },
-  { id: "population", icon: "population", label: "Test population risk", hint: "Twin, endpoints and variability", question: "How variable is the response, and when is a humane endpoint reached?", views: [["twin", "Treated vs untreated"], ["population", "Population & endpoints"], ["uncertainty", "Uncertainty (advanced)"]], coreViews: ["twin", "population"] },
-  { id: "trust", icon: "trust", label: "Translate & judge", hint: "Human scaling, limits and evidence", question: "What can be translated to humans, and how far should you trust it?", views: [["calculator", "Dose scaling"], ["translation", "Human translation"], ["fidelity", "Model limits"], ["validation", "Validation (advanced)"], ["pitch", "References (advanced)"]], coreViews: ["calculator", "translation", "fidelity"] },
+  { id: "design", icon: "design", label: "Design study", hint: "Model, dose, duration", question: "What are you testing?", views: [["design", "Study groups"]], coreViews: ["design"] },
+  { id: "overview", label: "Results", hint: "The main finding", question: "What happened?", icon: "overview", views: [["overview", "Study answer"]], coreViews: ["overview"] },
+  { id: "animal", icon: "animal", label: "Animal", hint: "Organs and signs", question: "What changed inside the animal?", views: [["rat", "Interactive rat"], ["clinobs", "Daily observations"], ["behaviour", "Behaviour (advanced)"]], coreViews: ["rat", "clinobs"] },
+  { id: "data", icon: "data", label: "Compare doses", hint: "Exposure and injury", question: "How did the groups differ?", views: [["pkpd", "Exposure"], ["stats", "Dose response"], ["clinpath", "Blood tests"], ["necropsy", "Tissue findings"], ["disease", "Disease model"]], coreViews: ["pkpd", "stats"] },
+  { id: "population", icon: "population", label: "Variability", hint: "Different responses", question: "Did every virtual animal respond alike?", views: [["twin", "Treated vs untreated"], ["population", "Population"], ["uncertainty", "Uncertainty (advanced)"]], coreViews: ["twin", "population"] },
+  { id: "trust", icon: "trust", label: "Limits", hint: "What this can tell us", question: "How far should you trust this simulation?", views: [["calculator", "Dose scaling"], ["translation", "Human translation"], ["fidelity", "Model limits"], ["validation", "Validation (advanced)"], ["pitch", "References (advanced)"]], coreViews: ["calculator", "translation", "fidelity"] },
 ];
 
 /** The twelve Story chapters, in order. */
