@@ -10,13 +10,19 @@ import { fmtInt } from "../design/format";
 export function SetupPanel() {
   const setup = useStore((s) => s.setup);
   const set = useStore((s) => s.setSetup);
+  const detail = useStore((s) => s.detail);
   const study = useStore((s) => s.study);
   const stale = useResultsStale();
   const problems = designProblems(setup);
   const compoundName = COMPOUNDS.find((c) => c.key === setup.compoundKey)?.name ?? setup.custom.name;
   const referenceCase = referenceCaseForCompound(setup.compoundKey);
   const routeName = setup.route === "oral" ? "oral gavage" : setup.route === "iv" ? "intravenous dosing" : "dietary dosing";
-  const pickCompound = (key: string) => set({ compoundKey: key, highDose: key === "custom" ? setup.custom.defaultDoseMgPerKg : ARCHETYPES[key]!.defaultDoseMgPerKg });
+  const pickCompound = (key: string) => set({
+    compoundKey: key,
+    highDose: key === "custom" ? setup.custom.defaultDoseMgPerKg : ARCHETYPES[key]!.defaultDoseMgPerKg,
+    disease: key === "cardiotoxin" ? "cancer" : "none",
+  });
+  const modelDoses = [0, ...setup.fractions.map((fraction) => Math.round(fraction * setup.highDose * 10) / 10)];
 
   return (
     <section className="panel" aria-labelledby="setup-title">
@@ -69,6 +75,13 @@ export function SetupPanel() {
         <p><b>You are not editing the published experiment.</b> The controls below change a teaching model. Published-protocol mode will unlock only after the source tables, units and study metadata have passed the evidence checks.</p>
       </div>}
 
+      {referenceCase?.publishedDoseGroups && <div className="protocol-compare" aria-label="Published and model dose comparison">
+        <div><span className="eyebrow">Published design</span><strong>{referenceCase.publishedDoseGroups.map(fmtInt).join(" · ")}</strong><small>mg/kg · observed protocol arms</small></div>
+        <span className="protocol-arrow" aria-hidden="true">→</span>
+        <div><span className="eyebrow">Your sandbox design</span><strong>{modelDoses.map(fmtInt).join(" · ")}</strong><small>mg/kg/day · predicted model arms</small></div>
+        <p><b>Your task:</b> use the model ladder to explore dose–response, then compare its pattern with the published protocol without treating a prediction as an observation.</p>
+      </div>}
+
       <div className="field"><b>2. Design the dosing protocol</b> <span className="small">The simulator creates a control, low-, mid- and high-dose group. Current dose values are model-proxy settings—not published doses.</span></div>
       <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
         <label className="field" htmlFor="top-dose">
@@ -83,14 +96,11 @@ export function SetupPanel() {
           </div>
           <span className="small">{setup.recovery ? `Plus ${setup.recoveryDays} recovery days for recovery groups.` : "No recovery period."}</span>
         </div>
-        <label className="field" htmlFor="disease">Disease model
+        {detail === "expert" ? <label className="field" htmlFor="disease">Disease model
           <select id="disease" value={setup.disease} onChange={(e) => set({ disease: e.target.value as DiseaseChoice })}>
-            <option value="none">None (healthy animals)</option>
-            <option value="cancer">Tumour (xenograft)</option>
-            <option value="diabetes-stz">Diabetes, fast onset</option>
-            <option value="diabetes-type2">Diabetes, slow onset</option>
+            <option value="none">None (healthy animals)</option><option value="cancer">Tumour (xenograft)</option><option value="diabetes-stz">Diabetes, fast onset</option><option value="diabetes-type2">Diabetes, slow onset</option>
           </select>
-        </label>
+        </label> : <div className="field guided-context"><span>Biological baseline</span><b>{setup.disease === "cancer" ? "Tumour-bearing animals" : "Healthy animals"}</b><small>Chosen automatically for this teaching case. Research mode allows other disease models.</small></div>}
       </div>
 
       <div className="study-sentence" aria-live="polite">
