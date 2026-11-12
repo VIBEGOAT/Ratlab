@@ -102,18 +102,18 @@ export function LabShell() {
           </div>
         </section>
         <div className="lab-toolbar">
-          {visibleViews.length > 1 ? (
+          {setup.studyMode === "published" ? <span className="lab-crumb">Published evidence</span> : visibleViews.length > 1 ? (
             <div className="segmented tabs" role="tablist" aria-label={`${sec.label} views`} ref={tabsRef}>
               {tabPill.ready && <span className="seg-pill" style={tabPill.style} aria-hidden="true" />}
               {visibleViews.map(([v, l]) => <button key={v} role="tab" type="button" aria-selected={v === viewId} onClick={() => goLab(sec.id, v)}>{l}</button>)}
             </div>
           ) : <span className="lab-crumb">{sec.label}</span>}
-          <div className="lab-tools">
+          {setup.studyMode !== "published" && <div className="lab-tools">
             {animalViews.includes(viewId) && <AnimalPicker />}
             {soundViews.includes(viewId) && <SoundToggle className="sound-chip" offText="Rat sounds" onText="Rat sounds on" hint="Synthesised sniffing, a chirp when you click the rat, footsteps and the heartbeat. Real rats make most of their calls above the range of human hearing.">
               <Icon name="sound" size={16} />
             </SoundToggle>}
-          </div>
+          </div>}
         </div>
         {sec.id === "design" && <SetupPanel />}
         <div className="content view-enter" role="tabpanel" key={`${sec.id}/${viewId}/${setup.studyMode}`}>
