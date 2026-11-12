@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "acetaminophen-liver",
   "status": "curating",
   "drug": {
@@ -13,6 +13,7 @@
     "citation": "Igarashi Y et al. Open TG-GATEs: a large-scale toxicogenomics database. Nucleic Acids Research. 2015;43(D1):D921-D927.",
     "doi": "10.1093/nar/gku955",
     "primaryProtocolCitation": "E-MTAB-799 and E-MTAB-800 SDRF metadata mirrored in bhklab/TGGATES",
+    "stableIdentifiers": ["E-MTAB-799", "E-MTAB-800"],
     "licenceChecked": false
   },
   "protocol": {
@@ -53,6 +54,7 @@
     ]
   },
   "doseConclusion": {
+    "sourceStatementChecked": false,
     "sourceReportedNoaelMgPerKgDay": null,
     "sourceReportedLoaelMgPerKgDay": null,
     "basis": null

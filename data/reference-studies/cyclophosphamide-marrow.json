@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 2,
+  "id": "cyclophosphamide-marrow",
+  "status": "source-mapped",
+  "drug": { "genericName": "cyclophosphamide", "synonyms": [], "targetLesson": "marrow suppression and recovery" },
+  "source": {
+    "dataset": "Open TG-GATEs", "datasetRecord": "ArrayExpress E-MTAB-799 and E-MTAB-800, Rat / in vivo / liver transcriptomics",
+    "citation": "Igarashi Y et al. Open TG-GATEs: a large-scale toxicogenomics database. Nucleic Acids Research. 2015;43(D1):D921-D927.",
+    "doi": "10.1093/nar/gku955", "primaryProtocolCitation": "E-MTAB-799 and E-MTAB-800 SDRF metadata mirrored in bhklab/TGGATES",
+    "stableIdentifiers": ["E-MTAB-799", "E-MTAB-800", "CHEMBL88"], "licenceChecked": false
+  },
+  "protocol": {
+    "species": "Rattus norvegicus", "strain": "Crj:CD(SD)IGS", "sex": "male", "ageWeeks": 6, "bodyWeightG": null,
+    "route": "gavage", "formulation": null, "doseUnit": "mg/kg", "doseGroups": [0, 15, 50, 150],
+    "frequency": null, "durationDays": null, "groupSize": null,
+    "control": "Control arm recorded at every sacrifice time; vehicle formulation is not stated in the SDRF metadata",
+    "studyArms": [
+      { "type": "single-dose", "accession": "E-MTAB-799", "sacrificeTimes": [3, 6, 9, 24], "sacrificeUnit": "hour" },
+      { "type": "repeat-dose", "accession": "E-MTAB-800", "doseGroups": [0, 1.5, 5, 15], "sacrificeTimes": [4, 8, 15, 29], "sacrificeUnit": "day" }
+    ]
+  },
+  "observations": { "pk": [], "clinicalChemistry": [], "organWeights": [], "histopathology": [], "transcriptomics": [] },
+  "doseConclusion": { "sourceStatementChecked": false, "sourceReportedNoaelMgPerKgDay": null, "sourceReportedLoaelMgPerKgDay": null, "basis": null },
+  "review": { "transcribedBy": null, "checkedBy": null, "checkedOn": null, "blockingIssues": [
+    "The mapped ArrayExpress records describe liver transcriptomics, not a bone-marrow toxicity endpoint package",
+    "Blood counts, marrow histopathology and recovery observations are not yet imported",
+    "Formulation, dosing frequency, group size and reuse terms require verification"
+  ] }
+}

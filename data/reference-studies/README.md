@@ -3,6 +3,16 @@
 These packages are the boundary between published observations and VAST model output.
 A drug name or citation is not enough to mark a case as validated.
 
+## Statuses
+
+- `source-needed`: the teaching case exists, but an endpoint-matched primary source has not yet been selected;
+- `source-mapped`: a stable primary source has been identified, but observations have not been imported;
+- `curating`: protocol or observation rows are being transcribed and still require checks;
+- `reviewed`: protocol and observations passed a second-person transcription review;
+- `ready`: reviewed, reusable evidence that satisfies every readiness rule below.
+
+These are evidence-readiness states, not claims that VAST is validated for regulatory use.
+
 A package may enter `ready` status only when it includes:
 
 1. the primary source and a stable dataset identifier;
@@ -21,3 +31,7 @@ VAST uses three evidence labels:
 - `predicted`: generated for a condition not directly observed in that source.
 
 Missing values stay `null`. They must never be replaced with plausible-looking estimates.
+
+The validator deliberately fails a `ready` package if any required field, provenance,
+review, or reuse check is absent. Earlier statuses may be incomplete, but the validator
+prints every blocker so the UI and team can describe that incompleteness honestly.

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 2,
+  "id": "paclitaxel-nerves",
+  "status": "source-needed",
+  "drug": { "genericName": "paclitaxel", "synonyms": ["Taxol"], "targetLesson": "cumulative peripheral neuropathy" },
+  "source": {
+    "dataset": null, "datasetRecord": null, "citation": null, "doi": null, "primaryProtocolCitation": null,
+    "stableIdentifiers": [], "licenceChecked": false,
+    "discoveryNote": "Paclitaxel was not found in the rat in-vivo E-MTAB-799 or E-MTAB-800 SDRF records. A suitable primary rat neuropathy study still needs to be selected."
+  },
+  "protocol": {
+    "species": "Rattus norvegicus", "strain": null, "sex": null, "ageWeeks": null, "bodyWeightG": null,
+    "route": null, "formulation": null, "doseUnit": null, "doseGroups": [], "frequency": null, "durationDays": null,
+    "groupSize": null, "control": null, "studyArms": []
+  },
+  "observations": { "pk": [], "clinicalChemistry": [], "organWeights": [], "histopathology": [], "behaviour": [] },
+  "doseConclusion": { "sourceStatementChecked": false, "sourceReportedNoaelMgPerKgDay": null, "sourceReportedLoaelMgPerKgDay": null, "basis": null },
+  "review": { "transcribedBy": null, "checkedBy": null, "checkedOn": null, "blockingIssues": [
+    "Select a stable primary rat peripheral-neuropathy source before displaying a published protocol",
+    "Import sensory, gait and nerve-histology observations with units and variability",
+    "Record protocol, review and reuse metadata"
+  ] }
+}
