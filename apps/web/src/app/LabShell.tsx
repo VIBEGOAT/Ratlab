@@ -1,5 +1,5 @@
 import { lazy, Suspense, useRef, type LazyExoticComponent } from "react";
-import { useStore } from "../store";
+import { useStore, type LabSection } from "../store";
 import { AnimalPicker, RunStatus, SetupPanel } from "./SetupPanel";
 import { SECTIONS, type SectionDef, type ViewId } from "../lib/nav";
 import { COMPOUNDS } from "../lib/setup";
@@ -39,6 +39,15 @@ const LESSON_COPY: Record<string, { label: string; hint: string; question: strin
   trust: { label: "Review and reflect", hint: "Feedback and sources", question: "What did this practical establish—and what remains unknown?" },
 };
 
+function StudentRoute({ current, detail, onGo, onDetail }: { current: LabSection; detail: "simple" | "expert"; onGo: (section: LabSection) => void; onDetail: (detail: "simple" | "expert") => void }) {
+  const currentIndex = SECTIONS.findIndex((section) => section.id === current);
+  return <section className="student-route" aria-label="Student learning route">
+    <div className="student-route-copy"><span className="eyebrow">Your learning route</span><b>{currentIndex + 1} of {SECTIONS.length} · one question at a time</b><small>Start with the study question. The full research workspace stays available when you need it.</small></div>
+    <ol>{SECTIONS.map((section, index) => <li key={section.id} className={index === currentIndex ? "active" : index < currentIndex ? "complete" : ""}><button type="button" onClick={() => onGo(section.id)} aria-current={index === currentIndex ? "step" : undefined}><i>{index < currentIndex ? "✓" : index + 1}</i><span>{section.label}</span></button></li>)}</ol>
+    <button type="button" className="student-route-depth" onClick={() => onDetail(detail === "simple" ? "expert" : "simple")}><span>{detail === "simple" ? "Need more detail?" : "Research tools open"}</span><b>{detail === "simple" ? "Explore deeper" : "Guided view"}</b></button>
+  </section>;
+}
+
 function DetailSwitch({ sec, viewId }: { sec: SectionDef; viewId: ViewId }) {
   const detail = useStore((s) => s.detail);
   const setDetail = useStore((s) => s.setDetail);
@@ -59,6 +68,7 @@ export function LabShell() {
   const section = useStore((s) => s.labSection);
   const view = useStore((s) => s.labView);
   const detail = useStore((s) => s.detail);
+  const setDetail = useStore((s) => s.setDetail);
   const setup = useStore((s) => s.setup);
   const setSetup = useStore((s) => s.setSetup);
   const goLab = useStore((s) => s.goLab);
@@ -91,6 +101,7 @@ export function LabShell() {
       </nav>
       <main className="lab-main" id="main">
         <h1 className="sr-only">Lab: {sec.label}</h1>
+        {setup.studyMode !== "published" && <StudentRoute current={sec.id} detail={detail} onGo={goLab} onDetail={setDetail} />}
         {sec.id !== "design" && <section className="lab-guide" aria-labelledby="lab-step-title">
           <div className="lab-guide-copy">
             <span className="eyebrow">Step {step + 1} of {SECTIONS.length}</span>

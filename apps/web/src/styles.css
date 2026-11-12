@@ -143,6 +143,22 @@ tr.flag td { color: var(--bad); }
 .lab-nav button span { font-size: 11.5px; color: var(--muted); font-weight: 450; }
 .lab-nav button[aria-current="page"] { background: var(--surface); border-color: var(--line-strong); color: var(--ink); }
 .lab-main { min-width: 0; padding: 22px 26px 40px; display: flex; flex-direction: column; gap: 18px; }
+.student-route { display: grid; grid-template-columns: minmax(190px, .9fr) minmax(360px, 2fr) auto; align-items: center; gap: 18px; padding: 13px 15px; border: 1px solid var(--line); border-radius: 16px; background: color-mix(in srgb, var(--surface-solid) 88%, transparent); box-shadow: inset 0 1px rgba(255,255,255,.06); }
+.student-route-copy { display: flex; flex-direction: column; gap: 3px; }
+.student-route-copy b { font-size: 12px; }
+.student-route-copy small { color: var(--muted); font-size: 10px; line-height: 1.35; }
+.student-route ol { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 3px; margin: 0; padding: 0; list-style: none; }
+.student-route li { min-width: 0; }
+.student-route li button { width: 100%; display: flex; align-items: center; gap: 6px; padding: 7px 6px; border: 1px solid transparent; border-radius: 9px; background: transparent; color: var(--muted); font-size: 10px; text-align: left; transition: color .22s var(--ease), background .22s var(--ease), border-color .22s var(--ease); }
+.student-route li button:hover { color: var(--ink); background: var(--surface); }
+.student-route li i { display: grid; flex: none; width: 17px; height: 17px; place-items: center; border: 1px solid var(--line-strong); border-radius: 50%; color: var(--muted); font: 650 9px var(--f-mono); font-style: normal; }
+.student-route li.active button { color: var(--ink); border-color: color-mix(in srgb, var(--accent) 52%, var(--line)); background: var(--accent-soft); }
+.student-route li.active i { border-color: var(--accent); color: var(--accent); }
+.student-route li.complete button { color: var(--ink-2); }
+.student-route li.complete i { border-color: var(--good); color: var(--good); }
+.student-route-depth { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; padding: 7px 9px; border: 0; border-left: 1px solid var(--line); background: transparent; white-space: nowrap; text-align: right; }
+.student-route-depth span { color: var(--muted); font-size: 9px; }
+.student-route-depth b { color: var(--accent); font-size: 10px; }
 .subnav { display: flex; gap: 6px; flex-wrap: wrap; }
 @media (max-width: 900px) {
   .lab { grid-template-columns: minmax(0, 1fr); }
@@ -150,6 +166,9 @@ tr.flag td { color: var(--bad); }
   .lab-nav button { width: auto; white-space: nowrap; }
   .lab-nav button span { display: none; }
   .lab-main { padding: 16px; }
+  .student-route { grid-template-columns: 1fr; gap: 10px; }
+  .student-route ol { grid-template-columns: repeat(3, 1fr); }
+  .student-route-depth { align-items: flex-start; border-left: 0; border-top: 1px solid var(--line); text-align: left; }
   .topbar, .footer { padding-left: 12px; padding-right: 12px; }
 }
 
