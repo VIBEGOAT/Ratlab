@@ -21,6 +21,14 @@ const SIGN_LABEL: Record<string, string> = {
 };
 const LAYER_LABEL: Array<[keyof Layers, string]> = [["xray", "X-ray body"], ["skeleton", "Skeleton"], ["vessels", "Blood vessels"], ["brain", "Brain"], ["heart", "Heart"], ["lungs", "Lungs"], ["liver", "Liver"], ["kidneys", "Kidneys"], ["gut", "Gut"], ["marrow", "Bone marrow"], ["tumor", "Tumor"], ["labels", "Grade labels"]];
 const TOXICITY_CUE: Record<Organ, string> = { liver: "Inflammation and loss of healthy tissue", kidney: "Tubular stress and impaired filtration", heart: "Irregular contraction and myocardial stress", brain: "Neural stress and altered signalling", gut: "Mucosal injury and impaired absorption", marrow: "Suppressed blood-cell production" };
+const PATHOLOGY_LENS: Record<Organ, string> = {
+  liver: "Colour shift and focal lesions are a teaching cue for hepatocellular injury; they are not a histology slide.",
+  kidney: "Swelling and focal lesions represent tubular injury/casts at a gross teaching scale; filtration cannot be seen directly.",
+  heart: "Darker colour, contraction change and lesions represent myocardial injury; this is not an ECG or ejection-fraction measurement.",
+  brain: "This is a neural-system proxy. Paclitaxel evidence concerns peripheral neuropathy and behaviour, not a measured brain lesion.",
+  gut: "Colour and focal lesions are a teaching cue for mucosal injury, not an endoscopic observation.",
+  marrow: "Marrow brightness represents reduced blood-cell production; the model does not show a real marrow biopsy.",
+};
 
 function OrganDetail({ organ, b, day }: { organ: Organ; b: AnimalBundle; day: number }) {
   const det = ORGAN_DETAIL[organ];
@@ -130,8 +138,10 @@ function RatLab({ tw }: { tw: TwinBundle }) {
               <button type="button" aria-pressed={xrayOn} onClick={() => setLayers({ ...layers, xray: true })}>X-ray</button>
             </div>
             <label className="small"><input type="checkbox" checked={twins} onChange={(e) => setTwins(e.target.checked)} /> Show untreated twin</label>
+            <button type="button" className="glass-action pathology-action" onClick={() => { setSelected(target); setLayers({ ...layers, xray: true, labels: true, vessels: true }); }}>Show {ORGAN_LABEL[target]} pathology</button>
             <button onClick={() => { setSelected(null); setReset(reset + 1); }}>Reset view</button>
           </div>
+          <p className="pathology-lens"><b>Anatomy lens:</b> {PATHOLOGY_LENS[target]}</p>
           <Expert label="layers, speed and quality">
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
             <label className="small">Speed <select value={speed} onChange={(e) => setSpeed(+e.target.value)} style={{ width: "auto" }}>{[0.5, 1, 2, 4, 8].map((s) => <option key={s} value={s}>{s} days/s</option>)}</select></label>

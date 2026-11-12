@@ -563,6 +563,9 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
 .toxicity-cue > span { color: var(--bad); animation: toxicity-blink 1.5s ease-in-out infinite; }
 .toxicity-cue b { font-size: 11px; }
 .toxicity-cue small { color: var(--muted); font-size: 10px; }
+.pathology-action { padding: 7px 11px; font-size: 11px; }
+.pathology-lens { margin: 0; max-width: 82ch; color: var(--muted); font-size: 10px; line-height: 1.45; }
+.pathology-lens b { color: var(--ink-2); }
 @keyframes toxicity-blink { 50% { opacity: .3; transform: scale(.7); } }
 .study-route { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--surface-solid); }
 .study-route span { display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 10px 14px; color: var(--muted); font-size: 12px; border-right: 1px solid var(--line); }
