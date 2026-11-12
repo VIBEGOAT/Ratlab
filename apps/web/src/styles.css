@@ -498,9 +498,10 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
 .simple-study legend { margin-bottom: 12px; font-weight: 650; }
 .simple-study legend span, .simple-study-controls label > span b i { display: inline-grid; width: 24px; height: 24px; margin-right: 8px; place-items: center; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font: 700 10px var(--f-mono); font-style: normal; }
 .simple-study-models > div { display: grid; grid-template-columns: repeat(5, 1fr); gap: 9px; }
-.simple-study-models button { min-width: 0; min-height: 92px; padding: 14px; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; text-align: left; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.simple-study-models button { min-width: 0; min-height: 142px; padding: 14px; display: flex; flex-direction: column; align-items: flex-start; text-align: left; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
 .simple-study-models button small { color: var(--muted); font-size: 10px; }
-.simple-study-models button b { font-size: 14px; overflow-wrap: anywhere; }
+.simple-study-models button b { margin-top: auto; font-size: 14px; overflow-wrap: anywhere; }
+.simple-study-models button p { margin: 6px 0 0; color: var(--muted); font-size: 10px; line-height: 1.35; }
 .simple-study-models button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 -3px var(--accent); }
 .simple-study-controls { display: grid; grid-template-columns: 1.25fr .75fr; gap: 26px; padding-block: 28px; border-block: 1px solid var(--line); }
 .simple-study-controls > label { display: flex; flex-direction: column; gap: 12px; }
@@ -510,6 +511,12 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
 .simple-study-controls small { color: var(--muted); font-size: 10px; }
 .simple-study-controls .segmented { display: grid; grid-template-columns: repeat(4, 1fr); }
 .simple-study-controls .segmented button { padding-inline: 8px; }
+.simple-study-controls fieldset > small { display: block; margin-top: 12px; color: var(--muted); font-size: 10px; }
+.simple-study-guide { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.simple-study-guide article { padding: 16px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface); }
+.simple-study-guide article > span { color: var(--accent); font: 650 9px var(--f-mono); text-transform: uppercase; letter-spacing: .08em; }
+.simple-study-guide b { display: block; margin: 7px 0 5px; font-size: 13px; }
+.simple-study-guide p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.45; }
 .simple-study-summary { display: flex; justify-content: space-between; align-items: center; gap: 22px; padding: 22px; border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line)); border-radius: 17px; background: var(--surface); }
 .simple-study-summary p { margin: 5px 0; max-width: 65ch; font-size: 15px; line-height: 1.5; }
 .simple-study-summary small { color: var(--muted); }
@@ -741,6 +748,7 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
   .simple-study-models > div { display: flex; overflow-x: auto; padding-bottom: 6px; }
   .simple-study-models button { min-width: 140px; }
   .simple-study-controls { grid-template-columns: 1fr; }
+  .simple-study-guide { grid-template-columns: 1fr; }
   .simple-study-summary { align-items: stretch; flex-direction: column; }
   .simple-advanced { grid-template-columns: 1fr 1fr; }
 }

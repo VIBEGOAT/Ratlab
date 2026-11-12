@@ -25,16 +25,18 @@ export function SetupPanel() {
   });
 
   return <section className="simple-study" aria-labelledby="setup-title">
-    <header><span className="eyebrow">New simulation</span><h2 id="setup-title">Design a study</h2><p>Choose what to test, then set the highest dose and study length.</p></header>
+    <header><span className="eyebrow">New simulation</span><h2 id="setup-title">Design a study</h2><p>Choose an organ response to investigate. The Lab will compare an untreated control with three increasing dose groups.</p></header>
 
     <fieldset className="simple-study-models"><legend><span>1</span> Choose a toxicity model</legend><div>
-      {COMPOUNDS.filter((item) => item.key !== "reference").map((item) => <button key={item.key} type="button" aria-pressed={setup.compoundKey === item.key} onClick={() => pick(item.key)}><small>{ORGAN[item.key]}</small><b>{item.name.replace("-toxic", "")}</b></button>)}
+      {COMPOUNDS.filter((item) => item.key !== "reference").map((item) => <button key={item.key} type="button" aria-pressed={setup.compoundKey === item.key} onClick={() => pick(item.key)}><small>{ORGAN[item.key]}</small><b>{item.name}</b><p>{item.sub}</p></button>)}
     </div></fieldset>
 
     <div className="simple-study-controls">
       <label htmlFor="top-dose"><span><b><i>2</i> Highest dose</b><strong>{fmtInt(setup.highDose)} mg/kg/day</strong></span><input id="top-dose" type="range" min={1} max={Math.max(400, setup.highDose)} step={1} value={setup.highDose} onChange={(event) => set({ highDose: +event.target.value })} /><small>The simulation also creates untreated, low-dose and mid-dose groups.</small></label>
-      <fieldset><legend><span>3</span> Study length</legend><div className="segmented">{[7, 14, 28, 90].map((days) => <button key={days} type="button" aria-pressed={setup.durationDays === days} onClick={() => set({ durationDays: days })}>{days} days</button>)}</div></fieldset>
+      <fieldset><legend><span>3</span> Study length</legend><div className="segmented">{[7, 14, 28, 90].map((days) => <button key={days} type="button" aria-pressed={setup.durationDays === days} onClick={() => set({ durationDays: days })}>{days} days</button>)}</div><small>Longer studies reveal effects that build gradually.</small></fieldset>
     </div>
+
+    <div className="simple-study-guide" aria-label="How the virtual study works"><article><span>Control</span><b>What is normal?</b><p>Untreated virtual rats provide the baseline for every comparison.</p></article><article><span>Dose groups</span><b>Does exposure matter?</b><p>Low, mid and high doses reveal whether effects increase with dose.</p></article><article><span>Readout</span><b>What changed?</b><p>Results connect exposure with organ response, signs and recovery.</p></article></div>
 
     <div className="simple-study-summary"><div><span className="eyebrow">Your study</span><p>Test the <b>{ORGAN[setup.compoundKey]?.toLowerCase() ?? "custom"}</b> model for <b>{setup.durationDays} days</b>, comparing untreated rats with doses up to <b>{fmtInt(setup.highDose)} mg/kg/day</b>.</p><small>Educational simulation—not observed drug data.</small></div><button type="button" className="primary" onClick={() => goLab("overview")}>Run and view results →</button></div>
 
