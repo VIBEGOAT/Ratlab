@@ -13,7 +13,7 @@ import { COMPOUNDS, ORGAN_LABEL } from "../lib/setup";
 import { fmt, fmtInt, fmtPct } from "../design/format";
 import { GRADE_WORD, gradeVar } from "../design/damage";
 import { ratVisualState } from "../three/ratState";
-import { force3d, softwareGraphics, webglAvailable } from "../three/webgl";
+import { softwareGraphics, webglAvailable } from "../three/webgl";
 import { ChapterBehaviour, ChapterFinale, ChapterForecast, ChapterTrust, ChapterTwin, scaleDose } from "./chapters";
 import { ForecastField, HumanScale, SplitDivider } from "./overlays";
 import { useStoryScroll, type StoryPos } from "./useStoryScroll";
@@ -134,8 +134,10 @@ export function StoryPage() {
   const [sceneReady, setSceneReady] = useState(false);
   const [software, setSoftware] = useState(false);
   useEffect(() => {
-    let t = 0, idle = 0, live = true;
+    let t = 0, idle = 0, live = true, scheduled = false;
     const go = () => {
+      if (scheduled) return;
+      scheduled = true;
       // the first WebGL context starts the GPU process, which is slow, so even the probe waits for idle
       const start = () => {
         if (!live) return;
@@ -144,22 +146,27 @@ export function StoryPage() {
         if (!ok) return;
         const sw = softwareGraphics();
         setSoftware(sw);
-        if (!sw) setSceneReady(true);
+        // A slower renderer still gets the living Story scene. It runs at low
+        // quality instead of silently replacing every animation with a poster.
+        setSceneReady(true);
       };
       const ric = (window as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
-      if (ric) idle = ric(start, { timeout: 2500 }); else t = window.setTimeout(start, 600);
+      if (ric) idle = ric(start, { timeout: 1000 }); else t = window.setTimeout(start, 300);
     };
-    // phones and tablets: wait for the first touch or scroll, so the first seconds go to the page itself
+    // Input starts the scene immediately on phones and tablets; a fallback
+    // timer guarantees that Story mode never remains a static poster.
     const coarse = window.matchMedia?.("(pointer: coarse)").matches || window.innerWidth < 760;
     const onFirstInput = () => go();
     if (coarse) {
       window.addEventListener("scroll", onFirstInput, { once: true, passive: true });
       window.addEventListener("pointerdown", onFirstInput, { once: true });
       window.addEventListener("keydown", onFirstInput, { once: true });
-    } else if (document.readyState === "complete") t = window.setTimeout(go, 700); else window.addEventListener("load", () => { t = window.setTimeout(go, 700); }, { once: true });
+      t = window.setTimeout(go, 1200);
+    } else if (document.readyState === "complete") t = window.setTimeout(go, 250); else window.addEventListener("load", () => { t = window.setTimeout(go, 250); }, { once: true });
     return () => { live = false; window.removeEventListener("scroll", onFirstInput); window.removeEventListener("pointerdown", onFirstInput); window.removeEventListener("keydown", onFirstInput); window.clearTimeout(t); if (idle) (window as { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback?.(idle); };
   }, []);
-  const gl = glOk && sceneReady && !software;
+  const gl = glOk && sceneReady;
+  const sceneQuality: Quality = software ? "low" : quality;
   const plasmaRef = useRef(0);
   const stageRef = useRef<HTMLDivElement>(null);
   const splitRef = useRef(0.5);
@@ -374,17 +381,11 @@ export function StoryPage() {
           <div className="story-canvas">{gl ? (
             <Suspense fallback={<div className="poster"><RatPoster /></div>}>
               <StoryScene posRef={posRef as React.MutableRefObject<StoryPos>} chapter={pos.chapter} doseReplay={doseReplay} bridgeOrgan={bridgeOrgan} onBridgeOrgan={setBridgeOrgan} targetOrgan={targetOrgan} treated={t} untreated={u} day={damageDay} moment={moment} exposure={exposure} plasmaRef={plasmaRef}
-                reduceMotion={reduce} palette={cb ? "cb" : "standard"} quality={quality} background={bg} paused={paused} splitRef={splitRef} twinDay={twinDay} />
+                reduceMotion={reduce} palette={cb ? "cb" : "standard"} quality={sceneQuality} background={bg} paused={paused} splitRef={splitRef} twinDay={twinDay} />
 
             </Suspense>
           ) : <div className="poster"><RatPoster /></div>}</div>
 
-          {glOk && software && (
-            <div className="gl-note" role="status">
-              <span>Software graphics detected, so live 3D is paused to keep the page responsive.</span>
-              <button type="button" onClick={() => { force3d(); setSoftware(false); setSceneReady(true); }}>Turn on 3D</button>
-            </div>
-          )}
           {pos.chapter === 1 && <div className="meet-frame" aria-hidden="true"><div className="meet-frame-top"><span>VAST / ANATOMY STUDIO</span><span>02 — EXPLORE</span></div><div className="meet-frame-bottom"><span>A living system.<br/><strong>Revealed, layer by layer.</strong></span><small>SCROLL TO LOOK INSIDE ↓</small></div></div>}
           {pos.chapter === 2 && <div className="stage-scientific-note">Illustrative binding motif · target highlighting · not a real molecular structure</div>}
           {pos.chapter === 3 && <div className="stage-scientific-note">Oral route → gut → portal liver → circulation → renal clearance<br/>Bio-tracers illustrate model transport; glow is normalized to each tissue’s peak.</div>}

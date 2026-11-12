@@ -1,6 +1,16 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
+test("a normal visitor receives the animated scene without a force-3D preference", async ({ page }) => {
+  test.setTimeout(90_000);
+  await page.goto("/#story");
+  const hero = page.getByTestId("cinematic-hero");
+  await expect(hero).toBeVisible();
+  await expect(page.locator(".story-stage canvas")).toHaveCount(1, { timeout: 30_000 });
+  await expect(hero).toHaveAttribute("data-stage", "0");
+  await expect(hero).toHaveAttribute("data-stage", "1", { timeout: 20_000 });
+});
+
 test("cinematic hero renders all views, pauses, and fits mobile", async ({ page }) => {
   test.setTimeout(180_000); // Software WebGL needs additional time for three full-resolution captures.
   const errors: string[] = [];
