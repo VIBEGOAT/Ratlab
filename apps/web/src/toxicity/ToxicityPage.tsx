@@ -93,7 +93,7 @@ export function ToxicityPage() {
   const exportRun = () => { if (result) download("vast-toxicity-experiment.json", JSON.stringify({ simVersion: SIM_VERSION, evidence: "fictional model; unvalidated against animal data", comparison: "same animal parameters; selected dose versus half dose; no disease overlay", snapshotDay: day, organResults: rows, ...result }, null, 2), "application/json"); };
 
   return <main className="tox-page" id="main">
-    <header className="tox-header"><div><p className="eyebrow">A little curiosity. A deeper understanding.</p><h1>A living lesson.<br /><span>One virtual rat.</span></h1><p>Change the dose. Explore the organs. See the story unfold.</p></div>
+    <header className="tox-header"><div><p className="eyebrow">Try a virtual experiment</p><h1>One question.<br /><span>One virtual rat.</span></h1><p>Change a fictional dose, watch the organ response, then continue to Lab for a full study.</p></div>
       <button className="tox-lesson-link" onClick={() => setMode("learn")}><Icon name="design" /><span>New to pharmacokinetics?<b>Start with a guided lesson <span aria-hidden="true">↗</span></b></span></button>
     </header>
     <div className="tox-layout">

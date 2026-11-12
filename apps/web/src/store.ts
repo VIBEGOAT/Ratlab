@@ -83,7 +83,7 @@ export const storageAvailable = (() => {
   } catch { return false; }
 })();
 const savedTheme = ((): Theme => { const t = ls.get("theme"); return t === "light" || t === "dark" ? t : "system"; })();
-const savedMode = ((): Mode => { const h = typeof location !== "undefined" ? location.hash : ""; if (h.startsWith("#learn")) return "learn"; if (h.startsWith("#lab")) return "lab"; if (h.startsWith("#story")) return "story"; return "toxicity"; })();
+const savedMode = ((): Mode => { const h = typeof location !== "undefined" ? location.hash : ""; if (h.startsWith("#learn")) return "learn"; if (h.startsWith("#lab")) return "lab"; if (h.startsWith("#toxicity")) return "toxicity"; return "story"; })();
 const cacheKey = (s: Setup) => `${SIM_VERSION}|${JSON.stringify(s)}`;
 const msg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 

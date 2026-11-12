@@ -104,8 +104,8 @@ function MainApp() {
     const read = () => {
       const h = location.hash;
       if (h.startsWith("#learn")) { useStore.setState({ mode: "learn" }); }
-      else if (h.startsWith("#story")) { useStore.setState({ mode: "story" }); }
-      else if (h === "" || h === "#" || h.startsWith("#toxicity")) { useStore.setState({ mode: "toxicity" }); }
+      else if (h === "" || h === "#" || h.startsWith("#story")) { useStore.setState({ mode: "story" }); }
+      else if (h.startsWith("#toxicity")) { useStore.setState({ mode: "toxicity" }); }
       else if (h.startsWith("#lab")) {
         const sec = h.split("/")[1] as LabSection | undefined;
         useStore.setState({ mode: "lab", ...(sec && SECTIONS.includes(sec) ? { labSection: sec } : {}) });
@@ -121,12 +121,12 @@ function MainApp() {
     <div className="app">
       <a href="#main" className="sr-only skip-link">Skip to content</a>
       <header className={`topbar${focused ? " topbar-focused" : ""}`}>
-        <button className="brand" onClick={() => setMode("toxicity")} aria-label="VAST home"><span className="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m5 6 7 12 7-12M8 6l4 7 4-7" stroke="var(--bg)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg></span>VAST<span className="brand-caption">A virtual learning lab.</span></button>
+        <button className="brand" onClick={() => setMode("story")} aria-label="VAST home"><span className="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m5 6 7 12 7-12M8 6l4 7 4-7" stroke="var(--bg)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg></span>VAST<span className="brand-caption">A virtual learning lab.</span></button>
         <div className="segmented" role="group" aria-label="Mode">
-          <button type="button" aria-pressed={mode === "toxicity"} onClick={() => setMode("toxicity")}>Toxicity</button>
+          <button type="button" aria-pressed={mode === "toxicity"} onClick={() => setMode("toxicity")}>Try an experiment</button>
           <button type="button" aria-pressed={mode === "learn"} onClick={() => setMode("learn")}>Learn</button>
           <button type="button" aria-pressed={mode === "story"} onClick={() => setMode("story")}>Story</button>
-          {!focused && <button type="button" aria-pressed={mode === "lab"} onClick={() => setMode("lab")}>Lab</button>}
+          <button type="button" aria-pressed={mode === "lab"} onClick={() => setMode("lab")}>Lab</button>
         </div>
         <div className="right">
           {focused ? <details className="app-more" ref={moreMenu}><summary aria-label="More options">More <span aria-hidden="true">⌄</span></summary><div className="app-more-menu">
