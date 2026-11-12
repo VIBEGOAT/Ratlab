@@ -470,6 +470,7 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
 .study-context > span:last-child { border-right: 0; }
 .study-context small { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; }
 .study-context b { color: var(--ink-2); font-size: 13px; white-space: nowrap; }
+.study-context .practical-exit { flex: none; margin-left: auto; white-space: nowrap; border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
 .lab-step-actions { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 12px; }
 .lab-step-actions button { min-width: 112px; }
 .lab-step-actions button:disabled { opacity: 0.32; }
@@ -721,6 +722,7 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
   .study-context > span { min-width: 0; padding: 8px 10px; border-right: 0; }
   .study-context > span:nth-child(odd) { padding-left: 0; border-right: 1px solid var(--line); }
   .study-context b { white-space: normal; }
+  .study-context .practical-exit { grid-column: 1 / -1; width: 100%; margin: 4px 0 0; }
   .lab-toolbar { align-items: stretch; }
   .segmented.tabs { width: 100%; overflow-x: auto; justify-content: flex-start; }
   .lab-tools, .lab-tools .field { width: 100%; }

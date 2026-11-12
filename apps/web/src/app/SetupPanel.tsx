@@ -28,7 +28,6 @@ export function SetupPanel() {
   if (setup.studyMode === "published" && referenceCase?.id === "acetaminophen-liver") return (
     <section className="lesson-modebar" aria-label="Current learning mode">
       <div><span className="eyebrow">Guided learning mode</span><b>Acetaminophen liver-toxicity practical</b><small>Published observations · approximately 12 minutes</small></div>
-      <button type="button" className="ghost" onClick={() => set({ studyMode: "sandbox" })}>Exit to Model Sandbox</button>
     </section>
   );
 

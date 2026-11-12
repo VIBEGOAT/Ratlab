@@ -60,6 +60,7 @@ export function LabShell() {
   const view = useStore((s) => s.labView);
   const detail = useStore((s) => s.detail);
   const setup = useStore((s) => s.setup);
+  const setSetup = useStore((s) => s.setSetup);
   const goLab = useStore((s) => s.goLab);
   const sec = SECTIONS.find((s) => s.id === section) ?? SECTIONS[0]!;
   const display = setup.studyMode === "published" ? LESSON_COPY[sec.id]! : sec;
@@ -104,7 +105,7 @@ export function LabShell() {
             <span><small>Compound</small><b>{compound}</b></span>
             <span><small>Top dose</small><b>{setup.studyMode === "published" && publishedTopDose !== undefined ? `${publishedTopDose.toLocaleString()} mg/kg` : `${setup.highDose} mg/kg/day`}</b></span>
             <span><small>Schedule</small><b>{setup.studyMode === "published" ? "Single + repeat · gavage" : `${setup.durationDays} days · ${setup.route === "oral" ? "oral" : setup.route.toUpperCase()}`}</b></span>
-            {setup.studyMode === "published" ? <span className="small muted">Limited observed package</span> : <RunStatus />}
+            {setup.studyMode === "published" ? <><span><small>Learning mode</small><b>Guided practical</b></span><button type="button" className="ghost practical-exit" onClick={() => setSetup({ studyMode: "sandbox" })}>Open Model Sandbox</button></> : <RunStatus />}
           </div>
           {setup.studyMode !== "published" && <div className="lab-step-actions">
             <button type="button" className="ghost" disabled={step === 0} onClick={() => step > 0 && goLab(SECTIONS[step - 1]!.id)}>← Previous</button>
