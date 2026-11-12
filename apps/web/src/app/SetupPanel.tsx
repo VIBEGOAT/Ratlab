@@ -56,10 +56,22 @@ export function SetupPanel() {
         </div>
       </div>}
 
+      {referenceCase && <div className="evidence-mode" role="group" aria-label="Evidence mode">
+        <button type="button" disabled aria-pressed="false">
+          <span><b>Published protocol</b><small>Observed dose groups and endpoints</small></span>
+          <em>Locked · data checking</em>
+        </button>
+        <button type="button" className="active" aria-pressed="true">
+          <span><b>Model sandbox</b><small>Change dose and duration to explore</small></span>
+          <em>Prediction</em>
+        </button>
+        <p><b>You are not editing the published experiment.</b> The controls below change a teaching model. Published-protocol mode will unlock only after the source tables, units and study metadata have passed the evidence checks.</p>
+      </div>}
+
       <div className="field"><b>2. Design the dosing protocol</b> <span className="small">The simulator creates a control, low-, mid- and high-dose group. Current dose values are model-proxy settings—not published doses.</span></div>
       <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
         <label className="field" htmlFor="top-dose">
-          <span className="row"><span>Highest dose</span><b>{fmtInt(setup.highDose)} mg/kg/day</b></span>
+          <span className="row"><span>Model top dose</span><b>{fmtInt(setup.highDose)} mg/kg/day</b></span>
           <input id="top-dose" type="range" min={1} max={Math.max(400, setup.highDose)} step={1} value={setup.highDose} onChange={(e) => set({ highDose: +e.target.value })} />
           <span className="small">Low and mid doses are {Math.round(setup.fractions[0] * 100)}% and {Math.round(setup.fractions[1] * 100)}% of this.</span>
         </label>

@@ -13,6 +13,7 @@
     "build": "npm run build -w @eliminate/web",
     "dev": "npm run dev -w @eliminate/web",
     "gen:needs": "node scripts/gen-needs-check.mjs",
+    "validate:references": "node scripts/validate-reference-studies.mjs",
     "ci": "npm run gen:needs && npm run gen:docs && npm run gen:prewarm && npm run lint && npm run typecheck && npm test && npm run bundle",
     "gen:docs": "tsx scripts/gen-docs.ts",
     "gen:prewarm": "tsx scripts/gen-prewarm.ts",

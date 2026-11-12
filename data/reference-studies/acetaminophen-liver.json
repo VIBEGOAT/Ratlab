@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "acetaminophen-liver",
+  "status": "curating",
+  "drug": {
+    "genericName": "acetaminophen",
+    "synonyms": ["paracetamol", "APAP"],
+    "targetLesson": "reactive-metabolite formation, hepatic defence and hepatocellular injury"
+  },
+  "source": {
+    "dataset": "Open TG-GATEs",
+    "datasetRecord": "Rat / in vivo / liver",
+    "citation": "Igarashi Y et al. Open TG-GATEs: a large-scale toxicogenomics database. Nucleic Acids Research. 2015;43(D1):D921-D927.",
+    "doi": "10.1093/nar/gku955",
+    "primaryProtocolCitation": null,
+    "licenceChecked": false
+  },
+  "protocol": {
+    "species": "Rattus norvegicus",
+    "strain": null,
+    "sex": null,
+    "ageWeeks": null,
+    "bodyWeightG": null,
+    "route": null,
+    "formulation": null,
+    "doseUnit": null,
+    "doseGroups": [],
+    "frequency": null,
+    "durationDays": null,
+    "groupSize": null,
+    "control": null
+  },
+  "observations": {
+    "pk": [],
+    "clinicalChemistry": [],
+    "organWeights": [],
+    "histopathology": [],
+    "transcriptomics": []
+  },
+  "doseConclusion": {
+    "sourceReportedNoaelMgPerKgDay": null,
+    "sourceReportedLoaelMgPerKgDay": null,
+    "basis": null
+  },
+  "review": {
+    "transcribedBy": null,
+    "checkedBy": null,
+    "checkedOn": null,
+    "blockingIssues": [
+      "Primary protocol table not yet retrieved",
+      "Numerical endpoint tables not yet imported",
+      "Reuse terms not yet checked"
+    ]
+  }
+}

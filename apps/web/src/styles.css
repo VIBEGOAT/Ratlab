@@ -515,6 +515,16 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
 .evidence-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin: 0 4px 0 6px; }
 .evidence-dot.observed { background: var(--good); }
 .evidence-dot.predicted { background: var(--warn); }
+.evidence-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface-solid); }
+.evidence-mode button { min-height: 66px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px; text-align: left; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); }
+.evidence-mode button.active { border-color: var(--warn); background: color-mix(in srgb, var(--warn) 7%, var(--surface)); }
+.evidence-mode button:disabled { opacity: .62; }
+.evidence-mode button span { display: flex; flex-direction: column; gap: 3px; }
+.evidence-mode button b { font-size: 13px; }
+.evidence-mode button small { color: var(--muted); font-size: 10px; }
+.evidence-mode button em { flex: none; padding: 5px 7px; border-radius: 999px; color: var(--muted); background: var(--surface-2); font: 600 9px var(--f-mono); text-transform: uppercase; font-style: normal; }
+.evidence-mode button.active em { color: var(--warn); }
+.evidence-mode > p { grid-column: 1 / -1; margin: 0; padding: 2px 4px 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
 
 @media (max-width: 700px) {
   .lab-guide { grid-template-columns: minmax(0, 1fr); padding: 17px; }
@@ -877,4 +887,6 @@ body::before { content: ""; position: fixed; inset: 0; z-index: 100; pointer-eve
   .reference-case { min-height: 130px; padding: 13px; }
   .case-dossier { grid-template-columns: 1fr; }
   .evidence-contract { grid-column: auto; }
+  .evidence-mode { grid-template-columns: 1fr; }
+  .evidence-mode > p { grid-column: auto; }
 }
