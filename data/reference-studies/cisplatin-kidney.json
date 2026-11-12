@@ -5,39 +5,47 @@
   "drug": { "genericName": "cisplatin", "synonyms": [], "targetLesson": "renal exposure and tubular injury" },
   "source": {
     "dataset": "Europe PMC open full text",
-    "datasetRecord": "PMC13180985; cisplatin-induced nephrotoxicity in male Sprague–Dawley rats",
-    "citation": "Khallaf EK, Ramadan EA, Elmazar MM, Safar MM. Dapagliflozin attenuates cisplatin-induced nephrotoxicity in rats through modulation of ROS/NF-kB, BCL2/Bax and PINK1/Parkin signaling pathways. Scientific Reports. 2026;16:15227.",
-    "doi": "10.1038/s41598-026-50755-0",
-    "primaryProtocolCitation": "Khallaf et al. 2026, Methods: Experimental design of CIS-induced nephrotoxicity; Table 2",
-    "stableIdentifiers": ["PMC13180985", "PMID:42144414", "DOI:10.1038/s41598-026-50755-0"],
+    "datasetRecord": "PMC13403953; early dose-related cisplatin cardiorenal toxicity in male Wistar rats",
+    "citation": "Kaya S et al. Early Dose-Related Cardiorenal Effects of Cisplatin: Integrated Biochemical, Molecular and Histopathological Evaluation in an Experimental Rat Model. Biomedicines. 2026;14:1490.",
+    "doi": "10.3390/biomedicines14071490",
+    "primaryProtocolCitation": "Kaya et al. 2026, Study Design; Results 3.1 and Table 1",
+    "stableIdentifiers": ["PMC13403953", "PMID:42511965", "DOI:10.3390/biomedicines14071490"],
     "licenceChecked": true,
     "licence": "CC BY 4.0",
-    "sourceUrl": "https://europepmc.org/articles/PMC13180985"
+    "sourceUrl": "https://europepmc.org/articles/PMC13403953",
+    "supportingSources": [{ "citation": "Khallaf EK et al. Scientific Reports. 2026;16:15227.", "doi": "10.1038/s41598-026-50755-0", "role": "previously mapped single-dose renal injury protocol" }]
   },
   "protocol": {
-    "species": "Rattus norvegicus", "strain": "Sprague Dawley", "sex": "male", "ageWeeks": null, "bodyWeightG": "150–250",
-    "route": "intraperitoneal injection", "formulation": "Cisplatin vial, 1 mg/mL (Mylan Pharmaceuticals)", "doseUnit": "mg/kg", "doseGroups": [0, 7],
-    "frequency": "single cisplatin injection on study day 10", "durationDays": 14, "groupSize": 6,
-    "control": "Vehicle control received 1% Tween in 0.9% normal saline for 14 days",
+    "species": "Rattus norvegicus", "strain": "Wistar albino", "sex": "male", "ageWeeks": "8–12", "bodyWeightG": null,
+    "route": "intraperitoneal injection", "formulation": "Commercial cisplatin 50 mg/100 mL IV formulation", "doseUnit": "mg/kg", "doseGroups": [0, 5, 7.5, 12],
+    "frequency": "single cisplatin injection", "durationDays": 3, "groupSize": "8 control; 10 per cisplatin dose group",
+    "control": "Single 1 mL intraperitoneal 0.9% isotonic saline dose",
     "studyArms": [
-      { "type": "vehicle control", "n": 6, "doseMgPerKg": 0, "sacrificeTime": 14, "sacrificeUnit": "day" },
-      { "type": "cisplatin injury arm", "n": 6, "doseMgPerKg": 7, "doseDay": 10, "sacrificeTime": 14, "sacrificeUnit": "day" }
+      { "type": "saline control", "n": 8, "doseMgPerKg": 0, "time": 3, "unit": "day" },
+      { "type": "cisplatin 5 mg/kg", "n": 10, "doseMgPerKg": 5, "time": 3, "unit": "day" },
+      { "type": "cisplatin 7.5 mg/kg", "n": 10, "doseMgPerKg": 7.5, "time": 3, "unit": "day" },
+      { "type": "cisplatin 12 mg/kg", "n": 10, "doseMgPerKg": 12, "time": 3, "unit": "day" }
     ]
   },
   "observations": {
     "pk": [], "clinicalChemistry": [], "organWeights": [],
     "histopathology": [
-      { "evidence": "observed", "sourceRow": "Table 2", "studyArm": "cisplatin injury arm", "doseMgPerKg": 7, "time": 14, "unit": "day", "finding": "degeneration", "grade": "moderate (++)" },
-      { "evidence": "observed", "sourceRow": "Table 2", "studyArm": "cisplatin injury arm", "doseMgPerKg": 7, "time": 14, "unit": "day", "finding": "loss of brush border", "grade": "mild (+)" },
-      { "evidence": "observed", "sourceRow": "Table 2", "studyArm": "cisplatin injury arm", "doseMgPerKg": 7, "time": 14, "unit": "day", "finding": "tubular dilation", "grade": "mild (+)" },
-      { "evidence": "observed", "sourceRow": "Table 2", "studyArm": "cisplatin injury arm", "doseMgPerKg": 7, "time": 14, "unit": "day", "finding": "cast formation", "grade": "moderate (++)" },
-      { "evidence": "observed", "sourceRow": "Table 2", "studyArm": "cisplatin injury arm", "doseMgPerKg": 7, "time": 14, "unit": "day", "finding": "renal tubular necrosis", "grade": "moderate (++)" }
+      { "evidence": "observed", "sourceRow": "Table 1", "studyArm": "saline control", "doseMgPerKg": 0, "time": 3, "unit": "day", "endpoint": "Hydropic degeneration", "value": 0.42, "variability": "SD 0.15", "n": 8, "valueUnit": "histopathology score (0–4)" },
+      { "evidence": "observed", "sourceRow": "Table 1", "studyArm": "cisplatin 5 mg/kg", "doseMgPerKg": 5, "time": 3, "unit": "day", "endpoint": "Hydropic degeneration", "value": 1.33, "variability": "SD 0.17", "n": 8, "valueUnit": "histopathology score (0–4)" },
+      { "evidence": "observed", "sourceRow": "Table 1", "studyArm": "cisplatin 7.5 mg/kg", "doseMgPerKg": 7.5, "time": 3, "unit": "day", "endpoint": "Hydropic degeneration", "value": 1.67, "variability": "SD 0.17", "n": 8, "valueUnit": "histopathology score (0–4)" },
+      { "evidence": "observed", "sourceRow": "Table 1", "studyArm": "cisplatin 12 mg/kg", "doseMgPerKg": 12, "time": 3, "unit": "day", "endpoint": "Hydropic degeneration", "value": 2.33, "variability": "SD 0.40", "n": 8, "valueUnit": "histopathology score (0–4)" },
+      { "evidence": "observed", "sourceRow": "Table 1", "studyArm": "saline control", "doseMgPerKg": 0, "time": 3, "unit": "day", "endpoint": "Renal necrosis", "value": 0.50, "variability": "SD 0.29", "n": 8, "valueUnit": "histopathology score (0–4)" },
+      { "evidence": "observed", "sourceRow": "Table 1", "studyArm": "cisplatin 5 mg/kg", "doseMgPerKg": 5, "time": 3, "unit": "day", "endpoint": "Renal necrosis", "value": 1.41, "variability": "SD 0.20", "n": 8, "valueUnit": "histopathology score (0–4)" },
+      { "evidence": "observed", "sourceRow": "Table 1", "studyArm": "cisplatin 7.5 mg/kg", "doseMgPerKg": 7.5, "time": 3, "unit": "day", "endpoint": "Renal necrosis", "value": 1.50, "variability": "SD 0.18", "n": 8, "valueUnit": "histopathology score (0–4)" },
+      { "evidence": "observed", "sourceRow": "Table 1", "studyArm": "cisplatin 12 mg/kg", "doseMgPerKg": 12, "time": 3, "unit": "day", "endpoint": "Renal necrosis", "value": 2.25, "variability": "SD 0.25", "n": 8, "valueUnit": "histopathology score (0–4)" },
+      { "evidence": "observed", "sourceRow": "Results 3.1; Figure 1A", "studyArm": "cisplatin 7.5 mg/kg", "doseMgPerKg": 7.5, "time": 3, "unit": "day", "finding": "Urea and creatinine were significantly elevated versus control (p < 0.001 and p = 0.002)" },
+      { "evidence": "observed", "sourceRow": "Results 3.1; Figure 1A", "studyArm": "cisplatin 12 mg/kg", "doseMgPerKg": 12, "time": 3, "unit": "day", "finding": "Urea and creatinine were significantly elevated versus control (both p < 0.001)" }
     ]
   },
   "doseConclusion": { "sourceStatementChecked": false, "sourceReportedNoaelMgPerKgDay": null, "sourceReportedLoaelMgPerKgDay": null, "basis": null },
   "review": { "transcribedBy": null, "checkedBy": null, "checkedOn": null, "blockingIssues": [
-    "Serum creatinine and urea nitrogen values are presented graphically in the source and have not been digitized or independently checked",
-    "This is a single-dose cisplatin injury study, not a multi-dose response series",
+    "Plasma urea and creatinine values are presented graphically and have not been digitized or independently checked",
+    "The source measures acute injury at day 3; it does not establish longer-term recovery",
     "No source-reported NOAEL/LOAEL has been extracted",
     "A second reviewer has not yet checked the transcription"
   ] }
