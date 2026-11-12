@@ -10,7 +10,6 @@ import { SoundToggle } from "./audio/SoundToggle";
 import { CommandPalette, openPalette } from "./palette/CommandPalette";
 import { MouseCursor } from "./components/MouseCursor";
 
-const ToxicityPage = lazy(() => import("./toxicity/ToxicityPage").then((m) => ({ default: m.ToxicityPage })));
 const LearnPage = lazy(() => import("./learn/LearnPage").then((m) => ({ default: m.LearnPage })));
 const StoryPage = lazy(() => import("./story/StoryPage").then((m) => ({ default: m.StoryPage })));
 const LabShell = lazy(() => import("./app/LabShell").then((m) => ({ default: m.LabShell })));
@@ -41,7 +40,7 @@ function MainApp() {
   const run = useStore((s) => s.runStudy);
   const started = useRef(false);
   const moreMenu = useRef<HTMLDetailsElement>(null);
-  const focused = mode === "toxicity" || mode === "learn";
+  const focused = mode === "learn";
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -67,8 +66,7 @@ function MainApp() {
   }, [theme, cb]);
   useEffect(() => {
     const meta = document.querySelector<HTMLMetaElement>('meta[name="description"]');
-    const pages: Record<LabSection | "toxicity" | "learn" | "story", [string, string]> = {
-      toxicity: ["Toxicity — VAST Virtual Toxicology Workbench", "Explore simulated organ responses, dose comparisons, pharmacokinetics, and human-equivalent dose conversion."],
+    const pages: Record<LabSection | "learn" | "story", [string, string]> = {
       learn: ["Learn pharmacokinetics — VAST", "Work through guided, fictional dose and exposure experiments in the VAST virtual toxicology lab."],
       story: ["Story — VAST Virtual Toxicology Workbench", "Follow a virtual laboratory rat through dose, exposure, organ response, and model credibility."],
       overview: ["Lab overview — VAST", "Review the simulated study design, findings, virtual rat, and model assumptions."],
@@ -105,7 +103,7 @@ function MainApp() {
       const h = location.hash;
       if (h.startsWith("#learn")) { useStore.setState({ mode: "learn" }); }
       else if (h === "" || h === "#" || h.startsWith("#story")) { useStore.setState({ mode: "story" }); }
-      else if (h.startsWith("#toxicity")) { useStore.setState({ mode: "toxicity" }); }
+      else if (h.startsWith("#toxicity")) { history.replaceState(null, "", "#story"); useStore.setState({ mode: "story" }); }
       else if (h.startsWith("#lab")) {
         const sec = h.split("/")[1] as LabSection | undefined;
         useStore.setState({ mode: "lab", ...(sec && SECTIONS.includes(sec) ? { labSection: sec } : {}) });
@@ -123,7 +121,6 @@ function MainApp() {
       <header className={`topbar${focused ? " topbar-focused" : ""}`}>
         <button className="brand" onClick={() => setMode("story")} aria-label="VAST home"><span className="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m5 6 7 12 7-12M8 6l4 7 4-7" stroke="var(--bg)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg></span>VAST<span className="brand-caption">A virtual learning lab.</span></button>
         <div className="segmented" role="group" aria-label="Mode">
-          <button type="button" aria-pressed={mode === "toxicity"} onClick={() => setMode("toxicity")}>Try an experiment</button>
           <button type="button" aria-pressed={mode === "learn"} onClick={() => setMode("learn")}>Learn</button>
           <button type="button" aria-pressed={mode === "story"} onClick={() => setMode("story")}>Story</button>
           <button type="button" aria-pressed={mode === "lab"} onClick={() => setMode("lab")}>Lab</button>
@@ -140,7 +137,7 @@ function MainApp() {
           <button className={`ghost${focused ? " app-theme" : ""}`} onClick={() => setTheme(nextTheme)} title={`Switch to ${nextTheme}`} aria-label={`Theme: ${theme === "system" ? "Auto" : theme === "dark" ? "Dark" : "Light"}`}>{focused ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" /></svg> : `Theme: ${theme === "system" ? "Auto" : theme === "dark" ? "Dark" : "Light"}`}</button>
         </div>
       </header>
-      {mode === "toxicity" ? <Suspense fallback={<div className="empty">Loading the toxicity workbench…</div>}><ToxicityPage /></Suspense> : mode === "learn" ? <Suspense fallback={<div className="empty">Loading the practical…</div>}><LearnPage /></Suspense> : mode === "story" ? <Suspense fallback={<div className="empty">Loading the story…</div>}><StoryPage /></Suspense> : <Suspense fallback={<div className="empty" style={{ margin: 24 }}>Loading the Lab…</div>}><LabShell /></Suspense>}
+      {mode === "learn" ? <Suspense fallback={<div className="empty">Loading the practical…</div>}><LearnPage /></Suspense> : mode === "story" ? <Suspense fallback={<div className="empty">Loading the story…</div>}><StoryPage /></Suspense> : <Suspense fallback={<div className="empty" style={{ margin: 24 }}>Loading the Lab…</div>}><LabShell /></Suspense>}
       <Footer />
       <Presenter />
       <CommandPalette />

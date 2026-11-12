@@ -12,7 +12,7 @@ async function cacheGet<T>(key: string): Promise<T | null> {
 }
 
 export type Theme = "system" | "light" | "dark";
-export type Mode = "story" | "lab" | "learn" | "toxicity";
+export type Mode = "story" | "lab" | "learn";
 export type LabSection = "overview" | "design" | "animal" | "data" | "population" | "trust";
 export type Detail = "simple" | "expert";
 type Status = "idle" | "running" | "done" | "error";
@@ -83,13 +83,13 @@ export const storageAvailable = (() => {
   } catch { return false; }
 })();
 const savedTheme = ((): Theme => { const t = ls.get("theme"); return t === "light" || t === "dark" ? t : "system"; })();
-const savedMode = ((): Mode => { const h = typeof location !== "undefined" ? location.hash : ""; if (h.startsWith("#learn")) return "learn"; if (h.startsWith("#lab")) return "lab"; if (h.startsWith("#toxicity")) return "toxicity"; return "story"; })();
+const savedMode = ((): Mode => { const h = typeof location !== "undefined" ? location.hash : ""; if (h.startsWith("#learn")) return "learn"; if (h.startsWith("#lab")) return "lab"; return "story"; })();
 const cacheKey = (s: Setup) => `${SIM_VERSION}|${JSON.stringify(s)}`;
 const msg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
 export const useStore = create<State>((set, get) => ({
   mode: savedMode,
-  setMode: (m) => { ls.set("mode", m); if (typeof history !== "undefined") history.replaceState(null, "", m === "lab" ? `#lab/${get().labSection}` : m === "learn" ? "#learn" : m === "story" ? "#story" : "#toxicity"); set((state) => ({ mode: m, setup: m === "lab" ? { ...state.setup, studyMode: "sandbox" } : state.setup })); },
+  setMode: (m) => { ls.set("mode", m); if (typeof history !== "undefined") history.replaceState(null, "", m === "lab" ? `#lab/${get().labSection}` : m === "learn" ? "#learn" : "#story"); set((state) => ({ mode: m, setup: m === "lab" ? { ...state.setup, studyMode: "sandbox" } : state.setup })); },
   labSection: "design",
   labView: "",
   detail: ls.get("detail") === "expert" ? "expert" : "simple",

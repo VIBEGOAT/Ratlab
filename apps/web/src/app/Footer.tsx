@@ -13,7 +13,6 @@ export function Footer() {
   const totalConst = Object.keys(CONSTANTS).length;
   const nRef = listUnverifiedReferences().length;
   const storageNote = !storageAvailable ? <span aria-live="polite">Settings will reset when you leave this browser.</span> : null;
-  if (mode === "toxicity") return <footer className="footer"><span>Simulated organ responses · Fictional compounds · Not validated against animal data.</span>{storageNote ?? <span>No human safety inference.</span>}</footer>;
   if (mode === "learn") return <footer className="footer"><span>Teaching simulation · Fictional compound and parameters.</span>{storageNote ?? <span>Learning outcomes have not yet been evaluated.</span>}</footer>;
   return (
     <>

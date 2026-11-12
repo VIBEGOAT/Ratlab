@@ -15,7 +15,6 @@ export interface Command {
 
 /** Everything the palette can do, supplied by the app so this file stays free of the DOM and the store. */
 export interface PaletteActions {
-  goToxicity: () => void;
   goLearn: () => void;
   goStory: (chapter: number) => void;
   goLab: (section: LabSection, view: ViewId) => void;
@@ -58,7 +57,6 @@ const VIEW_ALIASES: Partial<Record<ViewId, string>> = {
 
 export function buildCommands(a: PaletteActions): Command[] {
   const out: Command[] = [
-    { id: "toxicity", title: "Toxicity workbench", group: "VAST", keywords: "dose organ injury pharmacokinetics HED experiment", run: a.goToxicity },
     { id: "learn", title: "Guided learning practical", group: "VAST", keywords: "classroom student notebook education", run: a.goLearn },
   ];
   CHAPTERS.forEach((title, i) => out.push({ id: `story-${i}`, title: `${String(i + 1).padStart(2, "0")} · ${title}`, group: "Story", keywords: "chapter scroll go to", run: () => a.goStory(i) }));
