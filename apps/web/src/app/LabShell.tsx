@@ -30,6 +30,15 @@ const views = {
   pitch: lazy(() => import("../tabs/PitchTab")),
 } satisfies Record<ViewId, LazyExoticComponent<() => JSX.Element>>;
 
+const LESSON_COPY: Record<string, { label: string; hint: string; question: string }> = {
+  design: { label: "Start the practical", hint: "Question and study design", question: "What are we testing, and what makes the comparison fair?" },
+  overview: { label: "Make a prediction", hint: "Commit before the reveal", question: "What pattern do you expect as exposure increases?" },
+  animal: { label: "Follow the dose", hint: "Administration to excretion", question: "How can an oral dose become a liver response?" },
+  data: { label: "Read the evidence", hint: "Find the dose–time pattern", question: "What do the published pathology observations actually support?" },
+  population: { label: "Make a conclusion", hint: "Reason like a toxicologist", question: "Can you state the finding without overreaching the evidence?" },
+  trust: { label: "Review and reflect", hint: "Feedback and sources", question: "What did this practical establish—and what remains unknown?" },
+};
+
 function DetailSwitch({ sec, viewId }: { sec: SectionDef; viewId: ViewId }) {
   const detail = useStore((s) => s.detail);
   const setDetail = useStore((s) => s.setDetail);
@@ -53,6 +62,7 @@ export function LabShell() {
   const setup = useStore((s) => s.setup);
   const goLab = useStore((s) => s.goLab);
   const sec = SECTIONS.find((s) => s.id === section) ?? SECTIONS[0]!;
+  const display = setup.studyMode === "published" ? LESSON_COPY[sec.id]! : sec;
   const visibleViews = detail === "simple" ? sec.views.filter(([v]) => sec.coreViews.includes(v)) : sec.views;
   const viewId = (visibleViews.find(([v]) => v === view)?.[0] ?? visibleViews[0]![0]) as ViewId;
   const View = views[viewId];
@@ -74,7 +84,7 @@ export function LabShell() {
         {SECTIONS.map((s) => (
           <button key={s.id} type="button" aria-current={s.id === sec.id ? "page" : undefined} onClick={() => goLab(s.id)}>
             <Icon name={s.icon} size={18} className="nav-icon" />
-            <span className="nav-text"><span className="nav-step" aria-hidden="true">Step {SECTIONS.indexOf(s) + 1}</span><b>{s.label}</b><span>{s.hint}</span></span>
+            <span className="nav-text"><span className="nav-step" aria-hidden="true">Step {SECTIONS.indexOf(s) + 1}</span><b>{setup.studyMode === "published" ? LESSON_COPY[s.id]!.label : s.label}</b><span>{setup.studyMode === "published" ? LESSON_COPY[s.id]!.hint : s.hint}</span></span>
           </button>
         ))}
       </nav>
@@ -83,13 +93,13 @@ export function LabShell() {
         <section className="lab-guide" aria-labelledby="lab-step-title">
           <div className="lab-guide-copy">
             <span className="eyebrow">Step {step + 1} of {SECTIONS.length}</span>
-            <h2 id="lab-step-title">{sec.label}</h2>
-            <p>{sec.question}</p>
+            <h2 id="lab-step-title">{display.label}</h2>
+            <p>{display.question}</p>
           </div>
-          <div className="lab-guide-side">
+          {setup.studyMode !== "published" && <div className="lab-guide-side">
             <DetailSwitch sec={sec} viewId={viewId} />
             <span className="small muted">{detail === "simple" ? "Essential learning path" : "All specialist analyses"}</span>
-          </div>
+          </div>}
           <div className="study-context" aria-label="Current virtual study">
             <span><small>Compound</small><b>{compound}</b></span>
             <span><small>Top dose</small><b>{setup.studyMode === "published" && publishedTopDose !== undefined ? `${publishedTopDose.toLocaleString()} mg/kg` : `${setup.highDose} mg/kg/day`}</b></span>

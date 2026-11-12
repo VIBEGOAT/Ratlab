@@ -25,10 +25,22 @@ export function SetupPanel() {
   });
   const modelDoses = [0, ...setup.fractions.map((fraction) => Math.round(fraction * setup.highDose * 10) / 10)];
 
+  if (setup.studyMode === "published" && referenceCase?.id === "acetaminophen-liver") return (
+    <section className="lesson-modebar" aria-label="Current learning mode">
+      <div><span className="eyebrow">Guided learning mode</span><b>Acetaminophen liver-toxicity practical</b><small>Published observations · approximately 12 minutes</small></div>
+      <button type="button" className="ghost" onClick={() => set({ studyMode: "sandbox" })}>Exit to Model Sandbox</button>
+    </section>
+  );
+
   return (
     <section className="panel" aria-labelledby="setup-title">
       <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "baseline", flexWrap: "wrap" }}>
         <h2 id="setup-title">Set up the experiment</h2>
+      </div>
+
+      <div className="guided-launch">
+        <div><span className="eyebrow">Recommended first visit</span><h3>Acetaminophen: a guided liver-toxicity practical</h3><p>Learn through prediction, an animated drug journey, published pathology observations and immediate feedback.</p></div>
+        <button type="button" className="primary" onClick={() => set({ studyMode: "published", compoundKey: "hepatotoxin", disease: "none" })}>Start 12-minute practical →</button>
       </div>
 
       <div className="study-route" aria-label="Study design workflow">
@@ -65,7 +77,7 @@ export function SetupPanel() {
       </div>}
 
       {referenceCase && <div className="evidence-mode" role="group" aria-label="Evidence mode">
-        <button type="button" disabled={referenceCase.id !== "acetaminophen-liver"} aria-pressed={setup.studyMode === "published"} onClick={() => set({ studyMode: "published" })}>
+        <button type="button" className={setup.studyMode === "published" ? "active" : ""} disabled={referenceCase.id !== "acetaminophen-liver"} aria-pressed={setup.studyMode === "published"} onClick={() => set({ studyMode: "published" })}>
           <span><b>Published protocol</b><small>Observed dose groups and endpoints</small></span>
           <em>{referenceCase.id === "acetaminophen-liver" ? "Available · limited evidence" : "Locked · data checking"}</em>
         </button>
