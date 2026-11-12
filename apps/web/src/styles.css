@@ -640,6 +640,11 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
 .lesson-check > p, .conclusion-feedback { margin: 12px 0 0; padding: 12px 14px; border-radius: 10px; font-size: 12px; }
 .lesson-check > p.correct, .conclusion-feedback.correct { color: var(--good); background: color-mix(in srgb, var(--good) 9%, transparent); }
 .lesson-check > p.incorrect, .conclusion-feedback.incorrect { color: var(--bad); background: color-mix(in srgb, var(--bad) 9%, transparent); }
+.lesson-answer { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 12px; padding: 12px 14px; border-radius: 10px; }
+.lesson-answer.correct { color: var(--good); background: color-mix(in srgb, var(--good) 9%, transparent); }
+.lesson-answer.incorrect { color: var(--bad); background: color-mix(in srgb, var(--bad) 9%, transparent); }
+.lesson-answer p { margin: 0; font-size: 12px; }
+.lesson-continue { flex: none; white-space: nowrap; }
 .lesson-evidence { border: 1px solid var(--line); border-radius: 12px; background: var(--surface-solid); }
 .lesson-evidence summary { padding: 13px 15px; color: var(--muted); font: 600 11px var(--f-mono); cursor: pointer; }
 .lesson-evidence > div { padding: 0 15px 15px; color: var(--ink-2); font-size: 11px; line-height: 1.5; }
@@ -653,6 +658,7 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
 .prediction-lock { display: flex; flex-direction: column; gap: 5px; padding: 18px; border-left: 3px solid var(--accent); background: var(--accent-soft); }
 .prediction-lock span { color: var(--accent); font: 600 9px var(--f-mono); text-transform: uppercase; }
 .prediction-lock p { margin: 0; color: var(--muted); font-size: 11px; }
+.prediction-lock .lesson-continue { align-self: flex-start; margin-top: 8px; }
 .adme-stage { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 38px 24px 24px; overflow: hidden; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); }
 .adme-stage article { z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
 .adme-stage article > span { color: var(--accent); font: 600 9px var(--f-mono); }
@@ -666,6 +672,8 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
 .mechanism-strip span { display: flex; flex-direction: column; gap: 6px; padding: 16px; color: var(--muted); font-size: 11px; border-right: 1px solid var(--line); }
 .mechanism-strip span:last-child { border-right: 0; }
 .mechanism-strip b { color: var(--ink); }
+.lesson-flow-action { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 18px; border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line)); border-radius: 14px; background: var(--accent-soft); }
+.lesson-flow-action span { color: var(--ink-2); font-size: 12px; }
 .lesson-timeline li { position: relative; padding-top: 20px; }
 .lesson-timeline li::before { content: ""; position: absolute; top: 0; left: 13px; width: 42px; height: 3px; background: color-mix(in srgb, var(--accent) 30%, transparent); }
 .lesson-timeline li:nth-child(n+3)::before { background: var(--accent); }
@@ -673,7 +681,7 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
 .conclusion-builder > div, .conclusion-builder aside { padding: 22px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
 .conclusion-builder h3 { margin: 0 0 14px; font: 650 24px var(--f-display); }
 .conclusion-builder ul { margin: 14px 0 0; padding-left: 18px; color: var(--ink-2); font-size: 11px; line-height: 2; }
-.conclusion-feedback { margin: 0; }
+.conclusion-feedback { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0; }
 .conclusion-feedback p { margin: 5px 0 0; }
 .lesson-finale { padding: clamp(28px, 5vw, 60px); border: 1px solid color-mix(in srgb, var(--good) 40%, var(--line)); border-radius: 22px; background: radial-gradient(circle at 88% 12%, color-mix(in srgb, var(--good) 16%, transparent), transparent 32%), var(--surface); }
 .lesson-complete { display: inline-flex; margin-bottom: 14px; padding: 7px 10px; border-radius: 999px; color: var(--good); border: 1px solid var(--good); font: 650 9px var(--f-mono); text-transform: uppercase; }
@@ -701,6 +709,7 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
   .lesson-heading { padding: 20px; }
   .lesson-number { display: none; }
   .lesson-brief > div, .lesson-recap, .next-learning, .adme-stage { grid-template-columns: 1fr; }
+  .lesson-answer, .lesson-flow-action, .conclusion-feedback { align-items: stretch; flex-direction: column; }
   .dose-ladder { height: 210px; padding-inline: 8px; }
 }
 

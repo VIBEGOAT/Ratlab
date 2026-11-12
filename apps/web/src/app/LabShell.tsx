@@ -106,10 +106,10 @@ export function LabShell() {
             <span><small>Schedule</small><b>{setup.studyMode === "published" ? "Single + repeat · gavage" : `${setup.durationDays} days · ${setup.route === "oral" ? "oral" : setup.route.toUpperCase()}`}</b></span>
             {setup.studyMode === "published" ? <span className="small muted">Limited observed package</span> : <RunStatus />}
           </div>
-          <div className="lab-step-actions">
+          {setup.studyMode !== "published" && <div className="lab-step-actions">
             <button type="button" className="ghost" disabled={step === 0} onClick={() => step > 0 && goLab(SECTIONS[step - 1]!.id)}>← Previous</button>
             <button type="button" className="primary" disabled={step === SECTIONS.length - 1} onClick={() => step < SECTIONS.length - 1 && goLab(SECTIONS[step + 1]!.id)}>Next step →</button>
-          </div>
+          </div>}
         </section>
         <div className="lab-toolbar">
           {setup.studyMode === "published" ? <span className="lab-crumb">Published evidence</span> : visibleViews.length > 1 ? (
