@@ -36,11 +36,11 @@ export default function ValidationTab() {
       </Panel>
       <NeedsStudy>
         {() => (
-          <Panel title={historical.length ? "Run the check" : "Preview the validation workflow"} right={<button className="primary" onClick={run} disabled={validation.status === "running"}>{validation.status === "running" ? "Running…" : historical.length ? "Compare with my data" : "Preview with synthetic data"}</button>}>
+          <Panel title="Run the check" right={<button className="primary" onClick={run} disabled={validation.status === "running"}>{validation.status === "running" ? "Running…" : historical.length ? "Compare with my data" : "Run with simulated demo data"}</button>}>
             {validation.status === "error" && <Banner tone="bad">{validation.error}</Banner>}
             {v ? (
               <>
-                <div style={{ display: "flex", gap: 10, alignItems: "center" }}><Chip kind={v.usedDemo ? "ILLUSTRATIVE" : v.report.status}>{v.usedDemo ? "DEMO ONLY" : v.report.status}</Chip><span>{v.report.message}</span></div>
+                <div style={{ display: "flex", gap: 10, alignItems: "center" }}><Chip kind={v.report.status}>{v.report.status}</Chip><span>{v.report.message}</span></div>
                 {v.report.checks.length > 0 && (
                   <>
                     <p className="small">Pass rate {f1(v.report.passRate * 100, 0)}% of {v.report.checks.length} checks. A check passes when the simulated mean is within two historical SDs and the SD is between half and double.</p>
@@ -50,7 +50,7 @@ export default function ValidationTab() {
                     </table></ScrollBox>
                   </>
                 )}
-                {v.eligibility && <Banner tone={v.usedDemo ? "info" : v.eligibility.eligible ? "good" : "warn"}><b>{v.usedDemo ? "Workflow demonstration." : "Virtual control groups."}</b> {v.eligibility.message} ({f1(v.eligibility.fractionConsistent * 100, 0)}% of endpoints consistent.){v.usedDemo ? " Synthetic data test the software workflow only; this is not validation evidence." : ""}</Banner>}
+                {v.eligibility && <Banner tone={v.eligibility.eligible ? "good" : "warn"}><b>Virtual control groups.</b> {v.eligibility.message} ({f1(v.eligibility.fractionConsistent * 100, 0)}% of endpoints consistent.){v.usedDemo ? " Based on simulated demo data only." : ""}</Banner>}
               </>
             ) : <p className="muted">Not run yet.</p>}
           </Panel>

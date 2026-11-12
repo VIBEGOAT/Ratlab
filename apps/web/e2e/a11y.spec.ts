@@ -64,7 +64,7 @@ test("every Lab view, the palette and the honesty drawer have no axe violations"
   test.setTimeout(400_000);
   await fresh(page, "#lab/animal");
   await expect(page.getByText(/Loading/)).toHaveCount(0, { timeout: 120_000 });
-  for (const [section, views] of [["animal", ["3D rat", "Behaviour", "Clinical observations"]], ["data", ["PK/PD", "Clinical pathology", "Necropsy and histopathology", "Statistics and NOAEL", "Disease"]], ["population", ["Untreated twin", "Humane endpoints and forecast", "Uncertainty and credibility"]], ["trust", ["Dose scaling", "Study translation", "Validation", "Model fidelity", "Sources"]]] as const) {
+  for (const [section, views] of [["animal", ["3D rat", "Behaviour", "Clinical observations"]], ["data", ["PK/PD", "Clinical pathology", "Necropsy and histopathology", "Statistics and NOAEL", "Disease"]], ["population", ["Untreated twin", "Humane endpoints and forecast", "Uncertainty and credibility"]], ["trust", ["Dose calculator", "Human translation", "Validation", "Fidelity and parameters", "Pitch and references"]]] as const) {
     await page.goto(`/#lab/${section}`);
     for (const v of views) {
       await page.getByRole("tab", { name: v }).click();
@@ -105,7 +105,7 @@ test("expert mode and opened expert sections have no axe violations", async ({ p
   await page.getByRole("button", { name: "Show every endpoint comparison" }).click();
   await scan(page, "simple mode, section opened");
   await page.getByRole("group", { name: "Level of detail" }).getByRole("button", { name: "Expert" }).click();
-  for (const [section, view] of [["data", "Statistics and NOAEL"], ["animal", "3D rat"], ["animal", "Behaviour"], ["population", "Humane endpoints and forecast"], ["trust", "Model fidelity"]] as const) {
+  for (const [section, view] of [["data", "Statistics and NOAEL"], ["animal", "3D rat"], ["animal", "Behaviour"], ["population", "Humane endpoints and forecast"], ["trust", "Fidelity and parameters"]] as const) {
     await page.goto(`/#lab/${section}`);
     await page.getByRole("tab", { name: view }).click();
     await page.waitForTimeout(900);

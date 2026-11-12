@@ -36,6 +36,7 @@ export function LearnPage() {
       </div>
       <details className="panel learn-objectives"><summary>What you’ll learn</summary><ol><li>Distinguish dose from concentration and exposure.</li><li>Explain how clearance affects half-life.</li><li>Interpret repeated dosing without confusing dose rate with elimination.</li></ol><p className="small muted">Prerequisites: units, ratios, and reading a line graph. Work individually or in pairs.</p></details>
     </header>
+    <details className="learn-notice"><summary>About this teaching model</summary><p>This practical uses a fictional compound in a simple, linear, one-compartment model. Its curves illustrate PK relationships; they are not measured rat data or toxicity predictions. The exploratory Lab uses a separate, more detailed model.</p></details>
     <section className="learn-toolbar" aria-label="Notebook tools">
       <div><b>{completed} / 3 reflections recorded</b><p className="small muted" role="status">{storageOk ? "Saved in this browser only. On shared computers, download your work and clear the notebook when finished." : "Browser storage is unavailable. Download your notebook before leaving this page."}</p></div>
       <div className="learn-actions"><button onClick={() => download("vast-practical-notebook.html", reportHtml(notebook), "text/html;charset=utf-8")}>Download notebook</button><button onClick={() => setReset(!reset)}>Clear notebook</button></div>

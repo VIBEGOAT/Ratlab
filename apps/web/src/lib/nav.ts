@@ -15,7 +15,7 @@ export const SECTIONS: SectionDef[] = [
   { id: "animal", icon: "animal", label: "Animal", hint: "3D rat, behaviour, signs", picker: true, views: [["rat", "3D rat"], ["behaviour", "Behaviour"], ["clinobs", "Clinical observations"]] },
   { id: "data", icon: "data", label: "Data", hint: "PK/PD, pathology, statistics", picker: true, views: [["pkpd", "PK/PD"], ["clinpath", "Clinical pathology"], ["necropsy", "Necropsy and histopathology"], ["stats", "Statistics and NOAEL"], ["disease", "Disease"]] },
   { id: "population", icon: "population", label: "Population", hint: "Twin, humane endpoints, forecast", picker: true, views: [["twin", "Untreated twin"], ["population", "Humane endpoints and forecast"], ["uncertainty", "Uncertainty and credibility"]] },
-  { id: "trust", icon: "trust", label: "Translate & Trust", hint: "Dose scaling, evidence, sources", picker: false, views: [["calculator", "Dose scaling"], ["translation", "Study translation"], ["validation", "Validation"], ["fidelity", "Model fidelity"], ["pitch", "Sources"]] },
+  { id: "trust", icon: "trust", label: "Translate & Trust", hint: "Human outlook, validation, sources", picker: false, views: [["calculator", "Dose calculator"], ["translation", "Human translation"], ["validation", "Validation"], ["fidelity", "Fidelity and parameters"], ["pitch", "Pitch and references"]] },
 ];
 
 /** The twelve Story chapters, in order. */

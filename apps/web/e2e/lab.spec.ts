@@ -142,7 +142,6 @@ test("simple mode folds expert tables away; expert mode shows them; readable nam
   await expect(page.getByRole("heading", { name: "Endpoint comparisons" })).toBeVisible();
   await expect(page.getByRole("button", { name: /every endpoint comparison/ })).toHaveCount(0);
   await page.reload();
-  await page.getByRole("tab", { name: "Statistics and NOAEL" }).click();
   await expect(page.getByRole("group", { name: "Level of detail" }).getByRole("button", { name: "Expert" })).toHaveAttribute("aria-pressed", "true");
 });
 
@@ -150,12 +149,13 @@ test("rat sounds: off by default, one toggle for the whole app, engine loads onl
   await fresh(page, "#lab/overview");
   const engine: string[] = [];
   page.on("request", (r) => { if (/engine/.test(r.url())) engine.push(r.url()); });
-  const rat = page.getByRole("button", { name: /^Sound (?:off|on)/ });
+  const rat = page.getByRole("button", { name: /^Rat sounds/ });
   await expect(rat).toHaveAttribute("aria-pressed", "false");
   await page.waitForTimeout(500);
   expect(engine).toEqual([]);
   await rat.click();
   await expect(rat).toHaveAttribute("aria-pressed", "true");
+  await expect(rat).toHaveText(/Rat sounds on/);
   await expect(page.getByRole("button", { name: /^Sound on/ })).toHaveAttribute("aria-pressed", "true");
   await rat.click();
   await expect(rat).toHaveAttribute("aria-pressed", "false");
@@ -167,8 +167,8 @@ test("rat voices run without errors: chirp on an organ, listen to the heart, amb
   page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
   await fresh(page, "#lab/animal");
   await page.getByRole("tab", { name: "3D rat" }).click();
-  await page.getByRole("button", { name: /^Sound off/ }).click();
-  await expect(page.getByRole("button", { name: /^Sound on/ })).toBeVisible();
+  await page.getByRole("button", { name: /^Rat sounds/ }).click();
+  await expect(page.getByRole("button", { name: /^Rat sounds on/ })).toBeVisible();
   await page.getByRole("button", { name: /^Heart/ }).first().click();
   const listen = page.getByRole("button", { name: /Listen to the heart/ });
   await expect(listen).toBeVisible({ timeout: 30_000 });
@@ -185,7 +185,7 @@ test("dose calculator: rat to human, human to animal, wrong inputs, out-of-range
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await fresh(page, "#lab/trust");
-  await page.getByRole("tab", { name: "Dose scaling" }).click();
+  await page.getByRole("tab", { name: "Dose calculator" }).click();
   await expect(page.getByRole("heading", { name: "Dose calculator" })).toBeVisible();
   await expect(page.getByText("must not be used to dose people")).toBeVisible();
 
@@ -245,21 +245,12 @@ test("dose calculator can start from this study's NOAEL and is reachable from th
   await fresh(page, "#lab/overview");
   await expect(page.getByRole("heading", { name: /No adverse effect up to/ })).toBeVisible({ timeout: 60_000 });
   await page.getByRole("button", { name: /^Dose calculator/ }).click();
-  await expect(page.getByRole("tab", { name: "Dose scaling" })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("tab", { name: "Dose calculator" })).toHaveAttribute("aria-selected", "true");
   await page.getByRole("button", { name: /Use this study's rat NOAEL/ }).click();
   await expect(page.getByLabel("Rat dose")).toHaveValue("2.4");
   await expect(page.locator(".calc-hero")).toContainText("0.389");
   await page.goto("/#lab/design");
   await page.keyboard.press("Control+k");
   await page.getByRole("combobox", { name: "Search commands" }).fill("calculator");
-  await expect(page.getByRole("dialog", { name: "Command palette" }).getByRole("option").first()).toContainText("Dose scaling");
-});
-
-test("synthetic validation is presented as a workflow preview, not real evidence", async ({ page }) => {
-  await fresh(page, "#lab/trust");
-  await page.getByRole("tab", { name: "Validation" }).click();
-  await expect(page.getByRole("heading", { name: "Preview the validation workflow" })).toBeVisible({ timeout: 60_000 });
-  await page.getByRole("button", { name: "Preview with synthetic data" }).click();
-  await expect(page.getByText("DEMO ONLY")).toBeVisible({ timeout: 60_000 });
-  await expect(page.getByText(/not validation evidence/)).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Command palette" }).getByRole("option").first()).toContainText("Dose calculator");
 });

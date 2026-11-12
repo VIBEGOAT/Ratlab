@@ -52,7 +52,7 @@ export function buildCommands(a: PaletteActions): Command[] {
   ];
   CHAPTERS.forEach((title, i) => out.push({ id: `story-${i}`, title: `${String(i + 1).padStart(2, "0")} · ${title}`, group: "Story", keywords: "chapter scroll go to", run: () => a.goStory(i) }));
   for (const sec of SECTIONS) {
-    for (const [view, label] of sec.views) out.push({ id: `lab-${view}`, title: label, group: `Lab · ${sec.label}`, keywords: `${sec.hint} open go to${view === "calculator" ? " calculator HED human equivalent dose" : ""}`, run: () => a.goLab(sec.id, view) });
+    for (const [view, label] of sec.views) out.push({ id: `lab-${view}`, title: label, group: `Lab · ${sec.label}`, keywords: `${sec.hint} open go to`, run: () => a.goLab(sec.id, view) });
   }
   for (const c of COMPOUNDS) out.push({ id: `compound-${c.key}`, title: `Compound: ${c.name}`, group: "Study", keywords: `${c.sub} drug choose`, run: () => a.setCompound(c.key) });
   for (const [d, label] of DISEASES) out.push({ id: `disease-${d}`, title: `Disease model: ${label}`, group: "Study", keywords: "disease condition", run: () => a.setDisease(d) });

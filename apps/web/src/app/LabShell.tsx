@@ -4,6 +4,7 @@ import { AnimalPicker, SetupPanel } from "./SetupPanel";
 import { SECTIONS, type ViewId } from "../lib/nav";
 import { Icon } from "../components/icons";
 import { useSlidingPill } from "../components/motion";
+import { SoundToggle } from "../audio/SoundToggle";
 
 const views = {
   overview: lazy(() => import("../tabs/OverviewTab")),
@@ -25,10 +26,6 @@ const views = {
   fidelity: lazy(() => import("../tabs/FidelityTab")),
   pitch: lazy(() => import("../tabs/PitchTab")),
 } satisfies Record<ViewId, LazyExoticComponent<() => JSX.Element>>;
-
-/** Toolbar controls are contextual: group-level analyses should not imply that one animal drives them. */
-const ANIMAL_VIEWS = new Set<ViewId>(["overview", "rat", "behaviour", "clinobs", "pkpd", "clinpath", "disease", "twin"]);
-const EXPERT_VIEWS = new Set<ViewId>(["design", "rat", "behaviour", "stats", "population", "fidelity"]);
 
 function DetailSwitch() {
   const detail = useStore((s) => s.detail);
@@ -73,8 +70,11 @@ export function LabShell() {
             </div>
           ) : <span className="lab-crumb">{sec.label}</span>}
           <div className="lab-tools">
-            {sec.picker && ANIMAL_VIEWS.has(viewId) && <AnimalPicker />}
-            {EXPERT_VIEWS.has(viewId) && <DetailSwitch />}
+            {sec.picker && <AnimalPicker />}
+            <DetailSwitch />
+            <SoundToggle className="sound-chip" offText="Rat sounds" onText="Rat sounds on" hint="Synthesised sniffing, a chirp when you click the rat, footsteps and the heartbeat. Real rats make most of their calls above the range of human hearing.">
+              <Icon name="sound" size={16} />
+            </SoundToggle>
           </div>
         </div>
         {sec.id === "design" && <SetupPanel />}
