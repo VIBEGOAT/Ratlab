@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { CONTEXT_PRESETS, ORGANS, assessCredibility, listUnverifiedConstants, type Organ } from "@eliminate/sim-core";
+import { useMemo, useState } from "react";
+import { CONTEXT_PRESETS, FINDINGS, GRADE_SEVERITY, ORGANS, assessCredibility, listUnverifiedConstants, type Organ } from "@eliminate/sim-core";
 import { useStore, type LabSection } from "../store";
 import { COMPOUNDS, ORGAN_LABEL } from "../lib/setup";
 import { doseLadder, doseText, studyVerdict } from "../lib/verdict";
@@ -11,6 +11,7 @@ import { AnimatedNumber } from "../components/motion";
 import { Icon } from "../components/icons";
 import { Empty, NeedsStudy } from "../components/ui";
 import type { ViewId } from "../lib/nav";
+import { referenceCaseForCompound } from "../lib/referenceStudies";
 
 const USES: Array<[keyof typeof CONTEXT_PRESETS, string]> = [["education", "Teaching"], ["screening", "Screening compounds"], ["designAid", "Designing a study"], ["replacement", "Replacing an animal study"]];
 
@@ -27,6 +28,7 @@ function Tile({ label, to, children, hint, tone }: { label: string; to: [LabSect
 }
 
 export default function OverviewTab() {
+  const [answer, setAnswer] = useState<string | null>(null);
   const setup = useStore((s) => s.setup);
   const twin = useStore((s) => s.twin.data);
   const focusId = useStore((s) => s.focusId);
@@ -34,6 +36,7 @@ export default function OverviewTab() {
   const uses = useMemo(() => USES.map(([k, label]) => ({ label, ok: assessCredibility(CONTEXT_PRESETS[k]!).adequate })), []);
   const unverified = listUnverifiedConstants().length;
   const compound = COMPOUNDS.find((c) => c.key === setup.compoundKey)?.name ?? "Custom compound";
+  const referenceCase = referenceCaseForCompound(setup.compoundKey);
 
   return (
     <>
@@ -55,6 +58,8 @@ export default function OverviewTab() {
           const first = t ? firstToFail(t) : null;
           const end = t ? ratVisualState(t, t.days) : null;
           const cmax = t ? (t.pkIntervals?.first.cmax ?? Math.max(...t.plasma)) : null;
+          const highGroup = p.study.design.groups.filter((g) => g.kind === "main").sort((a, b) => b.doseMgPerKg - a.doseMgPerKg)[0];
+          const modelLiver = highGroup ? p.histo.find((row) => row.groupId === highGroup.id && row.organ === "liver" && row.sex === "M") : undefined;
           return (
             <div className="overview">
               <section className={`verdict ${verdict.tone}`} aria-labelledby="verdict-title">
@@ -106,6 +111,34 @@ export default function OverviewTab() {
                   {cmax === null ? "…" : <><AnimatedNumber value={cmax} format={(n) => n.toFixed(2)} /> <small>mg/L</small></>}
                 </Tile>
               </div>
+
+              {referenceCase?.publishedFindings && <section className="evidence-lab" aria-labelledby="evidence-lab-title">
+                <div className="evidence-lab-head">
+                  <div><span className="eyebrow">Evidence comparison · acetaminophen</span><h3 id="evidence-lab-title">Same biological question. Different evidence.</h3></div>
+                  <span className="evidence-rule">Do not merge these columns</span>
+                </div>
+                <div className="evidence-columns">
+                  <article className="evidence-column observed">
+                    <div className="evidence-column-title"><span>Observed-derived</span><b>Open TG-GATEs pathology</b></div>
+                    <p>Discretized pathology hits from the published protocol. These are not raw incidence or severity values.</p>
+                    <ul>{referenceCase.publishedFindings.map((finding) => <li key={`${finding.dose}-${finding.time}`}><strong>{fmtInt(finding.dose)} mg/kg</strong><span>{finding.time}</span><p>{finding.finding}</p></li>)}</ul>
+                  </article>
+                  <article className="evidence-column predicted">
+                    <div className="evidence-column-title"><span>Predicted</span><b>VAST model sandbox</b></div>
+                    <p>A fictional hepatotoxicity proxy at your selected design—not a fitted acetaminophen model.</p>
+                    {modelLiver && highGroup ? <div className="model-evidence-card"><span>Model top dose</span><strong>{fmtInt(highGroup.doseMgPerKg)} mg/kg/day</strong><span>Predicted liver pathology</span><strong>{GRADE_SEVERITY[modelLiver.maxGrade as 0 | 1 | 2 | 3 | 4 | 5]} · {FINDINGS.liver[modelLiver.maxGrade as 0 | 1 | 2 | 3 | 4 | 5]}</strong><small>Mean model grade {modelLiver.meanGrade.toFixed(2)} · males</small></div> : <p>Model pathology is still calculating.</p>}
+                  </article>
+                </div>
+                <div className="evidence-question">
+                  <h4>What can you conclude?</h4>
+                  <div role="group" aria-label="Evidence interpretation question">
+                    <button type="button" aria-pressed={answer === "validated"} onClick={() => setAnswer("validated")}>The model validates the published experiment.</button>
+                    <button type="button" aria-pressed={answer === "pattern"} onClick={() => setAnswer("pattern")}>Both concern liver injury, but direct agreement has not been tested.</button>
+                    <button type="button" aria-pressed={answer === "pk"} onClick={() => setAnswer("pk")}>The pathology findings prove the modelled PK curve.</button>
+                  </div>
+                  {answer && <p className={answer === "pattern" ? "correct" : "incorrect"} role="status">{answer === "pattern" ? "Correct. The source and model address a related mechanism, but their doses, outputs and evidence types are not yet matched for validation." : "Not supported. A shared drug or organ does not establish validation, and pathology cannot verify an unobserved PK curve."}</p>}
+                </div>
+              </section>}
 
               <section className="trust-strip" aria-labelledby="trust-title">
                 <div>
