@@ -27,6 +27,9 @@ function probe(): { ok: boolean; renderer: string } {
 /** Whether WebGL can run. The probe creates a throwaway context, which is slow on software renderers, so it runs once. */
 export function webglAvailable(): boolean {
   try {
+    // An explicit recovery link must win over an old saved lightweight-mode
+    // preference. This is useful after hardware acceleration is re-enabled.
+    if (typeof location !== "undefined" && new URLSearchParams(location.search).get("3d") === "1") return probe().ok;
     // an explicit opt-out for very slow graphics (and for tests that do not need 3D)
     if (localStorage.getItem("no3d") === "1") return false;
   } catch { return false; }
@@ -42,7 +45,10 @@ export function softwareGraphics(): boolean {
 }
 
 export function force3d(): void {
-  try { localStorage.setItem("force3d", "1"); } catch { /* storage may be blocked */ }
+  try {
+    localStorage.removeItem("no3d");
+    localStorage.setItem("force3d", "1");
+  } catch { /* storage may be blocked */ }
 }
 
 /** Some browsers do not report the first layout of a freshly mounted canvas. Ask for one more measurement. */

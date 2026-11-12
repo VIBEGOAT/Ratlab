@@ -13,7 +13,7 @@ import { COMPOUNDS, ORGAN_LABEL } from "../lib/setup";
 import { fmt, fmtInt, fmtPct } from "../design/format";
 import { GRADE_WORD, gradeVar } from "../design/damage";
 import { ratVisualState } from "../three/ratState";
-import { softwareGraphics, webglAvailable } from "../three/webgl";
+import { force3d, softwareGraphics, webglAvailable } from "../three/webgl";
 import { ChapterBehaviour, ChapterFinale, ChapterForecast, ChapterTrust, ChapterTwin, scaleDose } from "./chapters";
 import { ForecastField, HumanScale, SplitDivider } from "./overlays";
 import { useStoryScroll, type StoryPos } from "./useStoryScroll";
@@ -113,7 +113,18 @@ function useThemeBackground(): string {
 }
 
 export function StoryPage() {
-  const reduce = !!useReducedMotion();
+  const systemReduce = !!useReducedMotion();
+  const [fullMotion, setFullMotion] = useState(() => {
+    try {
+      const requested = new URLSearchParams(location.search).get("motion") === "full";
+      if (requested) {
+        force3d();
+        localStorage.setItem("story-motion", "full");
+      }
+      return requested || localStorage.getItem("story-motion") === "full";
+    } catch { return false; }
+  });
+  const reduce = systemReduce && !fullMotion;
   const [doseReplay,setDoseReplay]=useState(0);
   const [bridgeOrgan,setBridgeOrgan]=useState<BridgeOrgan>("heart");
   const { pos, ref: posRef } = useStoryScroll();
@@ -130,6 +141,7 @@ export function StoryPage() {
   const bg = useThemeBackground();
   useEffect(()=>{const nav=document.querySelector(".topbar"),story=document.querySelector<HTMLElement>(".story");if(!nav||!story)return;const measure=()=>story.style.setProperty("--story-header-height",`${nav.getBoundingClientRect().height}px`);const observer=new ResizeObserver(measure);observer.observe(nav);measure();return()=>observer.disconnect();},[]);
   const [glOk, setGlOk] = useState(false);
+  const [glChecked, setGlChecked] = useState(false);
   // paint the page with the poster first, then bring the live 3D scene up when the browser is idle
   const [sceneReady, setSceneReady] = useState(false);
   const [software, setSoftware] = useState(false);
@@ -142,6 +154,7 @@ export function StoryPage() {
       const start = () => {
         if (!live) return;
         const ok = webglAvailable();
+        setGlChecked(true);
         setGlOk(ok);
         if (!ok) return;
         const sw = softwareGraphics();
@@ -167,6 +180,15 @@ export function StoryPage() {
   }, []);
   const gl = glOk && sceneReady;
   const sceneQuality: Quality = software ? "low" : quality;
+  const enableFullMotion = () => {
+    force3d();
+    try { localStorage.setItem("story-motion", "full"); } catch { /* storage may be blocked */ }
+    setFullMotion(true);
+    const ok = webglAvailable();
+    setGlChecked(true);
+    setGlOk(ok);
+    if (ok) setSceneReady(true);
+  };
   const plasmaRef = useRef(0);
   const stageRef = useRef<HTMLDivElement>(null);
   const splitRef = useRef(0.5);
@@ -385,6 +407,13 @@ export function StoryPage() {
 
             </Suspense>
           ) : <div className="poster"><RatPoster /></div>}</div>
+
+          {((systemReduce && !fullMotion) || (glChecked && !glOk)) && (
+            <div className="story-motion-rescue" role="status">
+              <span>{systemReduce && !fullMotion ? "Your device is requesting reduced motion." : "This browser has 3D animation turned off."}</span>
+              <button type="button" onClick={enableFullMotion}>Play full animation</button>
+            </div>
+          )}
 
           {pos.chapter === 1 && <div className="meet-frame" aria-hidden="true"><div className="meet-frame-top"><span>VAST / ANATOMY STUDIO</span><span>02 — EXPLORE</span></div><div className="meet-frame-bottom"><span>A living system.<br/><strong>Revealed, layer by layer.</strong></span><small>SCROLL TO LOOK INSIDE ↓</small></div></div>}
           {pos.chapter === 2 && <div className="stage-scientific-note">Illustrative binding motif · target highlighting · not a real molecular structure</div>}

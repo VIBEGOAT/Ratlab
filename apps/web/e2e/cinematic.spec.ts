@@ -11,6 +11,19 @@ test("a normal visitor receives the animated scene without a force-3D preference
   await expect(hero).toHaveAttribute("data-stage", "1", { timeout: 20_000 });
 });
 
+test("full-motion recovery clears a saved static-mode preference", async ({ page }) => {
+  test.setTimeout(90_000);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.addInitScript(() => localStorage.setItem("no3d", "1"));
+  await page.goto("/?3d=1&motion=full#story");
+  const hero = page.getByTestId("cinematic-hero");
+  await expect(page.locator(".story-stage canvas")).toHaveCount(1, { timeout: 30_000 });
+  await expect(page.getByRole("button", { name: "Play full animation" })).toHaveCount(0);
+  await expect(hero).toHaveAttribute("data-stage", "0");
+  await expect(hero).toHaveAttribute("data-stage", "1", { timeout: 20_000 });
+  expect(await page.evaluate(() => ({ no3d: localStorage.getItem("no3d"), motion: localStorage.getItem("story-motion") }))).toEqual({ no3d: null, motion: "full" });
+});
+
 test("cinematic hero renders all views, pauses, and fits mobile", async ({ page }) => {
   test.setTimeout(180_000); // Software WebGL needs additional time for three full-resolution captures.
   const errors: string[] = [];

@@ -682,13 +682,15 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
 .story-hero-grid { min-height: 100dvh; }
 .story-stage { position: fixed; inset: 69px 0 0 42.5%; width: auto; height: auto; z-index: 1; background: transparent; border: 0; border-radius: 0; }
 .story-stage canvas { border: 0; }
+.story-motion-rescue { position: absolute; z-index: 18; left: 50%; bottom: 22px; translate: -50% 0; display: flex; align-items: center; gap: 12px; width: max-content; max-width: calc(100% - 32px); padding: 10px 12px 10px 16px; border: 1px solid #f5f0e629; border-radius: 999px; color: #f4f0ea; background: #0b0a09e8; box-shadow: 0 12px 40px #0008; font-size: 12px; }
+.story-motion-rescue button { color: #141210; background: #e8a855; border-color: #e8a855; white-space: nowrap; }
 .cinematic-controls-only { background: transparent; pointer-events: none; }
 .cinematic-controls-only .cinematic-controls { pointer-events: auto; }
 .cinematic-controls-only::after { display: none; }
 .chapter-sec { min-height: 100dvh; }
 .chapter-sec[aria-labelledby=c9],.chapter-sec[aria-labelledby=c10] { min-height: 100dvh; padding-top: 60px; }
 .meet-frame { border: 0; }
-@media(max-width:900px) { .story-stage { inset: 53px 0 auto; height: 40dvh; z-index: 11; } .story-text { width: 100%; padding-top: 40dvh; } .story-grid .story-text { padding-top: 0; } .chapter-sec { padding-top: calc(40dvh + 45px); min-height: 100dvh; } .story-text .hero-sec { padding-top: 45px; } }
+@media(max-width:900px) { .story-stage { inset: 53px 0 auto; height: 40dvh; z-index: 11; } .story-text { width: 100%; padding-top: 40dvh; } .story-grid .story-text { padding-top: 0; } .chapter-sec { padding-top: calc(40dvh + 45px); min-height: 100dvh; } .story-text .hero-sec { padding-top: 45px; } .story-motion-rescue { bottom: 8px; font-size: 10px; padding: 7px 8px 7px 11px; } .story-motion-rescue button { padding: 6px 9px; font-size: 10px; } }
 .pathology-hud,.target-organ-callout { position: absolute; left: 24px; right: 24px; bottom: 24px; padding: 18px; border: 1px solid #f5f0e612; border-radius: 16px; background: #0b0a09ea; color: #f4f0ea; z-index: 4; }
 .pathology-hud strong,.target-organ-callout strong { display: block; margin: 8px 0; font-size: 20px; font-weight: 500; }
 .pathology-hud p,.target-organ-callout p { font-size: 12px; line-height: 1.5; }
