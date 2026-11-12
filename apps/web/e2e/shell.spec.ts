@@ -40,16 +40,16 @@ test("story hero, footer disclaimer and honest status chip", async ({ page }) =>
   expect(errors.filter((e) => !/Download the React DevTools|GL Driver Message|GPU stall/.test(e))).toEqual([]);
 });
 
-test("Lab opens on the Overview, with five sections for the full analysis", async ({ page }) => {
+test("Lab opens on study design, with six ordered learning steps", async ({ page }) => {
   const errors = watchConsole(page);
   await fresh(page);
   await page.getByRole("button", { name: "Lab", exact: true }).click();
   const nav = page.getByRole("navigation", { name: "Lab sections" });
-  for (const s of ["Overview", "Design", "Animal", "Data", "Population", "Translate & Trust"]) await expect(nav.getByRole("button", { name: new RegExp(`^${s}`) })).toBeVisible();
-  await expect(nav.getByRole("button", { name: /^Overview/ })).toHaveAttribute("aria-current", "page");
-  await expect(page.getByRole("heading", { name: /No adverse effect|Adverse effects/ })).toBeVisible({ timeout: 90_000 });
-  await nav.getByRole("button", { name: /^Design/ }).click();
+  for (const s of ["Design the study", "Read the answer", "Follow one rat", "Compare groups", "Test population risk", "Translate & judge"]) await expect(nav.getByRole("button", { name: new RegExp(`^${s}`) })).toBeVisible();
+  await expect(nav.getByRole("button", { name: /^Design the study/ })).toHaveAttribute("aria-current", "page");
   await expect(page.getByText(/virtual animals simulated/)).toBeVisible({ timeout: 90_000 });
+  await nav.getByRole("button", { name: /^Read the answer/ }).click();
+  await expect(page.getByRole("heading", { name: /No adverse effect|Adverse effects/ })).toBeVisible({ timeout: 90_000 });
   expect(errors.filter((e) => !/Download the React DevTools|GL Driver Message|GPU stall/.test(e))).toEqual([]);
 });
 
@@ -59,7 +59,7 @@ test("timeline length follows the configured study length", async ({ page }) => 
   await page.getByRole("button", { name: "14 days" }).click();
   await expect(page.getByText(/Settings changed|Simulating/)).toBeVisible();
   await expect(page.getByText(/virtual animals simulated/)).toBeVisible({ timeout: 90_000 });
-  await page.getByRole("navigation", { name: "Lab sections" }).getByRole("button", { name: /^Animal/ }).click();
+  await page.getByRole("navigation", { name: "Lab sections" }).getByRole("button", { name: /^Follow one rat/ }).click();
   await expect(page.getByText(/Day \d+ \/ 14/)).toBeVisible({ timeout: 60_000 });
 });
 
@@ -91,14 +91,14 @@ for (const [w, h] of [[1440, 900], [1920, 1080], [390, 844]] as const) {
     await page.screenshot({ path: `${SHOTS}/story-hero-${w}x${h}.png` });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
     await page.getByRole("button", { name: "Lab", exact: true }).click();
-    await expect(page.getByRole("heading", { name: /No adverse effect|Adverse effects/ })).toBeVisible({ timeout: 90_000 });
-    await page.screenshot({ path: `${SHOTS}/lab-overview-${w}x${h}.png`, fullPage: false });
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
-    await page.getByRole("navigation", { name: "Lab sections" }).getByRole("button", { name: /^Design/ }).click();
     await expect(page.getByText(/virtual animals simulated/)).toBeVisible({ timeout: 90_000 });
     await page.screenshot({ path: `${SHOTS}/lab-design-${w}x${h}.png`, fullPage: false });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
-    await page.getByRole("navigation", { name: "Lab sections" }).getByRole("button", { name: /^Data/ }).click();
+    await page.getByRole("navigation", { name: "Lab sections" }).getByRole("button", { name: /^Read the answer/ }).click();
+    await expect(page.getByRole("heading", { name: /No adverse effect|Adverse effects/ })).toBeVisible({ timeout: 90_000 });
+    await page.screenshot({ path: `${SHOTS}/lab-overview-${w}x${h}.png`, fullPage: false });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+    await page.getByRole("navigation", { name: "Lab sections" }).getByRole("button", { name: /^Compare groups/ }).click();
     await expect(page.getByRole("cell", { name: "First dose" })).toBeVisible({ timeout: 60_000 });
     await page.screenshot({ path: `${SHOTS}/lab-data-${w}x${h}.png` });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
@@ -113,7 +113,7 @@ test("dark theme screenshots", async ({ page }) => {
     await expect(page.getByText(/virtual rats ready/)).toBeVisible({ timeout: 90_000 });
     await page.screenshot({ path: `${SHOTS}/dark-story-hero-${w}x${h}.png` });
     await page.getByRole("button", { name: "Lab", exact: true }).click();
-    await page.getByRole("navigation", { name: "Lab sections" }).getByRole("button", { name: /^Data/ }).click();
+    await page.getByRole("navigation", { name: "Lab sections" }).getByRole("button", { name: /^Compare groups/ }).click();
     await expect(page.getByRole("cell", { name: "First dose" })).toBeVisible({ timeout: 60_000 });
     await page.screenshot({ path: `${SHOTS}/dark-lab-data-${w}x${h}.png` });
   }

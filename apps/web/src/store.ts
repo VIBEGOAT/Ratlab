@@ -90,7 +90,7 @@ const msg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 export const useStore = create<State>((set, get) => ({
   mode: savedMode,
   setMode: (m) => { ls.set("mode", m); if (typeof history !== "undefined") history.replaceState(null, "", m === "lab" ? `#lab/${get().labSection}` : m === "learn" ? "#learn" : m === "story" ? "#story" : "#toxicity"); set({ mode: m }); },
-  labSection: "overview",
+  labSection: "design",
   labView: "",
   detail: ls.get("detail") === "expert" ? "expert" : "simple",
   setDetail: (d) => { ls.set("detail", d); set({ detail: d }); },

@@ -11,6 +11,7 @@ import { usePresenter } from "../presenter/store";
 import { openNotesWindow } from "../presenter/channel";
 import { runSlideScroll } from "../presenter/scroll";
 import { buildCommands, filterCommands, type PaletteActions } from "./commands";
+import { SECTIONS } from "../lib/nav";
 
 export const OPEN_PALETTE_EVENT = "eliminate:open-palette";
 export const openPalette = () => window.dispatchEvent(new Event(OPEN_PALETTE_EVENT));
@@ -60,7 +61,13 @@ export function CommandPalette() {
         if (wasLab) st().setMode("story");
         window.setTimeout(() => runSlideScroll(chapter, 0.08, 0.08, 1.2, reduce), wasLab ? 250 : 30);
       },
-      goLab: (section, view) => { if (usePresenter.getState().active) usePresenter.getState().stop(); st().goLab(section, view); window.scrollTo({ top: 0 }); },
+      goLab: (section, view) => {
+        if (usePresenter.getState().active) usePresenter.getState().stop();
+        const destination = SECTIONS.find((s) => s.id === section);
+        if (destination && !destination.coreViews.includes(view)) st().setDetail("expert");
+        st().goLab(section, view);
+        window.scrollTo({ top: 0 });
+      },
       setCompound: (key) => st().setSetup({ compoundKey: key, highDose: ARCHETYPES[key]?.defaultDoseMgPerKg ?? st().setup.highDose }),
       setDisease: (d) => st().setSetup({ disease: d }),
       startPresenter: (track) => usePresenter.getState().start(track),

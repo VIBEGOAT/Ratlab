@@ -54,7 +54,7 @@ export default function DesignTab() {
   const checks = guidelineChecks(setup, constant);
   return (
     <>
-      <TabHead title="Groups and guideline check" blurb="A repeated-dose study laid out in the manner of OECD TG 407 (28 day) and TG 408 (90 day): a vehicle control and three dose groups, optional recovery and toxicokinetic satellites, both sexes, randomised littermates." fidelity={["pbpk", "toxicodynamics"]} />
+      <TabHead title="Confirm the study groups" blurb="A repeated-dose teaching study with an untreated control and three increasing dose groups. The dose gradient lets you ask whether exposure and harm rise together." fidelity={["pbpk", "toxicodynamics"]} />
       <div className="grid">
         <Panel title="Groups">
           <ScrollBox><table>
@@ -63,10 +63,12 @@ export default function DesignTab() {
           </table></ScrollBox>
           <p className="small muted">Dosing {design.route === "diet" ? "in the diet" : design.route === "iv" ? "by IV bolus" : "by gavage"} every {design.intervalH} h for {design.durationDays} days. Recovery groups are observed {design.recoveryDays} more days.</p>
         </Panel>
-        <Panel title="Check against OECD TG 407 minimums">
-          {checks.map((c) => <div key={c.item} style={{ display: "flex", gap: 8 }}><Chip kind={c.ok ? "PASS" : "FAIL"}>{c.ok ? "OK" : "CHECK"}</Chip><span><b>{c.item}.</b> <span className="muted">{c.note}</span></span></div>)}
-          <p className="small muted">Minimums come from the TG 407 text recorded as VERIFIED in the reference data. Details of TG 408 are still unverified.</p>
-        </Panel>
+        <Expert label="the OECD guideline check">
+          <Panel title="Check against OECD TG 407 minimums">
+            {checks.map((c) => <div key={c.item} style={{ display: "flex", gap: 8 }}><Chip kind={c.ok ? "PASS" : "FAIL"}>{c.ok ? "OK" : "CHECK"}</Chip><span><b>{c.item}.</b> <span className="muted">{c.note}</span></span></div>)}
+            <p className="small muted">Minimums come from the TG 407 text recorded as VERIFIED in the reference data. Details of TG 408 are still unverified.</p>
+          </Panel>
+        </Expert>
       </div>
       {setup.compoundKey === "custom" ? <CustomEditor /> : (
         <Expert label="compound parameters">

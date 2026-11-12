@@ -6,16 +6,25 @@ export type ViewId =
   | "stats" | "twin" | "population" | "uncertainty" | "calculator" | "translation" | "validation" | "fidelity" | "pitch";
 
 export type SectionIcon = "overview" | "design" | "animal" | "data" | "population" | "trust";
-export interface SectionDef { id: LabSection; label: string; hint: string; icon: SectionIcon; picker: boolean; views: Array<[ViewId, string]> }
+export interface SectionDef {
+  id: LabSection;
+  label: string;
+  hint: string;
+  question: string;
+  icon: SectionIcon;
+  views: Array<[ViewId, string]>;
+  /** Views needed for the undergraduate, step-by-step path. The others stay in Research mode. */
+  coreViews: ViewId[];
+}
 
 /** An overview, then five sections that hold every analysis view. Nothing is lost, only regrouped. */
 export const SECTIONS: SectionDef[] = [
-  { id: "overview", label: "Overview", hint: "The answers at a glance", icon: "overview", picker: true, views: [["overview", "Overview"]] },
-  { id: "design", icon: "design", label: "Design", hint: "Compound, dose, groups", picker: false, views: [["design", "Study design"]] },
-  { id: "animal", icon: "animal", label: "Animal", hint: "3D rat, behaviour, signs", picker: true, views: [["rat", "3D rat"], ["behaviour", "Behaviour"], ["clinobs", "Clinical observations"]] },
-  { id: "data", icon: "data", label: "Data", hint: "PK/PD, pathology, statistics", picker: true, views: [["pkpd", "PK/PD"], ["clinpath", "Clinical pathology"], ["necropsy", "Necropsy and histopathology"], ["stats", "Statistics and NOAEL"], ["disease", "Disease"]] },
-  { id: "population", icon: "population", label: "Population", hint: "Twin, humane endpoints, forecast", picker: true, views: [["twin", "Untreated twin"], ["population", "Humane endpoints and forecast"], ["uncertainty", "Uncertainty and credibility"]] },
-  { id: "trust", icon: "trust", label: "Translate & Trust", hint: "Human outlook, validation, sources", picker: false, views: [["calculator", "Dose calculator"], ["translation", "Human translation"], ["validation", "Validation"], ["fidelity", "Fidelity and parameters"], ["pitch", "Pitch and references"]] },
+  { id: "design", icon: "design", label: "Design the study", hint: "Compound, dose and groups", question: "What are you testing, at what dose, and for how long?", views: [["design", "Study groups"]], coreViews: ["design"] },
+  { id: "overview", label: "Read the answer", hint: "Findings at a glance", question: "What happened, and at what dose did harm begin?", icon: "overview", views: [["overview", "Study answer"]], coreViews: ["overview"] },
+  { id: "animal", icon: "animal", label: "Follow one rat", hint: "Organs, signs and behaviour", question: "How did exposure become a change in one animal?", views: [["rat", "Interactive rat"], ["clinobs", "Daily observations"], ["behaviour", "Behaviour (advanced)"]], coreViews: ["rat", "clinobs"] },
+  { id: "data", icon: "data", label: "Compare groups", hint: "Exposure, pathology and NOAEL", question: "Which findings change consistently as dose increases?", views: [["pkpd", "Exposure (PK/PD)"], ["stats", "Dose-response & NOAEL"], ["clinpath", "Clinical pathology"], ["necropsy", "Histopathology"], ["disease", "Disease model"]], coreViews: ["pkpd", "stats"] },
+  { id: "population", icon: "population", label: "Test population risk", hint: "Twin, endpoints and variability", question: "How variable is the response, and when is a humane endpoint reached?", views: [["twin", "Treated vs untreated"], ["population", "Population & endpoints"], ["uncertainty", "Uncertainty (advanced)"]], coreViews: ["twin", "population"] },
+  { id: "trust", icon: "trust", label: "Translate & judge", hint: "Human scaling, limits and evidence", question: "What can be translated to humans, and how far should you trust it?", views: [["calculator", "Dose scaling"], ["translation", "Human translation"], ["fidelity", "Model limits"], ["validation", "Validation (advanced)"], ["pitch", "References (advanced)"]], coreViews: ["calculator", "translation", "fidelity"] },
 ];
 
 /** The twelve Story chapters, in order. */

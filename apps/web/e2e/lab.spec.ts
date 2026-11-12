@@ -28,7 +28,7 @@ test("command palette: open, search, run, close, restore focus", async ({ page }
   await expect(dialog.getByRole("option").first()).toContainText("Validation");
   await page.keyboard.press("Enter");
   await expect(dialog).toBeHidden();
-  await expect(page.getByRole("tab", { name: "Validation" })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("tab", { name: "Validation (advanced)" })).toHaveAttribute("aria-selected", "true");
   await expect(page).toHaveURL(/#lab\/trust/);
 
   // nonsense shows an honest empty state; Escape closes and returns focus
@@ -61,7 +61,7 @@ test("command palette jumps from the Lab to a Story chapter", async ({ page }) =
 test("charts: direct labels, keyboard readout, data table", async ({ page }) => {
   test.setTimeout(300_000);
   await fresh(page, "#lab/animal");
-  await page.getByRole("tab", { name: "Clinical observations" }).click();
+  await page.getByRole("tab", { name: "Daily observations" }).click();
   const chart = page.getByRole("group", { name: /^Body weight\. Use the left and right arrow keys/ }).first();
   await expect(chart).toBeVisible({ timeout: 200_000 });
   // two series: names are written on the chart itself
@@ -117,17 +117,17 @@ test("overview answers first and every tile opens its analysis", async ({ page }
   const tile = page.getByRole("button", { name: /Highest dose with no adverse effect/ });
   await expect(tile).toContainText("2.4", { timeout: 10_000 });
   await tile.click();
-  await expect(page.getByRole("tab", { name: "Statistics and NOAEL" })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("tab", { name: "Dose-response & NOAEL" })).toHaveAttribute("aria-selected", "true");
   await expect(page).toHaveURL(/#lab\/data/);
-  await page.getByRole("navigation", { name: "Lab sections" }).getByRole("button", { name: /^Overview/ }).click();
+  await page.getByRole("navigation", { name: "Lab sections" }).getByRole("button", { name: /^Read the answer/ }).click();
   await page.getByRole("button", { name: /Humane endpoints/ }).click();
-  await expect(page.getByRole("tab", { name: "Humane endpoints and forecast" })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("tab", { name: "Population & endpoints" })).toHaveAttribute("aria-selected", "true");
   expect(errors).toEqual([]);
 });
 
 test("simple mode folds expert tables away; expert mode shows them; readable names throughout", async ({ page }) => {
   await fresh(page, "#lab/data");
-  await page.getByRole("tab", { name: "Statistics and NOAEL" }).click();
+  await page.getByRole("tab", { name: "Dose-response & NOAEL" }).click();
   await expect(page.getByText("Troponin I (heart damage) in males, up 1510%")).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText("chem.troponinI")).toHaveCount(0);
   const reveal = page.getByRole("button", { name: "Show every endpoint comparison" });
@@ -136,17 +136,17 @@ test("simple mode folds expert tables away; expert mode shows them; readable nam
   await reveal.click();
   await expect(page.getByRole("heading", { name: "Endpoint comparisons" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Hide every endpoint comparison" })).toHaveAttribute("aria-expanded", "true");
-  // the Expert switch shows everything and is remembered
+  // Research mode shows everything and is remembered
   await page.getByRole("button", { name: "Hide every endpoint comparison" }).click();
-  await page.getByRole("group", { name: "Level of detail" }).getByRole("button", { name: "Expert" }).click();
+  await page.getByRole("group", { name: "Learning depth" }).getByRole("button", { name: "Research" }).click();
   await expect(page.getByRole("heading", { name: "Endpoint comparisons" })).toBeVisible();
   await expect(page.getByRole("button", { name: /every endpoint comparison/ })).toHaveCount(0);
   await page.reload();
-  await expect(page.getByRole("group", { name: "Level of detail" }).getByRole("button", { name: "Expert" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("group", { name: "Learning depth" }).getByRole("button", { name: "Research" })).toHaveAttribute("aria-pressed", "true");
 });
 
-test("rat sounds: off by default, one toggle for the whole app, engine loads only on demand", async ({ page }) => {
-  await fresh(page, "#lab/overview");
+test("rat sounds appear only where they are relevant and load only on demand", async ({ page }) => {
+  await fresh(page, "#lab/animal");
   const engine: string[] = [];
   page.on("request", (r) => { if (/engine/.test(r.url())) engine.push(r.url()); });
   const rat = page.getByRole("button", { name: /^Rat sounds/ });
@@ -156,7 +156,6 @@ test("rat sounds: off by default, one toggle for the whole app, engine loads onl
   await rat.click();
   await expect(rat).toHaveAttribute("aria-pressed", "true");
   await expect(rat).toHaveText(/Rat sounds on/);
-  await expect(page.getByRole("button", { name: /^Sound on/ })).toHaveAttribute("aria-pressed", "true");
   await rat.click();
   await expect(rat).toHaveAttribute("aria-pressed", "false");
 });
@@ -166,7 +165,7 @@ test("rat voices run without errors: chirp on an organ, listen to the heart, amb
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
   await fresh(page, "#lab/animal");
-  await page.getByRole("tab", { name: "3D rat" }).click();
+  await page.getByRole("tab", { name: "Interactive rat" }).click();
   await page.getByRole("button", { name: /^Rat sounds/ }).click();
   await expect(page.getByRole("button", { name: /^Rat sounds on/ })).toBeVisible();
   await page.getByRole("button", { name: /^Heart/ }).first().click();
@@ -175,7 +174,8 @@ test("rat voices run without errors: chirp on an organ, listen to the heart, amb
   await listen.click();
   await expect(page.getByRole("button", { name: /Listening at \d+ beats a minute/ })).toBeVisible();
   await expect(page.getByRole("button", { name: /Listen to the heart/ })).toBeVisible({ timeout: 8_000 });
-  await page.getByRole("tab", { name: "Behaviour" }).click();
+  await page.getByRole("group", { name: "Learning depth" }).getByRole("button", { name: "Research" }).click();
+  await page.getByRole("tab", { name: "Behaviour (advanced)" }).click();
   await page.waitForTimeout(7000); // at least one sniffing bout
   expect(await page.evaluate(() => typeof AudioContext)).toBe("function");
   expect(errors.filter((e) => !/GL Driver Message|GPU stall|WebGL/.test(e))).toEqual([]);
@@ -185,7 +185,7 @@ test("dose calculator: rat to human, human to animal, wrong inputs, out-of-range
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await fresh(page, "#lab/trust");
-  await page.getByRole("tab", { name: "Dose calculator" }).click();
+  await page.getByRole("tab", { name: "Dose scaling" }).click();
   await expect(page.getByRole("heading", { name: "Dose calculator" })).toBeVisible();
   await expect(page.getByText("must not be used to dose people")).toBeVisible();
 
@@ -245,12 +245,12 @@ test("dose calculator can start from this study's NOAEL and is reachable from th
   await fresh(page, "#lab/overview");
   await expect(page.getByRole("heading", { name: /No adverse effect up to/ })).toBeVisible({ timeout: 60_000 });
   await page.getByRole("button", { name: /^Dose calculator/ }).click();
-  await expect(page.getByRole("tab", { name: "Dose calculator" })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("tab", { name: "Dose scaling" })).toHaveAttribute("aria-selected", "true");
   await page.getByRole("button", { name: /Use this study's rat NOAEL/ }).click();
   await expect(page.getByLabel("Rat dose")).toHaveValue("2.4");
   await expect(page.locator(".calc-hero")).toContainText("0.389");
   await page.goto("/#lab/design");
   await page.keyboard.press("Control+k");
   await page.getByRole("combobox", { name: "Search commands" }).fill("calculator");
-  await expect(page.getByRole("dialog", { name: "Command palette" }).getByRole("option").first()).toContainText("Dose calculator");
+  await expect(page.getByRole("dialog", { name: "Command palette" }).getByRole("option").first()).toContainText("Dose scaling");
 });

@@ -12,16 +12,17 @@ export function SetupPanel() {
   const study = useStore((s) => s.study);
   const stale = useResultsStale();
   const problems = designProblems(setup);
+  const compoundName = COMPOUNDS.find((c) => c.key === setup.compoundKey)?.name ?? setup.custom.name;
+  const routeName = setup.route === "oral" ? "oral gavage" : setup.route === "iv" ? "intravenous dosing" : "dietary dosing";
   const pickCompound = (key: string) => set({ compoundKey: key, highDose: key === "custom" ? setup.custom.defaultDoseMgPerKg : ARCHETYPES[key]!.defaultDoseMgPerKg });
 
   return (
     <section className="panel" aria-labelledby="setup-title">
       <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "baseline", flexWrap: "wrap" }}>
-        <h2 id="setup-title">Design the study</h2>
-        <RunStatus />
+        <h2 id="setup-title">Set up the experiment</h2>
       </div>
 
-      <div className="field">Test compound <span className="small">All compounds are fictional archetypes.</span></div>
+      <div className="field"><b>1. Choose a compound archetype</b> <span className="small">Fictional teaching compounds model different organ-toxicity patterns; they are not real medicines.</span></div>
       <div className="cards" role="group" aria-label="Test compound">
         {COMPOUNDS.map((c) => (
           <button key={c.key} type="button" className="ccard" aria-pressed={setup.compoundKey === c.key} onClick={() => pickCompound(c.key)}>
@@ -30,6 +31,7 @@ export function SetupPanel() {
         ))}
       </div>
 
+      <div className="field"><b>2. Choose the dosing plan</b> <span className="small">The simulator automatically creates a control, low-, mid- and high-dose group.</span></div>
       <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
         <label className="field" htmlFor="top-dose">
           <span className="row"><span>Highest dose</span><b>{fmtInt(setup.highDose)} mg/kg/day</b></span>
@@ -53,8 +55,13 @@ export function SetupPanel() {
         </label>
       </div>
 
+      <div className="study-sentence" aria-live="polite">
+        <span className="eyebrow">Study in plain language</span>
+        <p>Give virtual rats <b>{compoundName}</b> by <b>{routeName}</b>, up to <b>{fmtInt(setup.highDose)} mg/kg/day</b>, for <b>{setup.durationDays} days</b>—then compare exposure, organ injury and recovery with the untreated control.</p>
+      </div>
+
       <details className="more">
-        <summary>Advanced</summary>
+        <summary>Research settings (optional)</summary>
         <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
           <label className="field" htmlFor="nsex"><span className="row"><span>Animals per sex per group</span><b>{setup.nPerSex}</b></span>
             <input id="nsex" type="range" min={2} max={20} value={setup.nPerSex} onChange={(e) => set({ nPerSex: +e.target.value })} /></label>

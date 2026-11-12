@@ -1,7 +1,8 @@
 import { lazy, Suspense, useRef, type LazyExoticComponent } from "react";
 import { useStore } from "../store";
-import { AnimalPicker, SetupPanel } from "./SetupPanel";
-import { SECTIONS, type ViewId } from "../lib/nav";
+import { AnimalPicker, RunStatus, SetupPanel } from "./SetupPanel";
+import { SECTIONS, type SectionDef, type ViewId } from "../lib/nav";
+import { COMPOUNDS } from "../lib/setup";
 import { Icon } from "../components/icons";
 import { useSlidingPill } from "../components/motion";
 import { SoundToggle } from "../audio/SoundToggle";
@@ -27,13 +28,18 @@ const views = {
   pitch: lazy(() => import("../tabs/PitchTab")),
 } satisfies Record<ViewId, LazyExoticComponent<() => JSX.Element>>;
 
-function DetailSwitch() {
+function DetailSwitch({ sec, viewId }: { sec: SectionDef; viewId: ViewId }) {
   const detail = useStore((s) => s.detail);
   const setDetail = useStore((s) => s.setDetail);
+  const goLab = useStore((s) => s.goLab);
+  const choose = (next: "simple" | "expert") => {
+    setDetail(next);
+    if (next === "simple" && !sec.coreViews.includes(viewId)) goLab(sec.id, sec.coreViews[0]);
+  };
   return (
-    <div className="segmented detail-switch" role="group" aria-label="Level of detail" title="Simple folds expert-only tables away. Nothing is removed.">
-      <button type="button" aria-pressed={detail === "simple"} onClick={() => setDetail("simple")}>Simple</button>
-      <button type="button" aria-pressed={detail === "expert"} onClick={() => setDetail("expert")}>Expert</button>
+    <div className="segmented detail-switch" role="group" aria-label="Learning depth" title="Guided shows the essential undergraduate path. Research reveals specialist analyses and parameters.">
+      <button type="button" aria-pressed={detail === "simple"} onClick={() => choose("simple")}>Guided</button>
+      <button type="button" aria-pressed={detail === "expert"} onClick={() => choose("expert")}>Research</button>
     </div>
   );
 }
@@ -41,10 +47,17 @@ function DetailSwitch() {
 export function LabShell() {
   const section = useStore((s) => s.labSection);
   const view = useStore((s) => s.labView);
+  const detail = useStore((s) => s.detail);
+  const setup = useStore((s) => s.setup);
   const goLab = useStore((s) => s.goLab);
   const sec = SECTIONS.find((s) => s.id === section) ?? SECTIONS[0]!;
-  const viewId = (sec.views.find(([v]) => v === view)?.[0] ?? sec.views[0]![0]) as ViewId;
+  const visibleViews = detail === "simple" ? sec.views.filter(([v]) => sec.coreViews.includes(v)) : sec.views;
+  const viewId = (visibleViews.find(([v]) => v === view)?.[0] ?? visibleViews[0]![0]) as ViewId;
   const View = views[viewId];
+  const step = SECTIONS.findIndex((s) => s.id === sec.id);
+  const compound = COMPOUNDS.find((c) => c.key === setup.compoundKey)?.name ?? setup.custom.name;
+  const animalViews: ViewId[] = ["rat", "behaviour", "clinobs", "pkpd", "clinpath", "disease"];
+  const soundViews: ViewId[] = ["rat", "behaviour"];
   const navRef = useRef<HTMLElement>(null);
   const tabsRef = useRef<HTMLDivElement>(null);
   const navPill = useSlidingPill(navRef, '[aria-current="page"]', [sec.id]);
@@ -56,25 +69,45 @@ export function LabShell() {
         {SECTIONS.map((s) => (
           <button key={s.id} type="button" aria-current={s.id === sec.id ? "page" : undefined} onClick={() => goLab(s.id)}>
             <Icon name={s.icon} size={18} className="nav-icon" />
-            <span className="nav-text"><b>{s.label}</b><span>{s.hint}</span></span>
+            <span className="nav-text"><span className="nav-step" aria-hidden="true">Step {SECTIONS.indexOf(s) + 1}</span><b>{s.label}</b><span>{s.hint}</span></span>
           </button>
         ))}
       </nav>
       <main className="lab-main" id="main">
         <h1 className="sr-only">Lab: {sec.label}</h1>
+        <section className="lab-guide" aria-labelledby="lab-step-title">
+          <div className="lab-guide-copy">
+            <span className="eyebrow">Step {step + 1} of {SECTIONS.length}</span>
+            <h2 id="lab-step-title">{sec.label}</h2>
+            <p>{sec.question}</p>
+          </div>
+          <div className="lab-guide-side">
+            <DetailSwitch sec={sec} viewId={viewId} />
+            <span className="small muted">{detail === "simple" ? "Essential learning path" : "All specialist analyses"}</span>
+          </div>
+          <div className="study-context" aria-label="Current virtual study">
+            <span><small>Compound</small><b>{compound}</b></span>
+            <span><small>Top dose</small><b>{setup.highDose} mg/kg/day</b></span>
+            <span><small>Schedule</small><b>{setup.durationDays} days · {setup.route === "oral" ? "oral" : setup.route.toUpperCase()}</b></span>
+            <RunStatus />
+          </div>
+          <div className="lab-step-actions">
+            <button type="button" className="ghost" disabled={step === 0} onClick={() => step > 0 && goLab(SECTIONS[step - 1]!.id)}>← Previous</button>
+            <button type="button" className="primary" disabled={step === SECTIONS.length - 1} onClick={() => step < SECTIONS.length - 1 && goLab(SECTIONS[step + 1]!.id)}>Next step →</button>
+          </div>
+        </section>
         <div className="lab-toolbar">
-          {sec.views.length > 1 ? (
+          {visibleViews.length > 1 ? (
             <div className="segmented tabs" role="tablist" aria-label={`${sec.label} views`} ref={tabsRef}>
               {tabPill.ready && <span className="seg-pill" style={tabPill.style} aria-hidden="true" />}
-              {sec.views.map(([v, l]) => <button key={v} role="tab" type="button" aria-selected={v === viewId} onClick={() => goLab(sec.id, v)}>{l}</button>)}
+              {visibleViews.map(([v, l]) => <button key={v} role="tab" type="button" aria-selected={v === viewId} onClick={() => goLab(sec.id, v)}>{l}</button>)}
             </div>
           ) : <span className="lab-crumb">{sec.label}</span>}
           <div className="lab-tools">
-            {sec.picker && <AnimalPicker />}
-            <DetailSwitch />
-            <SoundToggle className="sound-chip" offText="Rat sounds" onText="Rat sounds on" hint="Synthesised sniffing, a chirp when you click the rat, footsteps and the heartbeat. Real rats make most of their calls above the range of human hearing.">
+            {animalViews.includes(viewId) && <AnimalPicker />}
+            {soundViews.includes(viewId) && <SoundToggle className="sound-chip" offText="Rat sounds" onText="Rat sounds on" hint="Synthesised sniffing, a chirp when you click the rat, footsteps and the heartbeat. Real rats make most of their calls above the range of human hearing.">
               <Icon name="sound" size={16} />
-            </SoundToggle>
+            </SoundToggle>}
           </div>
         </div>
         {sec.id === "design" && <SetupPanel />}

@@ -14,7 +14,7 @@ const ToxicityPage = lazy(() => import("./toxicity/ToxicityPage").then((m) => ({
 const LearnPage = lazy(() => import("./learn/LearnPage").then((m) => ({ default: m.LearnPage })));
 const StoryPage = lazy(() => import("./story/StoryPage").then((m) => ({ default: m.StoryPage })));
 const LabShell = lazy(() => import("./app/LabShell").then((m) => ({ default: m.LabShell })));
-const SECTIONS: LabSection[] = ["overview", "design", "animal", "data", "population", "trust"];
+const SECTIONS: LabSection[] = ["design", "overview", "animal", "data", "population", "trust"];
 
 function ExportMenu() {
   const data = useStore((s) => s.study.data);
@@ -133,7 +133,7 @@ function MainApp() {
             <p>Go further</p><button onClick={() => setMode("lab")}>Lab<small>Advanced tools & full study data</small></button>
             <p>Preferences</p><button onClick={() => { openPalette(); if (moreMenu.current) moreMenu.current.open = false; }}>Search<small>Find a tool or page</small></button><button onClick={() => setCb(!cb)} aria-pressed={cb}>CB palette {cb ? "on" : "off"}<small>Alternative injury colors</small></button>
           </div></details> : <button className="ghost palette-btn" onClick={openPalette} aria-keyshortcuts="Control+K Meta+K">Search <kbd>{/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K"}</kbd></button>}
-          {(mode === "story" || mode === "lab") && <SoundToggle className="ghost hide-narrow" />}
+          {mode === "story" && <SoundToggle className="ghost hide-narrow" />}
           {(mode === "story" || mode === "lab") && <button className="ghost hide-narrow" onClick={() => usePresenter.getState().start()} title="Presenter mode (P)">Present</button>}
           {(mode === "story" || mode === "lab") && <ExportMenu />}
           {!focused && <button className="ghost hide-narrow" onClick={() => setCb(!cb)} aria-pressed={cb} title="Colour-blind-safe damage colours">{cb ? "CB palette on" : "CB palette"}</button>}

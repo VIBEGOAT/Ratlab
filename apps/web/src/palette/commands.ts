@@ -45,6 +45,17 @@ const DISEASES: Array<[DiseaseChoice, string]> = [
   ["diabetes-type2", "Diabetic rats (type 2)"],
 ];
 
+const VIEW_ALIASES: Partial<Record<ViewId, string>> = {
+  rat: "3d rat animal",
+  clinobs: "clinical observations",
+  pkpd: "pk pd pharmacokinetics pharmacodynamics",
+  stats: "statistics noael",
+  population: "humane endpoints forecast",
+  calculator: "dose calculator hed human equivalent dose",
+  fidelity: "fidelity parameters",
+  pitch: "pitch sources",
+};
+
 export function buildCommands(a: PaletteActions): Command[] {
   const out: Command[] = [
     { id: "toxicity", title: "Toxicity workbench", group: "VAST", keywords: "dose organ injury pharmacokinetics HED experiment", run: a.goToxicity },
@@ -52,7 +63,7 @@ export function buildCommands(a: PaletteActions): Command[] {
   ];
   CHAPTERS.forEach((title, i) => out.push({ id: `story-${i}`, title: `${String(i + 1).padStart(2, "0")} · ${title}`, group: "Story", keywords: "chapter scroll go to", run: () => a.goStory(i) }));
   for (const sec of SECTIONS) {
-    for (const [view, label] of sec.views) out.push({ id: `lab-${view}`, title: label, group: `Lab · ${sec.label}`, keywords: `${sec.hint} open go to`, run: () => a.goLab(sec.id, view) });
+    for (const [view, label] of sec.views) out.push({ id: `lab-${view}`, title: label, group: `Lab · ${sec.label}`, keywords: `${sec.hint} ${VIEW_ALIASES[view] ?? ""} open go to`, run: () => a.goLab(sec.id, view) });
   }
   for (const c of COMPOUNDS) out.push({ id: `compound-${c.key}`, title: `Compound: ${c.name}`, group: "Study", keywords: `${c.sub} drug choose`, run: () => a.setCompound(c.key) });
   for (const [d, label] of DISEASES) out.push({ id: `disease-${d}`, title: `Disease model: ${label}`, group: "Study", keywords: "disease condition", run: () => a.setDisease(d) });
