@@ -9,33 +9,48 @@
   },
   "source": {
     "dataset": "Open TG-GATEs",
-    "datasetRecord": "Rat / in vivo / liver",
+    "datasetRecord": "ArrayExpress E-MTAB-799 (single dose) and E-MTAB-800 (repeat dose), Rat / in vivo / liver",
     "citation": "Igarashi Y et al. Open TG-GATEs: a large-scale toxicogenomics database. Nucleic Acids Research. 2015;43(D1):D921-D927.",
     "doi": "10.1093/nar/gku955",
-    "primaryProtocolCitation": null,
+    "primaryProtocolCitation": "E-MTAB-799 and E-MTAB-800 SDRF metadata mirrored in bhklab/TGGATES",
     "licenceChecked": false
   },
   "protocol": {
     "species": "Rattus norvegicus",
-    "strain": null,
-    "sex": null,
-    "ageWeeks": null,
+    "strain": "Crj:CD(SD)IGS",
+    "sex": "male",
+    "ageWeeks": 6,
     "bodyWeightG": null,
-    "route": null,
+    "route": "gavage",
     "formulation": null,
-    "doseUnit": null,
-    "doseGroups": [],
+    "doseUnit": "mg/kg",
+    "doseGroups": [0, 300, 600, 1000],
     "frequency": null,
     "durationDays": null,
     "groupSize": null,
-    "control": null
+    "transcriptomicSamplesPerDoseTime": 6,
+    "control": "Control arm recorded at every sacrifice time; vehicle formulation is not stated in the SDRF metadata",
+    "studyArms": [
+      { "type": "single-dose", "accession": "E-MTAB-799", "sacrificeTimes": [3, 6, 9, 24], "sacrificeUnit": "hour" },
+      { "type": "repeat-dose", "accession": "E-MTAB-800", "sacrificeTimes": [4, 8, 15, 29], "sacrificeUnit": "day" }
+    ]
   },
   "observations": {
     "pk": [],
     "clinicalChemistry": [],
     "organWeights": [],
-    "histopathology": [],
-    "transcriptomics": []
+    "histopathology": [
+      { "evidence": "observed-derived", "doseMgPerKg": 1000, "studyArm": "single-dose", "time": 9, "unit": "hour", "finding": "eosinophilic change", "representation": "discretized hit; not raw incidence or severity" },
+      { "evidence": "observed-derived", "doseMgPerKg": 600, "studyArm": "single-dose", "time": 24, "unit": "hour", "finding": "cellular infiltration and eosinophilic change", "representation": "discretized hit; not raw incidence or severity" },
+      { "evidence": "observed-derived", "doseMgPerKg": 1000, "studyArm": "single-dose", "time": 24, "unit": "hour", "finding": "cellular infiltration and eosinophilic change", "representation": "discretized hit; not raw incidence or severity" },
+      { "evidence": "observed-derived", "doseMgPerKg": 1000, "studyArm": "repeat-dose", "time": 4, "unit": "day", "finding": "necrosis, increased mitosis, cellular infiltration and eosinophilic change", "representation": "discretized hit; not raw incidence or severity" },
+      { "evidence": "observed-derived", "doseMgPerKg": 600, "studyArm": "repeat-dose", "time": 15, "unit": "day", "finding": "ground-glass appearance", "representation": "discretized hit; not raw incidence or severity" },
+      { "evidence": "observed-derived", "doseMgPerKg": 1000, "studyArm": "repeat-dose", "time": 15, "unit": "day", "finding": "ground-glass appearance", "representation": "discretized hit; not raw incidence or severity" },
+      { "evidence": "observed-derived", "doseMgPerKg": 1000, "studyArm": "repeat-dose", "time": 29, "unit": "day", "finding": "swelling and ground-glass appearance", "representation": "discretized hit; not raw incidence or severity" }
+    ],
+    "transcriptomics": [
+      { "evidence": "observed", "accessions": ["E-MTAB-799", "E-MTAB-800"], "platform": "Affymetrix Rat Genome 230 2.0 (A-AFFY-43)", "valuesBundled": false }
+    ]
   },
   "doseConclusion": {
     "sourceReportedNoaelMgPerKgDay": null,
@@ -47,8 +62,9 @@
     "checkedBy": null,
     "checkedOn": null,
     "blockingIssues": [
-      "Primary protocol table not yet retrieved",
-      "Numerical endpoint tables not yet imported",
+      "Exact repeat-dose frequency and formulation are not present in the SDRF metadata",
+      "Raw clinical chemistry and raw pathology incidence/severity tables not yet imported",
+      "Transcriptomic matrices are referenced but not redistributed",
       "Reuse terms not yet checked"
     ]
   }

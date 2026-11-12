@@ -509,6 +509,7 @@ kbd { font: 500 12px var(--f-mono); padding: 1px 6px; border: 1px solid var(--li
 .case-dossier p { margin: 0; color: var(--ink-2); font-size: 12px; line-height: 1.5; }
 .endpoint-list { display: flex; flex-wrap: wrap; align-content: center; gap: 7px; }
 .endpoint-list span { padding: 6px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink-2); font-size: 10px; background: var(--surface); }
+.endpoint-list span.protocol-fact { border-color: color-mix(in srgb, var(--good) 42%, var(--line)); color: var(--good); }
 .evidence-contract { padding-left: 18px; border-left: 1px solid var(--line); }
 .evidence-contract b { font-size: 12px; }
 .evidence-contract a { display: inline-block; margin-top: 8px; color: var(--accent); font-size: 10px; }

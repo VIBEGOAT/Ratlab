@@ -47,6 +47,7 @@ export function SetupPanel() {
           <p>{referenceCase.mechanism}</p>
         </div>
         <div className="endpoint-list" aria-label="Endpoints taught in this case">
+          {referenceCase.protocolSnapshot?.map((fact) => <span className="protocol-fact" key={fact}>{fact}</span>)}
           {referenceCase.endpoints.map((endpoint) => <span key={endpoint}>{endpoint}</span>)}
         </div>
         <div className="evidence-contract">
@@ -59,7 +60,7 @@ export function SetupPanel() {
       {referenceCase && <div className="evidence-mode" role="group" aria-label="Evidence mode">
         <button type="button" disabled aria-pressed="false">
           <span><b>Published protocol</b><small>Observed dose groups and endpoints</small></span>
-          <em>Locked · data checking</em>
+          <em>{referenceCase.id === "acetaminophen-liver" ? "Protocol mapped · observations pending" : "Locked · data checking"}</em>
         </button>
         <button type="button" className="active" aria-pressed="true">
           <span><b>Model sandbox</b><small>Change dose and duration to explore</small></span>
