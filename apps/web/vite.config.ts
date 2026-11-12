@@ -33,6 +33,9 @@ function inlineCss(): Plugin {
 }
 
 export default defineConfig({
+  // Keep built asset URLs relative so the static preview works from RawGitHack's
+  // nested /apps/web/dist/ path as well as from the production site root.
+  base: "./",
   plugins: [react(), inlineCss()],
   server: { port: 5173, fs: { allow: ["../.."] } },
   worker: { format: "es" },
