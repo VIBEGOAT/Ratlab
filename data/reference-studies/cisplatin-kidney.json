@@ -50,6 +50,18 @@
       { "evidence": "observed", "sourceRow": "Results 3.1; Figure 1A", "studyArm": "cisplatin 12 mg/kg", "doseMgPerKg": 12, "time": 3, "unit": "day", "finding": "Urea and creatinine were significantly elevated versus control (both p < 0.001)" }
     ]
   },
+  "sourceTables": {
+    "renalHistopathologyScores": {
+      "sourceRow": "Table 1", "time": 3, "timeUnit": "day", "scoreScale": "0–4", "assessedNPerGroup": 8,
+      "endpoints": ["hydropicDegeneration", "necrosis", "tubularDilatation", "glomerularAtrophy", "hyalineCasts", "mononuclearInfiltrate", "interstitialEdema", "perivascularEdema", "congestion", "bleeding"],
+      "groups": {
+        "control": ["0.42 ± 0.15", "0.50 ± 0.29", "0.58 ± 0.29", "0.33 ± 0.17", "0.91 ± 0.30", "0.58 ± 0.24", "0.33 ± 0.16", "0.16 ± 0.11", "0.75 ± 0.21", "0.41 ± 0.23"],
+        "cisplatin5MgKg": ["1.33 ± 0.17", "1.41 ± 0.20", "0.92 ± 0.15", "0.58 ± 0.15", "1.58 ± 0.15", "1.33 ± 0.17", "0.41 ± 0.15", "0.25 ± 0.17", "1.33 ± 0.17", "1.33 ± 0.26"],
+        "cisplatin7_5MgKg": ["1.67 ± 0.17", "1.50 ± 0.18", "1.25 ± 0.17", "1.25 ± 0.25", "1.67 ± 0.36", "1.33 ± 0.17", "0.67 ± 0.26", "0.58 ± 0.15", "1.00 ± 0.13", "1.58 ± 0.15"],
+        "cisplatin12MgKg": ["2.33 ± 0.40", "2.25 ± 0.25", "1.42 ± 0.24", "1.58 ± 0.40", "2.66 ± 0.49", "1.58 ± 0.33", "0.75 ± 0.11", "0.83 ± 0.17", "1.41 ± 0.35", "2.00 ± 0.22"]
+      }
+    }
+  },
   "doseConclusion": { "sourceStatementChecked": false, "sourceReportedNoaelMgPerKgDay": null, "sourceReportedLoaelMgPerKgDay": null, "basis": null },
   "review": { "transcribedBy": null, "checkedBy": null, "checkedOn": null, "blockingIssues": [
     "Plasma urea and creatinine values are presented graphically and have not been digitized or independently checked",

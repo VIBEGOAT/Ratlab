@@ -33,6 +33,13 @@
       { "evidence": "observed", "sourceRow": "Figure 11 caption", "studyArm": "doxorubicin injury arm", "doseMgPerKg": 15, "time": 14, "unit": "day", "finding": "all five doxorubicin hearts scored above 7.3 on the cohort-relative optical cardiotoxicity score" }
     ]
   },
+  "sourceTables": {
+    "myocardialHistopathology": {
+      "sourceId": "frontiers-2025-dox18", "sourceRow": "Table 1", "time": 22, "timeUnit": "day", "reportedNPerGroup": 10, "scoreScale": "five domains, each 0–3; total 0–15",
+      "endpoints": ["degeneration", "pyknosis", "cellInfiltration", "necroticCells", "fibreFragmentation", "totalScore"],
+      "groups": { "control": [0, 0, 0, 0, 0, 0], "doxorubicin18": [2, 2, 2, 2, 2, 10], "doxorubicin18_allicin": [2, 2, 1, 1, 1, 7], "doxorubicin18_metformin": [1, 1, 1, 1, 1, 5], "doxorubicin18_allicin_metformin": [0, 1, 1, 0, 0, 2] }
+    }
+  },
   "doseConclusion": { "sourceStatementChecked": false, "sourceReportedNoaelMgPerKgDay": null, "sourceReportedLoaelMgPerKgDay": null, "basis": null },
   "review": { "transcribedBy": null, "checkedBy": null, "checkedOn": null, "blockingIssues": [
     "ECG and serum biomarker magnitudes are presented graphically and have not been digitized or independently checked",
