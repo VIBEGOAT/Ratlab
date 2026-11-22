@@ -1,0 +1,94 @@
+/* VAST studio: shared visual system for classroom, exploration and study tools. */
+:root:not([data-theme]), :root[data-theme="light"] {
+  --bg: #f5f7fb; --bg-2: #eaf0fa; --surface: #ffffff; --surface-solid: #ffffff; --surface-2: #edf2fa;
+  --ink: #18253d; --ink-2: #394b67; --muted: #596b85;
+  --line: #dfe6f1; --line-strong: #bdcbe0; --grid: #dae3ef;
+  --accent: #185cdb; --accent-ink: #fff; --accent-soft: #eaf1ff;
+  --info: #185cdb; --good: #227344; --warn: #8a5300; --bad: #b72439;
+  --c1: #185cdb; --c2: #7b52c4; --c3: #b85e0b; --c4: #187c70; --c5: #a34480; --c6: #b72439;
+  --nav-surface: #eaf0fa; --stage-bg: #edf3fc; --stage-glow: #accbff66;
+  --shadow: 0 8px 32px #233e6b08; --radius: 24px; --radius-sm: 12px;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg: #101724; --bg-2: #172235; --surface: #1b273a; --surface-solid: #1b273a; --surface-2: #24334a;
+  --ink: #f2f6ff; --ink-2: #d2dded; --muted: #aabbd3;
+  --line: #304158; --line-strong: #526783; --grid: #304158;
+  --accent: #91baff; --accent-ink: #102341; --accent-soft: #263c60;
+  --info: #91baff; --good: #85d5a0; --warn: #f2c078; --bad: #ff92a3;
+  --c1: #91baff; --c2: #c2a4ff; --c3: #f2c078; --c4: #7cdbce; --c5: #efa4d4; --c6: #ff92a3;
+  --nav-surface: #172235; --stage-bg: #152236; --stage-glow: #558de333;
+  --shadow: 0 8px 32px #00000016; color-scheme: dark;
+}
+body { font-size: 16px; line-height: 1.65; }
+h1, h2, h3 { line-height: 1.15; }
+h3 { font-size: 18px; }
+button { min-height: 44px; font-size: 15px; padding: 10px 18px; }
+button.primary { box-shadow: 0 5px 16px color-mix(in srgb, var(--accent) 20%, transparent); }
+select, input[type="number"], input[type="text"], textarea { font-size: 16px; padding: 12px; }
+.small, .field, .field label, .muted { line-height: 1.6; }
+.small { font-size: 14px; }
+.eyebrow { font: 650 12px/1.5 var(--f-body); letter-spacing: .12em; color: var(--accent); }
+.topbar { min-height: 76px; padding-block: 14px; background: color-mix(in srgb, var(--surface) 88%, transparent); }
+.topbar .segmented button { font-size: 15px; padding: 10px 18px; }
+.brand, button.brand { font-size: 22px; letter-spacing: -.04em; }
+.brand-caption { font-size: 13px; letter-spacing: 0; }
+.app-theme { width: 44px; height: 44px; }
+.app-more > summary { font-size: 14px; padding: 12px; }
+.footer { font-size: 12px; padding: 22px 28px; }
+.panel { border: 1px solid var(--line); border-radius: 24px; padding: 28px; background: var(--surface); }
+.learn-page { width: min(1380px, 100%); gap: 28px; padding-top: 40px; }
+.learn-catalog { grid-template-columns: 1fr; gap: 24px; padding: 30px; border: 0; background: var(--bg-2); border-radius: 28px; }
+.learn-catalog h2 { font-size: 36px; }
+.learn-catalog-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.learn-catalog-cards article, .learn-catalog-cards button { padding: 24px; border-radius: 20px; }
+.learn-catalog-cards span, .learn-catalog-cards b { font: 600 13px/1.5 var(--f-body); }
+.learn-catalog-cards h3 { font-size: 22px; line-height: 1.25; margin-block: 14px 10px; }
+.learn-catalog-cards p { font-size: 15px; line-height: 1.6; }
+.learn-hero { padding: 40px 12px; gap: 56px; }
+.learn-hero h1 { font-size: clamp(40px, 5vw, 72px); letter-spacing: -.055em; }
+.learn-hero h1 span { color: var(--accent); }
+.learn-intro { font-size: 18px; line-height: 1.7; }
+.learn-tags span { font-size: 13px; padding: 8px 14px; }
+.learn-objectives > summary { font-size: 18px; }
+.learn-objectives ol, .learn-notice, .learn-toolbar, .learn-page .panel p { font-size: 15px; }
+.learn-toolbar p, .learn-actions button, .learn-experiments small { font-size: 13px; }
+.learn-experiments button { padding: 22px; border-radius: 18px; }
+.learn-experiments button b { font-size: 16px; }
+.learn-number { display: grid; place-items: center; min-width: 42px; height: 42px; border-radius: 14px; background: var(--accent-soft); }
+.learn-case-page { gap: 24px; }
+.learn-case-steps button { padding: 16px; }
+.learn-case-steps b { font-size: 14px; }
+.learn-case-steps small, .learn-case-steps em { font-size: 12px; }
+.lab { grid-template-columns: 250px minmax(0, 1fr); }
+.lab-nav { top: 76px; height: calc(100vh - 76px); padding: 24px 16px; background: var(--surface); }
+.lab-nav button { padding: 14px; font-size: 15px; border-radius: 14px; }
+.lab-nav button span { font-size: 13px; }
+.lab-nav button[aria-current="page"] { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+.lab-main { padding: 32px; gap: 24px; }
+.subnav button { font-size: 14px; padding: 10px 16px; }
+table { font-size: 14px; }
+th { font: 600 12px/1.5 var(--f-body); letter-spacing: .03em; }
+th, td { padding: 12px; }
+.fluid-select-trigger, .fluid-select-menu button { font-size: 14px; min-height: 44px; }
+.fluid-select-label { font-size: 14px; }
+.tox-section-heading h2 { font-size: 30px; }
+.tox-steps button, .tox-section-intro, .tox-detail p:not(.eyebrow), .tox-science { font-size: 15px; }
+.tox-organ-card > span, .tox-organ-card b, .rat-view-switch button, .rat-camera-controls button { font-size: 13px; }
+.tox-organ-card { padding: 18px; }
+@media (max-width: 900px) {
+  .learn-catalog-cards { grid-template-columns: 1fr; }
+  .learn-hero { gap: 24px; padding: 20px 0; }
+  .lab { grid-template-columns: 1fr; }
+  .lab-nav { position: static; height: auto; }
+  .lab-main { padding: 20px; }
+}
+@media (max-width: 600px) {
+  .topbar { flex-wrap: wrap; gap: 8px; padding: 12px 16px; }
+  .topbar .segmented button { font-size: 14px; padding: 8px 12px; }
+  .learn-page, .learn-case-page { padding: 24px 16px 48px; }
+  .learn-catalog, .panel, .learn-workspace .panel { padding: 20px; }
+  .learn-hero { grid-template-columns: 1fr; }
+  .learn-case-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }

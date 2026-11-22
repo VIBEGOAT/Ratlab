@@ -7,6 +7,7 @@ import "./styles.css";
 import "./learn/learn.css";
 import "./toxicity/toxicity.css";
 import "./interface.css";
+import "./refresh.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
