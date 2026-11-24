@@ -1,15 +1,15 @@
 import { describe, it, expect } from "vitest";
 import { ARCHETYPES, defaultDesign, runStudy } from "@eliminate/sim-core";
-import { defaultFocusId, defaultSetup, sameSetup, COMPOUNDS } from "./setup";
+import { defaultFocusId, defaultSetup, sameSetup, COMPOUNDS, TOXICITY_MODELS } from "./setup";
 import { fmt, fmtP, fmtPct, fmtSmart } from "../design/format";
 import { GRADE_HEX, gradeVar } from "../design/damage";
 
 describe("default study and focus animal", () => {
-  it("defaults to the heart-toxic anticancer compound in tumour-bearing rats, 28 days, 10 per sex per group", () => {
+  it("defaults to the data-backed liver model, 14 days, 10 per sex per group", () => {
     const s = defaultSetup();
-    expect(s.compoundKey).toBe("cardiotoxin");
-    expect(s.disease).toBe("cancer");
-    expect(s.durationDays).toBe(28);
+    expect(s.compoundKey).toBe("hepatotoxin");
+    expect(s.disease).toBe("none");
+    expect(s.durationDays).toBe(14);
     expect(s.nPerSex).toBe(10);
   });
 
@@ -29,6 +29,15 @@ describe("default study and focus animal", () => {
 
   it("names every compound in plain language without archetype codes", () => {
     for (const c of COMPOUNDS) { expect(c.name).not.toMatch(/·|archetype/i); expect(ARCHETYPES[c.key]).toBeDefined(); }
+  });
+
+  it("keeps all five toxicity lessons and labels their evidence support", () => {
+    expect(COMPOUNDS.map((c) => c.key)).toEqual(["hepatotoxin", "nephrotoxin", "cardiotoxin", "neurotoxin", "myelotoxin"]);
+    expect(Object.values(TOXICITY_MODELS).filter((model) => model.support === "data-backed")).toHaveLength(3);
+    for (const model of Object.values(TOXICITY_MODELS)) {
+      expect(model.doses).toHaveLength(3);
+      expect(model.days.length).toBeGreaterThanOrEqual(3);
+    }
   });
 });
 

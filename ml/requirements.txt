@@ -1,0 +1,9 @@
+pandas>=2.2
+numpy>=2.0
+scikit-learn>=1.5
+catboost>=1.2
+joblib>=1.4
+requests>=2.32
+rdkit>=2025.3
+openpyxl>=3.1
+

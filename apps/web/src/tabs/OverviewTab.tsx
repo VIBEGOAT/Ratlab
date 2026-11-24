@@ -1,19 +1,44 @@
 import { useMemo, useState } from "react";
 import { CONTEXT_PRESETS, FINDINGS, GRADE_SEVERITY, ORGANS, assessCredibility, listUnverifiedConstants, type Organ } from "@eliminate/sim-core";
-import { useStore, type LabSection } from "../store";
-import { COMPOUNDS, ORGAN_LABEL } from "../lib/setup";
+import { useStore, type LabSection, type LessonPrediction } from "../store";
+import { COMPOUNDS, ORGAN_LABEL, TOXICITY_MODELS } from "../lib/setup";
+import { LESSON_CONTENT, severityFromGrade } from "../lib/lessonContent";
 import { doseLadder, doseText, studyVerdict } from "../lib/verdict";
 import { firstToFail } from "../presenter/prediction";
 import { ratVisualState } from "../three/ratState";
 import { GRADE_WORD, gradeVar } from "../design/damage";
-import { fmtInt } from "../design/format";
+import { fmtInt, fmtSmart } from "../design/format";
 import { AnimatedNumber } from "../components/motion";
 import { Icon } from "../components/icons";
 import { Empty, NeedsStudy } from "../components/ui";
 import type { ViewId } from "../lib/nav";
 import { assessSandboxEvidence, referenceCaseForCompound } from "../lib/referenceStudies";
+import predictionGrid from "../data/organPredictions.json";
 
 const USES: Array<[keyof typeof CONTEXT_PRESETS, string]> = [["education", "Teaching"], ["screening", "Screening compounds"], ["designAid", "Designing a study"], ["replacement", "Replacing an animal study"]];
+type Estimate = { estimate: number; interval90: number[] };
+type PredictionModel = { conditions: Record<string, Record<string, Estimate>> };
+
+function LessonResult({ compoundKey, dose, days, prediction, grade }: { compoundKey: string; dose: number; days: number; prediction: LessonPrediction | null; grade: number | null }) {
+  const [check, setCheck] = useState<string | null>(null);
+  const goLab = useStore((s) => s.goLab);
+  const content = LESSON_CONTENT[compoundKey]; const model = TOXICITY_MODELS[compoundKey];
+  if (!content || !model) return null;
+  const actual = grade === null ? null : severityFromGrade(grade);
+  const estimateModel = (predictionGrid.models as Record<string, PredictionModel>)[compoundKey];
+  const estimates = estimateModel?.conditions[`${dose}:${days}`];
+  const order = { low: 0, moderate: 1, severe: 2 };
+  const comparison = prediction && actual ? (prediction === actual ? "Your hypothesis matched the model result." : Math.abs(order[prediction] - order[actual]) === 1 ? "Your hypothesis was close—compare the mechanism with the result." : "The result challenges your hypothesis. Use the mechanism below to revise it.") : "Return to Study design to make a hypothesis before revealing a result.";
+  const exploreReadouts = () => compoundKey === "neurotoxin" ? goLab("animal", "behaviour") : compoundKey === "cardiotoxin" ? goLab("animal", "clinobs") : goLab("data", "clinpath");
+  return <section className="lesson-result" aria-labelledby="lesson-result-title">
+    <div className="lesson-result-head"><div><span className={`support-badge ${model.support}`}>{model.support === "data-backed" ? "Measured-data prediction" : "Mechanistic teaching result"}</span><h3 id="lesson-result-title">Prediction vs result</h3></div><p>{comparison}</p></div>
+    <div className="prediction-compare"><article><span>Your hypothesis</span><b>{prediction ?? "Not recorded"}</b></article><i aria-hidden="true">→</i><article><span>Observed model result</span><b>{actual ?? "Calculating"}</b><small>{grade === null ? "Preparing target organ" : `${ORGAN_LABEL[content.target]} injury grade ${grade} of 5`}</small></article></div>
+    <div className="lesson-readouts"><div><span className="eyebrow">Key readouts</span><h4>{model.support === "data-backed" ? "What changed in the model?" : "What would scientists measure?"}</h4></div><div className="prediction-readouts">{content.markers.map((marker) => { const value = estimates?.[marker.key]; return <article key={marker.key}><span>{marker.label}</span>{value ? <><b>{fmtSmart(value.estimate)} <small>{marker.unit}</small></b><p>{fmtSmart(value.interval90[0])}–{fmtSmart(value.interval90[1])} · 90% interval</p></> : <><b>Teaching endpoint</b><p>No calibrated numeric estimate claimed</p></>}</article>; })}</div>{estimates && <small>Repeat-dose training data · held-out-condition median R² {fmtSmart(predictionGrid.medianHeldOutR2)}</small>}</div>
+    <div className="mechanism-story"><span className="eyebrow">Mechanism</span><h4>{content.mechanismTitle}</h4><ol>{content.mechanism.map((step, index) => <li key={step}><span>{index + 1}</span><b>{step}</b></li>)}</ol></div>
+    <div className="lesson-check"><span className="eyebrow">Quick check</span><h4>{content.question}</h4><div>{content.options.map((option) => <button type="button" key={option.key} aria-pressed={check === option.key} onClick={() => setCheck(option.key)}>{option.label}</button>)}</div>{check && <p className={check === content.correct ? "correct" : "incorrect"}>{check === content.correct ? content.explanation : "Not quite. Follow the mechanism from exposure to the target-organ response, then try again."}</p>}</div>
+    <nav className="lesson-next" aria-label="Continue this lesson"><div><span className="eyebrow">Continue exploring</span><b>See the result inside the virtual animal</b><p>Watch the target organ change over time, then inspect the supporting measurements.</p></div><div><button type="button" className="primary" onClick={() => goLab("animal", "rat")}>Watch the {model.organ.toLowerCase()}</button><button type="button" onClick={exploreReadouts}>Explore the readouts</button></div></nav>
+  </section>;
+}
 
 function Tile({ label, to, children, hint, tone }: { label: string; to: [LabSection, ViewId]; children: React.ReactNode; hint: string; tone?: "good" | "warn" | "bad" }) {
   const goLab = useStore((s) => s.goLab);
@@ -33,6 +58,7 @@ export default function OverviewTab() {
   const twin = useStore((s) => s.twin.data);
   const focusId = useStore((s) => s.focusId);
   const goLab = useStore((s) => s.goLab);
+  const lessonPrediction = useStore((s) => s.lessonPrediction);
   const uses = useMemo(() => USES.map(([k, label]) => ({ label, ok: assessCredibility(CONTEXT_PRESETS[k]!).adequate })), []);
   const unverified = listUnverifiedConstants().length;
   const compound = COMPOUNDS.find((c) => c.key === setup.compoundKey)?.name ?? "Custom compound";
@@ -101,6 +127,8 @@ export default function OverviewTab() {
                   ) : <Empty>Preparing the selected animal…</Empty>}
                 </div>
               </section>
+
+              <LessonResult key={`${setup.compoundKey}:${setup.highDose}:${setup.durationDays}`} compoundKey={setup.compoundKey} dose={setup.highDose} days={setup.durationDays} prediction={lessonPrediction} grade={end ? end.organs[TOXICITY_MODELS[setup.compoundKey]?.target ?? "liver"].grade : null} />
 
               <div className="kpis">
                 <Tile label="Highest dose with no adverse effect" to={["data", "stats"]} tone="good" hint={p.noael.noaelIsAtLeast ? "No tested dose was adverse" : "The NOAEL, from the statistics"}>

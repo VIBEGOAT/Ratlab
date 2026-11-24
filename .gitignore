@@ -8,3 +8,4 @@ apps/web/test-results
 apps/web/playwright-report
 apps/web/dist-prof
 test-results
+catboost_info/

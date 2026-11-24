@@ -11,7 +11,7 @@
     "test": "npm test -w @eliminate/sim-core && npm test -w @eliminate/web",
     "typecheck": "npm run typecheck -w @eliminate/sim-core && npm run typecheck -w @eliminate/web",
     "build": "npm run build -w @eliminate/web",
-    "dev": "npm run dev -w @eliminate/web",
+    "dev": "npm run dev -w @eliminate/web --",
     "gen:needs": "node scripts/gen-needs-check.mjs",
     "validate:references": "node scripts/validate-reference-studies.mjs",
     "ci": "npm run gen:needs && npm run gen:docs && npm run gen:prewarm && npm run lint && npm run typecheck && npm test && npm run bundle",

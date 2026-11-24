@@ -10,6 +10,7 @@ import { listenHeart, ratChirp } from "../audio";
 import { ambiencePlan } from "../audio/soundPlan";
 import { useRatAmbience } from "../audio/useRatAmbience";
 import { ORGAN_LABEL } from "../lib/setup";
+import { ORGAN_EVIDENCE, organPredictionReleased } from "../lib/organEvidence";
 import { useStore } from "../store";
 import { DEFAULT_LAYERS, type Layers } from "../three/RatModel";
 import { RatScene, SceneBoundary, useKickResize, webglAvailable } from "../three/RatScene";
@@ -32,6 +33,7 @@ const PATHOLOGY_LENS: Record<Organ, string> = {
 
 function OrganDetail({ organ, b, day }: { organ: Organ; b: AnimalBundle; day: number }) {
   const det = ORGAN_DETAIL[organ];
+  const evidence = ORGAN_EVIDENCE[organ];
   const v = ratVisualState(b, day).organs[organ];
   const hx = b.hoursH.map((h) => h / 24);
   const damage = b.damage[organ];
@@ -39,6 +41,9 @@ function OrganDetail({ organ, b, day }: { organ: Organ; b: AnimalBundle; day: nu
   const cp = b.clinpath[Math.min(day, b.days)]!;
   return (
     <Panel title={`${ORGAN_LABEL[organ]} on day ${day}`}>
+      <div className={`organ-evidence organ-evidence-${evidence.level}`} role="note">
+        <b>{evidence.label}</b><span>{evidence.detail}</span>
+      </div>
       <div className="organ" style={{ borderColor: gradeVar(v.grade) }}>
         <b><i className="gdot" style={{ background: gradeVar(v.grade) }} aria-hidden="true" />{GRADE_WORD[v.grade]} <span className="small muted">(grade {v.grade} of 5)</span></b>
         <span className="small muted">{v.finding}</span>
@@ -171,9 +176,10 @@ function RatLab({ tw }: { tw: TwinBundle }) {
               return (
                 <button key={o} className="organ" onClick={() => select(o)} aria-pressed={selected === o} style={{ textAlign: "left", borderColor: selected === o ? "var(--accent)" : ov.grade >= 1 ? gradeVar(ov.grade) : undefined }}>
                   <b>{ORGAN_LABEL[o]}</b>
+                  <span className={`organ-evidence-tag organ-evidence-${ORGAN_EVIDENCE[o].level}`}>{ORGAN_EVIDENCE[o].label}</span>
                   <span className="organ-grade"><i className="gdot" style={{ background: gradeVar(ov.grade) }} aria-hidden="true" />{GRADE_WORD[ov.grade]}</span>
                   <span className="organ-bar" aria-hidden="true"><i style={{ width: `${Math.max(3, (ov.grade / 5) * 100)}%`, background: gradeVar(ov.grade) }} /></span>
-                  <span className="small muted">{ov.grade === 0 ? "No finding" : FINDINGS[o][ov.grade]}</span>
+                  <span className="small muted">{organPredictionReleased(o) ? (ov.grade === 0 ? "No finding" : FINDINGS[o][ov.grade]) : "Exploratory simulation—not a released prediction"}</span>
                 </button>
               );
             })}

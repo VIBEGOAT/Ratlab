@@ -47,6 +47,6 @@ describe("dose ladder", () => {
     expect(steps[0]!.status).toBe("control");
     expect(steps.at(-1)!.status).toBe("adverse");
     const v = studyVerdict(f.payload.noael);
-    expect(v.headline).toMatch(/^No adverse effect up to 2\.4 mg\/kg\/day/);
+    expect(v.headline).toMatch(/^No adverse effect up to 60 mg\/kg\/day/);
   });
 });

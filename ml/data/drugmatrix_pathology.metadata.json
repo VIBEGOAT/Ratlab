@@ -1,0 +1,15 @@
+{
+  "source": "NTP DrugMatrix Histopathology",
+  "source_url": "https://cebs.niehs.nih.gov/cebs/paper/15670",
+  "scope": "short-term male rat histopathology",
+  "rows": 7685,
+  "animals": 5444,
+  "compounds": 613,
+  "organs": {
+    "liver": 4771,
+    "kidney": 1391,
+    "heart": 1310,
+    "gut": 213
+  },
+  "notice": "Research/education model. Sparse organ coverage and shared vehicle controls limit generalisation."
+}

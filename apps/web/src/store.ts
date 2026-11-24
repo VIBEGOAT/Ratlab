@@ -15,6 +15,7 @@ export type Theme = "system" | "light" | "dark";
 export type Mode = "story" | "lab" | "learn";
 export type LabSection = "overview" | "design" | "animal" | "data" | "population" | "trust";
 export type Detail = "simple" | "expert";
+export type LessonPrediction = "low" | "moderate" | "severe";
 type Status = "idle" | "running" | "done" | "error";
 interface Job<T> { status: Status; progress: number; error?: string; data: T | null }
 const idle = <T,>(): Job<T> => ({ status: "idle", progress: 0, data: null });
@@ -41,6 +42,8 @@ interface State {
   /** the setup that produced the current results; null until the first run finishes */
   ranSetup: Setup | null;
   setSetup: (p: Partial<Setup>) => void;
+  lessonPrediction: LessonPrediction | null;
+  setLessonPrediction: (prediction: LessonPrediction | null) => void;
 
   study: Job<StudyPayload>;
   runStudy: () => Promise<void>;
@@ -105,8 +108,10 @@ export const useStore = create<State>((set, get) => ({
 
   setup: defaultSetup(),
   ranSetup: null,
+  lessonPrediction: null,
+  setLessonPrediction: (lessonPrediction) => set({ lessonPrediction }),
   setSetup: (p) => {
-    set((s) => ({ setup: { ...s.setup, ...p } }));
+    set((s) => ({ setup: { ...s.setup, ...p }, lessonPrediction: null }));
     // results follow the configuration: re-run shortly after the last change
     clearTimeout(rerunTimer);
     rerunTimer = setTimeout(() => { if (designProblems(get().setup).length === 0) void get().runStudy(); }, 650);

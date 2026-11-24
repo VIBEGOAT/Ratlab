@@ -25,11 +25,29 @@ export interface Setup {
 export const COMPOUNDS: Array<{ key: string; name: string; sub: string }> = [
   { key: "hepatotoxin", name: "Liver-toxic", sub: "Damages the liver at high exposure" },
   { key: "nephrotoxin", name: "Kidney-toxic", sub: "Builds up in the kidney" },
-  { key: "cardiotoxin", name: "Heart-toxic anticancer", sub: "Shrinks tumours, slowly harms the heart" },
-  { key: "neurotoxin", name: "Nerve-toxic", sub: "Overstimulates the brain" },
+  { key: "cardiotoxin", name: "Heart-toxic", sub: "Cumulative stress in heart muscle" },
+  { key: "neurotoxin", name: "Nerve-toxic", sub: "Changes nervous-system function" },
   { key: "myelotoxin", name: "Marrow-toxic", sub: "Suppresses blood cell production" },
-  { key: "reference", name: "Well tolerated", sub: "A safe reference compound" },
 ];
+
+export interface ToxicityModel {
+  drug: string;
+  organ: string;
+  target: Organ;
+  doses: number[];
+  days: number[];
+  route: Route;
+  support: "data-backed" | "mechanistic";
+}
+
+/** Five teaching models. Data-backed and mechanistic models are labelled separately in the UI. */
+export const TOXICITY_MODELS: Record<string, ToxicityModel> = {
+  hepatotoxin: { drug: "Acetaminophen", organ: "Liver", target: "liver", doses: [300, 600, 1000], days: [3, 7, 14, 28], route: "oral", support: "data-backed" },
+  nephrotoxin: { drug: "Gentamicin", organ: "Kidneys", target: "kidney", doses: [10, 30, 100], days: [3, 7, 14, 28], route: "iv", support: "data-backed" },
+  cardiotoxin: { drug: "Doxorubicin", organ: "Heart", target: "heart", doses: [2, 8, 16], days: [7, 14, 28], route: "iv", support: "mechanistic" },
+  neurotoxin: { drug: "Paclitaxel", organ: "Nervous system", target: "brain", doses: [10, 40, 80], days: [7, 14, 28], route: "iv", support: "mechanistic" },
+  myelotoxin: { drug: "Cyclophosphamide", organ: "Bone marrow", target: "marrow", doses: [2, 5, 15], days: [3, 7, 14, 28], route: "oral", support: "data-backed" },
+};
 
 export const COMPOUND_LABELS: Record<string, string> = {
   ...Object.fromEntries(COMPOUNDS.map((c) => [c.key, c.name])),
@@ -50,15 +68,13 @@ export function newCustomCompound(): Compound {
 }
 
 /**
- * Default scenario: the heart-toxic anticancer archetype in tumour-bearing rats. It shows efficacy and
- * toxicity together, and untreated tumours reach the humane limit, which the story needs to be honest.
+ * Default to the best-supported teaching case: acetaminophen-associated liver injury.
  */
 export function defaultSetup(): Setup {
-  const c = ARCHETYPES.cardiotoxin!;
   return {
-    studyMode: "sandbox", compoundKey: "cardiotoxin", custom: newCustomCompound(), highDose: c.defaultDoseMgPerKg, fractions: [0.1, 0.3, 1],
-    durationDays: 28, recoveryDays: 14, nPerSex: 10, sexes: ["M", "F"], strain: "SD", ageWeeks: 8, route: "oral", recovery: false, tk: false,
-    disease: "cancer", seed: 42,
+    studyMode: "sandbox", compoundKey: "hepatotoxin", custom: newCustomCompound(), highDose: 600, fractions: [0.1, 0.3, 1],
+    durationDays: 14, recoveryDays: 14, nPerSex: 10, sexes: ["M", "F"], strain: "SD", ageWeeks: 8, route: "oral", recovery: false, tk: false,
+    disease: "none", seed: 42,
   };
 }
 
